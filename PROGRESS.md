@@ -4,7 +4,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 
 ## Steps
 
-- [x] **Step 1: Read Sony's kit** (no camera). Findings: [docs/step1-sdk-findings.md](docs/step1-sdk-findings.md). *Waiting for director review.*
+- [x] **Step 1: Read Sony's kit** (no camera). Findings: [docs/step1-sdk-findings.md](docs/step1-sdk-findings.md). Reviewed and approved by director.
 - [ ] Step 2: First connection, read-only (waits for "camera ready")
 - [ ] Step 3: The bridge (C++ ↔ Python), speed and latency measurements
 - [ ] Step 4: The eyes (image analysis, log handling, overlays)
@@ -16,19 +16,21 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 
 ## Step 1 summary
 
-- SDK is C++ (Apple Silicon native). Recommended bridge: small C++ helper program + Python brain over a local socket. **Decision pending.**
+- SDK is C++ (Apple Silicon native). Bridge: small C++ helper program + Python brain over a local socket (decided).
 - FX2 over USB: ISO, base ISO (High/Low), EI, shutter speed and angle, iris, WB preset and Kelvin, focus mode/point/nudge, record state: all readable, most changeable.
 - Not on the FX2 via SDK: zebra (we draw our own), internal ND (it has none), WB tint, gain in dB.
 - Live view: JPEG, 640 or 1024 px wide, up to 30 fps per Sony (to measure). Whether live view shows flat log or the Display LUT image is untested.
 - License: our own code can be public and the app can be sold. Sony's files can't be published. Distributing to others requires a warranty/consent notice.
 - Risks: macOS 27 isn't on Sony's tested list (14/15/26). CMake isn't installed and full Xcode isn't either. Pi 5 isn't on Sony's tested list.
 
-## Open decisions for the director
+## Decisions (2026-10-17)
 
-1. Bridge approach (A: C++ helper + Python, recommended / B: pybind11 module / C: community wrapper).
-2. Step 2 connection tool (my minimal read-only program, recommended / Sony's interactive RemoteCli).
-3. Install CMake with Homebrew (`brew install cmake`) before Step 2.
-4. Warranty clause: check FX2 warranty terms before connecting, if it matters to you.
+1. Bridge: **A**, a C++ helper program with its own hard-coded safety blocks, plus a Python brain.
+2. Step 2 first connection: **our own minimal read-only program**, not Sony's interactive sample app.
+3. CMake: install with `brew install cmake` at the start of Step 2.
+4. Warranty clause: director has read it and chose to continue.
+
+Next: Step 2 starts only when the director says **"camera ready"** (FX2 firmware update to 1.01 in progress).
 
 ## Ground rules (from the director, apply to every step)
 
