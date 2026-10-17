@@ -23,8 +23,9 @@ Run: `cd build/bridge && ./probe_readonly <session folder>`, then `python3 tools
 | Settings read | ✅ 452 settings |
 | Changed anything? | ✅ No. Two full reads before and after the live-view grab were identical (0 differences). |
 | Live view frame | ✅ saved, 1024×576 JPEG, 40 KB, first attempt |
-| Live view content | ⚠️ **Black frame** (brightness 3-16 out of 255). Camera reports no lens name and f-number "--". Likely reason: lens/body cap on, or no electronic lens mounted. |
-| S-Log3 live view check | ⏸ Not possible on a black frame. Waiting for a real picture. |
+| Live view content | ✅ First grab was black (cap on / no lens reported). With the Sigma mounted and uncapped: a real picture. |
+| Lens recognized | ✅ "28-70mm F2.8 DG DN \| Contemporary 021". Iris changeable (f/2.8 to f/22, 19 stops in 1/3 steps); focus changeable (AF-C/MF, near/far, absolute position). |
+| S-Log3 live view check | ✅ **Live view over USB shows the log image whether Display LUT is On or Off** (see below). |
 | macOS 27 (untested by Sony) | ✅ Works |
 | Build without full Xcode | ✅ Works (CMake + Command Line Tools) |
 
@@ -44,6 +45,26 @@ Run: `cd build/bridge && ./probe_readonly <session folder>`, then `python3 tools
 - Battery 3/4 on power supply
 
 The full snapshot is in the session folder (`sessions/…/settings_start.json`), which is not committed.
+
+### S-Log3 and the Display LUT (tested)
+
+Setup:
+- Log mode Flexible ISO, S-Gamut3.Cine, ISO 12800, 1/250, f/2.8
+- Same framing for both grabs; the director switched only Display LUT on the camera
+- The camera confirmed the switch (`MonitorLUTSetting` ON, then OFF)
+- The only other change was a small AF-C focus shift
+
+| 8-bit luma | LUT On | LUT Off |
+|---|---|---|
+| darkest 0.5% | 12 | 11 |
+| median | 44 | 43 |
+| 95% / 99.5% | 78 / 84 | 77 / 85 |
+
+**Conclusion:** the USB live-view JPEG is not affected by Display LUT. The agent always sees the flat log image in log mode, so:
+
+- **Good:** the agent's input doesn't depend on how you set your monitor.
+- **Rule for Step 4:** in log mode, judge exposure in S-Log3 terms, never by "it looks dark". The log mode is read from `MovieShootingMode` / `PictureProfile_Gamma`.
+- **Open (Step 4):** exactly how Sony maps S-Log3 into the 8-bit JPEG. The deepest shadows sat at about 11/255. That **likely** means legal-range S-Log3 (black = code 95 of 1023) stretched to 0-255, which would put 18% grey near 104/255 and 90% white near 155/255. To be confirmed with a grey card.
 
 ### Things we learned
 

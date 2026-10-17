@@ -5,7 +5,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 ## Steps
 
 - [x] **Step 1: Read Sony's kit** (no camera). Findings: [docs/step1-sdk-findings.md](docs/step1-sdk-findings.md). Reviewed and approved by director.
-- [~] **Step 2: First connection, read-only.** Results: [docs/step2-first-connection.md](docs/step2-first-connection.md). Connected, read 452 settings, saved a frame, changed nothing (verified). **Open:** the frame was black (likely lens/body cap or no electronic lens). Re-grab with a real picture, plus the S-Log3 Display LUT on/off check.
+- [x] **Step 2: First connection, read-only.** Results: [docs/step2-first-connection.md](docs/step2-first-connection.md). Connected, read 452 settings, saved frames, changed nothing (verified twice per run). Sigma recognized. Live view shows log whether Display LUT is On or Off. *Waiting for director review.*
 - [ ] Step 3: The bridge (C++ ↔ Python), speed and latency measurements
 - [ ] Step 4: The eyes (image analysis, log handling, overlays)
 - [ ] Step 5: The brain (cinematography rules, look presets)
