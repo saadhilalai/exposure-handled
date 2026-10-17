@@ -19,6 +19,26 @@ This project talks to the camera through Sony's Camera Remote SDK. Sony's licens
 
 `sdk/` and the zip are listed in `.gitignore` so they are never committed.
 
+On macOS, remove the download "quarantine" flag from Sony's libraries (Sony's instruction):
+
+```
+cd sdk/RemoteCli/external/crsdk
+xattr -d com.apple.quarantine libCr_Core.dylib libmonitor_protocol*.dylib CrAdapter/*.dylib
+```
+
+## Build and run the read-only probe
+
+Needs CMake (`brew install cmake`) and Apple's Command Line Tools.
+
+```
+cmake -S bridge -B build/bridge
+cmake --build build/bridge -j2
+mkdir -p sessions/test && (cd build/bridge && ./probe_readonly ../../sessions/test)
+python3 tools/show_settings.py sessions/test
+```
+
+The probe only reads. It cannot change camera settings (see `docs/step2-first-connection.md`).
+
 ## Built by
 
 Built by Saad Hilal · S4D. Directed by Saad Hilal; code written with an AI coding assistant.

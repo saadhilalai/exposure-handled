@@ -5,7 +5,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 ## Steps
 
 - [x] **Step 1: Read Sony's kit** (no camera). Findings: [docs/step1-sdk-findings.md](docs/step1-sdk-findings.md). Reviewed and approved by director.
-- [ ] Step 2: First connection, read-only (waits for "camera ready")
+- [~] **Step 2: First connection, read-only.** Results: [docs/step2-first-connection.md](docs/step2-first-connection.md). Connected, read 452 settings, saved a frame, changed nothing (verified). **Open:** the frame was black (likely lens/body cap or no electronic lens). Re-grab with a real picture, plus the S-Log3 Display LUT on/off check.
 - [ ] Step 3: The bridge (C++ ↔ Python), speed and latency measurements
 - [ ] Step 4: The eyes (image analysis, log handling, overlays)
 - [ ] Step 5: The brain (cinematography rules, look presets)
@@ -47,4 +47,5 @@ Next: Step 2 starts only when the director says **"camera ready"** (FX2 firmware
 - Every setting change goes through ONE safety function with director-approved ranges, and is logged (time, old value, new value, reason).
 - Always a kill switch that stops all changes and hands control back.
 - Snapshot the camera's settings at the start of each session; offer to restore them at the end.
-- Hard-blocked in the C++ bridge: card format, settings reset, pixel mapping, LUT import, settings-file upload, APS-C/FF switch, clock/FTP settings, and record start/stop unless explicitly enabled.
+- The C++ bridge uses an **allow-list**: only director-approved settings can be set; everything else is refused. Never allowed: card format, settings reset, pixel mapping, LUT import, settings-file upload, APS-C/FF switch, clock/FTP settings, deleting Base Looks. Record start/stop only if explicitly enabled.
+- Read-only tools "poison" Sony's change functions so they can't even compile a change.
