@@ -1,0 +1,22 @@
+# Sony Camera Remote SDK: licensed to each developer, never published here.
+# Download it yourself from Sony (see README.md).
+CrSDK_*.zip
+sdk/
+
+# Build output
+build/
+*.o
+*.dylib
+*.so
+*.dll
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Camera session data (settings snapshots, change logs, captured frames)
+sessions/
+
+# macOS
+.DS_Store
