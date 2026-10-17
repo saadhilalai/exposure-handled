@@ -30,7 +30,25 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 3. CMake: install with `brew install cmake` at the start of Step 2.
 4. Warranty clause: director has read it and chose to continue.
 
-Next: Step 2 starts only when the director says **"camera ready"** (FX2 firmware update to 1.01 in progress).
+Next: Step 3 starts only when the director says **"camera ready"** (camera is out on a shoot as of 2026-10-17 evening).
+
+## Approved safe ranges (director, 2026-10-17)
+
+These go into the C++ allow-list. Anything not listed is blocked.
+
+| Setting | Allowed range | Step 3 | Camera's options inside the range (from Step 2 snapshot) |
+|---|---|---|---|
+| ISO | 800 to 12800 | **Only setting Step 3 may change** (one step, confirm, put back) | 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800 |
+| Shutter | Video only, 1/48 to 1/100 | Never touch | 1/48, 1/50, 1/60, 1/80, 1/96, 1/100 |
+| Aperture | f/2.8 to f/11 | Never touch | f/2.8 … f/11 (13 stops in 1/3 steps, Sigma 28-70) |
+| White balance | 2800K to 7500K | Never touch | camera range 2500K-9900K in 100K steps |
+| Focus | No changes yet | Never touch | |
+| Everything else | Blocked | Blocked | |
+
+Before any ISO change in Step 3:
+
+- **Confirm the FX2's real base ISOs for S-Log3 from the camera itself.** In Flexible ISO mode the camera reports "Gain Base ISO" as not available, and "Base ISO Switch EI" reads 2000 EI. That's a hint, not a confirmation. Plan: try Sony's read-only "display string" request ("Camera Gain BaseISO" list); otherwise check the FX2 Help Guide and tell the director which source was used.
+- Note: at the end of Step 2 the camera's own shutter was 1/250, outside the approved range. The range limits what the agent may *set*; it won't "correct" a value you set. How the agent should react to an out-of-range starting value is a question for Step 5.
 
 ## Ground rules (from the director, apply to every step)
 
