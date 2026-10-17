@@ -28,26 +28,32 @@ add_custom_command(
             "${CRSDK_INCLUDE_DIR}/CrDeviceProperty.h" "${GENERATED_DIR}/property_names.inc"
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tools/gen_property_names.py" "${CRSDK_INCLUDE_DIR}/CrDeviceProperty.h"
 )
+add_custom_target(property_names DEPENDS "${GENERATED_DIR}/property_names.inc")
 
-add_executable(probe_readonly src/probe_readonly.cpp "${GENERATED_DIR}/property_names.inc")
-# SYSTEM: don't report warnings from Sony's headers, only from our code.
-target_include_directories(probe_readonly SYSTEM PRIVATE "${CRSDK_INCLUDE_DIR}")
-target_include_directories(probe_readonly PRIVATE "${GENERATED_DIR}")
-target_link_libraries(probe_readonly PRIVATE "${CR_CORE_LIB}")
-target_compile_options(probe_readonly PRIVATE -Wall -Wextra)
+function(add_camera_program name source)
+    add_executable(${name} ${source})
+    add_dependencies(${name} property_names)
+    # SYSTEM: don't report warnings from Sony's headers, only from our code.
+    target_include_directories(${name} SYSTEM PRIVATE "${CRSDK_INCLUDE_DIR}")
+    target_include_directories(${name} PRIVATE "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(${name} PRIVATE "${CR_CORE_LIB}")
+    target_compile_options(${name} PRIVATE -Wall -Wextra)
+    if(APPLE)
+        # On macOS the SDK loads its USB/network adapters from
+        # <program folder>/Contents/Frameworks/CrAdapter (same layout as Sony's sample).
+        set_target_properties(${name} PROPERTIES BUILD_RPATH "@executable_path")
+        add_custom_command(TARGET ${name} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${CRSDK_LIB_DIR}/libCr_Core.dylib"
+                    "${CRSDK_LIB_DIR}/libmonitor_protocol.dylib"
+                    "${CRSDK_LIB_DIR}/libmonitor_protocol_pf.dylib"
+                    $<TARGET_FILE_DIR:${name}>
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    "${CRSDK_LIB_DIR}/CrAdapter"
+                    $<TARGET_FILE_DIR:${name}>/Contents/Frameworks/CrAdapter
+        )
+    endif()
+endfunction()
 
-if(APPLE)
-    # On macOS the SDK loads its USB/network adapters from
-    # <program folder>/Contents/Frameworks/CrAdapter (same layout as Sony's sample).
-    set_target_properties(probe_readonly PROPERTIES BUILD_RPATH "@executable_path")
-    add_custom_command(TARGET probe_readonly POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CRSDK_LIB_DIR}/libCr_Core.dylib"
-                "${CRSDK_LIB_DIR}/libmonitor_protocol.dylib"
-                "${CRSDK_LIB_DIR}/libmonitor_protocol_pf.dylib"
-                $<TARGET_FILE_DIR:probe_readonly>
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${CRSDK_LIB_DIR}/CrAdapter"
-                $<TARGET_FILE_DIR:probe_readonly>/Contents/Frameworks/CrAdapter
-    )
-endif()
+add_camera_program(probe_readonly src/probe_readonly.cpp)
+add_camera_program(camera_bridge src/camera_bridge.cpp)

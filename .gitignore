@@ -20,3 +20,6 @@ sessions/
 
 # macOS
 .DS_Store
+
+# Bridge socket
+run/

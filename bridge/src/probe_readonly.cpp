@@ -16,27 +16,16 @@
 //
 // Usage: probe_readonly <out_dir>
 
-#include <atomic>
-#include <chrono>
 #include <condition_variable>
-#include <cstdio>
-#include <cstring>
-#include <ctime>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
-#include <map>
 #include <mutex>
-#include <sstream>
-#include <string>
 #include <thread>
-#include <vector>
 
-#include "CameraRemote_SDK.h"
-#include "CrDeviceProperty.h"
 #include "CrImageDataBlock.h"
 #include "ICrCameraObjectInfo.h"
 #include "IDeviceCallback.h"
+#include "sdk_util.hpp"
 
 // Every Sony call that can change the camera. Any use below is a compile error.
 #pragma GCC poison SetDeviceProperty SendCommand ExecuteControlCodeValue ExecuteControlCodeString
@@ -45,129 +34,11 @@
 #pragma GCC poison SetCurrentValue SetCurrentStr
 
 namespace SDK = SCRSDK;
+using namespace sdkutil;
 
 namespace {
 
 const char* kExpectedModel = "ILME-FX2";
-
-const std::map<CrInt32u, const char*> kPropertyNames = {
-#include "property_names.inc"
-};
-
-std::string property_name(CrInt32u code) {
-    auto it = kPropertyNames.find(code);
-    if (it != kPropertyNames.end()) return it->second;
-    std::ostringstream s;
-    s << "Unknown_0x" << std::hex << std::uppercase << code;
-    return s.str();
-}
-
-std::string now_iso() {
-    std::time_t t = std::time(nullptr);
-    char buf[32];
-    std::strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S%z", std::localtime(&t));
-    return buf;
-}
-
-std::string json_escape(const std::string& in) {
-    std::ostringstream out;
-    for (unsigned char c : in) {
-        switch (c) {
-            case '"': out << "\\\""; break;
-            case '\\': out << "\\\\"; break;
-            case '\n': out << "\\n"; break;
-            case '\r': out << "\\r"; break;
-            case '\t': out << "\\t"; break;
-            default:
-                if (c < 0x20) out << "\\u" << std::hex << std::setw(4) << std::setfill('0') << int(c) << std::dec;
-                else out << c;
-        }
-    }
-    return out.str();
-}
-
-// Sony strings are UTF-16: first element is the length, then the characters.
-std::string sony_str_to_utf8(const CrInt16u* str) {
-    if (!str || str[0] == 0) return "";
-    std::string out;
-    for (CrInt16u i = 1; i <= str[0]; ++i) {
-        CrInt16u ch = str[i];
-        if (ch == 0) break;
-        if (ch < 0x80) {
-            out += char(ch);
-        } else if (ch < 0x800) {
-            out += char(0xC0 | (ch >> 6));
-            out += char(0x80 | (ch & 0x3F));
-        } else {
-            out += char(0xE0 | (ch >> 12));
-            out += char(0x80 | ((ch >> 6) & 0x3F));
-            out += char(0x80 | (ch & 0x3F));
-        }
-    }
-    return out;
-}
-
-std::string type_name(CrInt32u type) {
-    if (type == SDK::CrDataType_STR) return "STR";
-    if (type == SDK::CrDataType_Undefined) return "Undefined";
-    std::string base;
-    switch (type & 0x000F) {
-        case 1: base = "8"; break;
-        case 2: base = "16"; break;
-        case 3: base = "32"; break;
-        case 4: base = "64"; break;
-        case 5: base = "128"; break;
-        default: base = "?"; break;
-    }
-    std::string name = ((type & SDK::CrDataType_SignBit) ? "Int" : "UInt") + base;
-    if (type & SDK::CrDataType_CustomBit) name = "Custom" + name;
-    if (type & SDK::CrDataType_ArrayBit) name += "Array";
-    if (type & SDK::CrDataType_RangeBit) name += "Range";
-    return name;
-}
-
-const char* enable_flag_name(int flag) {
-    switch (flag) {
-        case SDK::CrEnableValue_NotSupported: return "NotSupported";
-        case SDK::CrEnableValue_False: return "False";
-        case SDK::CrEnableValue_True: return "True";
-        case SDK::CrEnableValue_DisplayOnly: return "DisplayOnly";
-        case SDK::CrEnableValue_SetOnly: return "SetOnly";
-        default: return "Other";
-    }
-}
-
-// Decode a packed list of candidate values (array) or min/max/step (range).
-std::vector<long long> decode_values(CrInt32u type, const CrInt8u* data, CrInt32u size) {
-    std::vector<long long> out;
-    if (!data || size == 0 || type == SDK::CrDataType_STR) return out;
-    CrInt32u elem = 0;
-    switch (type & 0x000F) {
-        case 1: elem = 1; break;
-        case 2: elem = 2; break;
-        case 3: elem = 4; break;
-        case 4: elem = 8; break;
-        default: return out;  // 128-bit values are not used by the settings we need
-    }
-    bool is_signed = (type & SDK::CrDataType_SignBit) != 0;
-    for (CrInt32u off = 0; off + elem <= size; off += elem) {
-        long long v = 0;
-        switch (elem) {
-            case 1: { CrInt8u x; std::memcpy(&x, data + off, 1); v = is_signed ? (long long)(int8_t)x : x; break; }
-            case 2: { CrInt16u x; std::memcpy(&x, data + off, 2); v = is_signed ? (long long)(int16_t)x : x; break; }
-            case 4: { CrInt32u x; std::memcpy(&x, data + off, 4); v = is_signed ? (long long)(int32_t)x : x; break; }
-            case 8: { CrInt64u x; std::memcpy(&x, data + off, 8); v = (long long)x; break; }
-        }
-        out.push_back(v);
-    }
-    return out;
-}
-
-void write_list(std::ostream& out, const std::vector<long long>& values) {
-    out << "[";
-    for (size_t i = 0; i < values.size(); ++i) out << (i ? ", " : "") << values[i];
-    out << "]";
-}
 
 struct PropertySnapshot {
     std::map<CrInt32u, unsigned long long> current;  // code -> current value
@@ -240,24 +111,10 @@ bool dump_properties(SDK::CrDeviceHandle handle, const std::string& path, const 
     out << "  \"property_count\": " << count << ",\n  \"properties\": [\n";
     for (CrInt32 i = 0; i < count; ++i) {
         const SDK::CrDeviceProperty& p = props[i];
-        CrInt32u type = p.GetValueType();
-        std::string str_value = (type == SDK::CrDataType_STR) ? sony_str_to_utf8(p.GetCurrentStr()) : "";
         snapshot->current[p.GetCode()] = p.GetCurrentValue();
-        if (type == SDK::CrDataType_STR) snapshot->current_str[p.GetCode()] = str_value;
-
-        out << "    {\"code\": " << p.GetCode()
-            << ", \"name\": \"" << json_escape(property_name(p.GetCode())) << "\""
-            << ", \"type\": \"" << type_name(type) << "\""
-            << ", \"enable\": \"" << enable_flag_name(p.GetPropertyEnableFlag()) << "\""
-            << ", \"can_read\": " << (p.IsGetEnableCurrentValue() ? "true" : "false")
-            << ", \"can_set_now\": " << (p.IsSetEnableCurrentValue() ? "true" : "false")
-            << ", \"current\": " << p.GetCurrentValue();
-        if (type == SDK::CrDataType_STR) out << ", \"current_str\": \"" << json_escape(str_value) << "\"";
-        out << ", \"values\": ";
-        write_list(out, decode_values(type, p.GetValues(), p.GetValueSize()));
-        out << ", \"set_values\": ";
-        write_list(out, decode_values(type, p.GetSetValues(), p.GetSetValueSize()));
-        out << "}" << (i + 1 < count ? "," : "") << "\n";
+        if (p.GetValueType() == SDK::CrDataType_STR)
+            snapshot->current_str[p.GetCode()] = sony_str_to_utf8(p.GetCurrentStr());
+        out << "    " << property_json(p) << (i + 1 < count ? "," : "") << "\n";
     }
     out << "  ]\n}\n";
     snapshot->count = count;

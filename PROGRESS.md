@@ -6,7 +6,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 
 - [x] **Step 1: Read Sony's kit** (no camera). Findings: [docs/step1-sdk-findings.md](docs/step1-sdk-findings.md). Reviewed and approved by director.
 - [x] **Step 2: First connection, read-only.** Results: [docs/step2-first-connection.md](docs/step2-first-connection.md). Connected, read 452 settings, saved frames, changed nothing (verified twice per run). Sigma recognized. Live view shows log whether Display LUT is On or Off. *Waiting for director review.*
-- [ ] Step 3: The bridge (C++ ↔ Python), speed and latency measurements
+- [~] **Step 3: The bridge (C++ ↔ Python).** Results: [docs/step3-bridge.md](docs/step3-bridge.md). Bridge built and tested read-only: base ISOs confirmed from the camera (800 / 4000), live view 23.9 fps. **Open:** the ISO change test. The camera's starting ISO (102400) was outside the approved range, so the test refused itself; waiting for the director.
 - [ ] Step 4: The eyes (image analysis, log handling, overlays)
 - [ ] Step 5: The brain (cinematography rules, look presets)
 - [ ] Step 6: The dashboard
@@ -47,7 +47,7 @@ These go into the C++ allow-list. Anything not listed is blocked.
 
 Before any ISO change in Step 3:
 
-- **Confirm the FX2's real base ISOs for S-Log3 from the camera itself.** In Flexible ISO mode the camera reports "Gain Base ISO" as not available, and "Base ISO Switch EI" reads 2000 EI. That's a hint, not a confirmation. Plan: try Sony's read-only "display string" request ("Camera Gain BaseISO" list); otherwise check the FX2 Help Guide and tell the director which source was used.
+- ✅ **FX2 base ISOs for S-Log3 confirmed from the camera itself: 800 (Low) and 4000 (High).** Source: the camera's own menu text via the read-only "Camera Gain BaseISO" display-string request (2026-10-17).
 - Note: at the end of Step 2 the camera's own shutter was 1/250, outside the approved range. The range limits what the agent may *set*; it won't "correct" a value you set. How the agent should react to an out-of-range starting value is a question for Step 5.
 
 ## Ground rules (from the director, apply to every step)
