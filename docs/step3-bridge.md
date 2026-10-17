@@ -35,9 +35,35 @@ FX2 ──USB──> camera_bridge (C++) ──private socket file──> Python
 | Frame size | 1024×576 JPEG, about 66 KB each (about 1.6 MB/s over USB 2.0) |
 | Delay bridge → Python | about 0 ms median: Python gets each frame as soon as the bridge has it |
 | Read-only part changed anything? | No: 0 of 452 settings differed before vs. after (including the base-ISO request) |
-| ISO test | **Not run.** Starting ISO was 102400, outside the approved 800–12800, so there's no in-range step up. The test refused itself; nothing was changed. |
+| ISO test, first attempt | **Refused by the test itself.** Starting ISO was 102400, outside the approved 800–12800, so there was no in-range step up. Nothing was changed. |
+| ISO test, second attempt | ✅ Director set ISO 800 by hand. **800 → 1000 → 800**, each step confirmed by the camera, restored exactly (see below). |
+
+## The ISO test (the first camera change of the project)
+
+Camera: Flexible ISO (S-Log3), shutter 1/160, Sigma 28-70, AF-C, not recording.
+
+| | Before | During | After |
+|---|---|---|---|
+| ISO (camera's own read-back) | 800 | 1000 | 800 (exact) |
+
+| How long the change took | ISO 800 → 1000 | ISO 1000 → 800 |
+|---|---|---|
+| Sony call returns | 0.002 ms (it only queues the request) | 0.002 ms |
+| Camera says "ISO changed" (callback) | 171 ms | 115 ms |
+| Camera reports the new value when read | **172 ms** | **119 ms** |
+| Python round trip (ask → confirmed) | 172 ms | 119 ms |
+| Live-view picture first shows it | **325 ms** | **272 ms** |
+| Picture halfway to its new brightness | 366 ms | 314 ms |
+| Brightness change (clean regions) | +2.8 of 255 | −3.6 of 255 |
+
+- Rule of thumb: **a setting change lands in about 0.1-0.2 s and shows in the picture in about 0.3 s**, i.e. 7-8 live-view frames at 24 fps. Step 5's "small steps, wait before reacting again" must allow at least that.
+- **Honest note:** the whole-frame brightness at the end was much lower than at the start. Cause: at the moment of the restore, a dark chat window opened on the MacBook screen in shot, and a hand came into frame. A 4×4 region check showed the exposure itself returned (most regions within ±0.4 levels of the start; the screen region alone fell 44 levels). The "picture changed" times above are measured only on regions the screen and hand don't touch. In those regions start vs. end brightness was 33.11 vs. 32.84.
+- Every change went through `SafetyGate.change_setting()` and the bridge's `guarded_set()`, and was logged twice: `changes.jsonl` with reasons, and `bridge_log.jsonl`.
+- Full settings before vs. after the test: only `MeteredManualLevel` (the camera's exposure meter) differed. It reacts to the scene, which changed (the screen).
 
 Notes:
 - Live view ran at **24 fps, matching the 23.98p project frame rate**, not the "up to 30 fps" in Sony's docs. Likely the camera sends live view at the recording frame rate; untested at 59.94p.
 - The occasional 70-90 ms gap is a late frame from the camera, not one we dropped (frame numbers had no gaps).
 - With the earlier frame at ISO 102400, brightness piled up at a hard ceiling of **221/255**. Likely the S-Log3 clip point in this preview; to confirm in Step 4.
+
+The clean-region re-timing was a one-off analysis of the saved frames (results stored in the session's step3_results.json). Step 4's image tools will make region-based measurement standard, so in-shot screens or people moving can't fool the numbers.

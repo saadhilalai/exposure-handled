@@ -6,7 +6,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 
 - [x] **Step 1: Read Sony's kit** (no camera). Findings: [docs/step1-sdk-findings.md](docs/step1-sdk-findings.md). Reviewed and approved by director.
 - [x] **Step 2: First connection, read-only.** Results: [docs/step2-first-connection.md](docs/step2-first-connection.md). Connected, read 452 settings, saved frames, changed nothing (verified twice per run). Sigma recognized. Live view shows log whether Display LUT is On or Off. *Waiting for director review.*
-- [~] **Step 3: The bridge (C++ ↔ Python).** Results: [docs/step3-bridge.md](docs/step3-bridge.md). Bridge built and tested read-only: base ISOs confirmed from the camera (800 / 4000), live view 23.9 fps. **Open:** the ISO change test. The camera's starting ISO (102400) was outside the approved range, so the test refused itself; waiting for the director.
+- [x] **Step 3: The bridge (C++ ↔ Python).** Results: [docs/step3-bridge.md](docs/step3-bridge.md). Base ISOs from the camera: 800 / 4000. Live view 24 fps (matches 23.98p), 0 frames missed. ISO 800 → 1000 → 800 confirmed and restored exactly. The camera confirms a change in 119-172 ms, and it shows in the picture after 272-325 ms. *Waiting for director review.*
 - [ ] Step 4: The eyes (image analysis, log handling, overlays)
 - [ ] Step 5: The brain (cinematography rules, look presets)
 - [ ] Step 6: The dashboard
