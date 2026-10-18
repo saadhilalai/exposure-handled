@@ -63,7 +63,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
   - Ready, no camera needed: `metrics.csv` logging + `m` mark key, `tools/score_take.py` (measurement definitions fixed in code, 4 tests), balanced take order from a fixed seed (`tools/make_test_order.py`).
   - ❓ 8 open questions in the plan; the big one is recording (the agent locks while recording).
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
-- [ ] Step 9: Package it (README, INTERVIEW.md, resume bullets)
+- [~] **Step 9: Package it.** Started overnight: README rewritten (what it does, how it thinks, safety, skin tones, results so far with sources, setup, honest limits, "How this was built"); [INTERVIEW.md](INTERVIEW.md) drafted with 10 Q&As + 3 draft resume bullets (real numbers only). Waiting on Step 7 results and a demo video.
 
 ## Step 1 summary
 
