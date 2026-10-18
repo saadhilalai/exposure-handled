@@ -2,14 +2,44 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
-## Resumed 2026-10-17, 21:48: director's answers
+## 📍 Where things stand (overnight 2026-10-17 → morning 2026-10-18)
 
-1. **Out-of-range ISO/aperture:** warn and pause (the brain's default; now confirmed).
-2. **Look numbers:** keep for now; tune after the live test.
-3. **Pi RAM:** decide later (both 4GB and 8GB stay in the plan; nothing bought).
-4. **Allow-list for the live brain test:** **ISO only (800–12800).** The brain plans every lever, but only ISO changes are made; shutter/aperture/WB proposals are shown as "would change". Expand after the director has seen it behave.
+The director went to sleep and asked for everything that doesn't need him or the camera. **The camera was not connected at any point overnight.** Only the fake camera and saved frames were used.
 
-## ⏸ PARKED: 2026-10-17, 19:40 (director stepped away)
+**Done overnight (each committed):**
+- Step 6 dashboard: [docs/step6-dashboard.md](docs/step6-dashboard.md)
+- Step 7 test plan (**DRAFT**) + scoring tools: [docs/step7-test-plan.md](docs/step7-test-plan.md)
+- Step 8 Pi plan finished: [docs/step8-pi-plan.md](docs/step8-pi-plan.md)
+- Step 9 started: README + [INTERVIEW.md](INTERVIEW.md)
+- 62 tests pass.
+
+**Decisions for the director (morning):**
+1. Step 6: "Lock" = hold every setting now (my reading of "LOCK all settings while recording"). OK?
+2. Step 6: face signatures are biometric data, stored only on this computer. OK, or a no-recognition version?
+3. Step 6: screenshots with your face are not committed (`sessions/2026-10-17_dashboard-screens-with-face/`). OK to keep it that way?
+4. Step 7: approve the draft plan and its 8 open questions (the big one: recording while the agent works).
+5. Step 8: 4GB vs 8GB (evidence now says 4GB is plenty).
+
+**Needs Saad at the camera:**
+1. **Live ISO test (Step 5)**, ~10 min:
+   - camera ready
+   - bridge started *without* `--read-only` (ISO 800–12800 only)
+   - you run `tools/run_agent.py --live --dashboard` in your own Terminal
+   - a 1-minute dry run first, then Auto on
+   - a scene with your face and a lamp; change a light; press SPACE once
+2. **Face button on the real camera:** press "this face looks right" once during that test.
+3. Later, Step 7 shoot (after the plan is approved).
+4. Optional: wall at f/8 and f/11, for the deep-shadow calibration.
+
+**How to start things again:**
+- Build: `cmake --build build/bridge -j2`
+- Bridge, read-only: `cd build/bridge && ./camera_bridge ~/camera-agent/run/bridge.sock ~/camera-agent/sessions/<new folder> --read-only`
+- Bridge, for the live ISO test: same command without `--read-only`.
+- Agent: `~/camera-agent/.venv/bin/python tools/run_agent.py [--live] [--dashboard] [--fake]`
+
+<details><summary>Earlier park notes (19:40, resolved)</summary>
+
+Parked 2026-10-17, 19:40 (director stepped away)
 
 **Stopped at a clean point:** Steps 5 (no-camera part) and 8 are finished and committed. The last report to the director (Step 5 + Step 8 summary and four questions) was delivered and is awaiting replies. Nothing was half-done.
 
@@ -34,6 +64,15 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 - Build: `cmake --build build/bridge -j2`
 - Read-only bridge: `cd build/bridge && ./camera_bridge ~/camera-agent/run/bridge.sock ~/camera-agent/sessions/<new folder> --read-only`
 - Python: `~/camera-agent/.venv/bin/python`
+
+</details>
+
+## Resumed 2026-10-17, 21:48: director's answers
+
+1. **Out-of-range ISO/aperture:** warn and pause (the brain's default; now confirmed).
+2. **Look numbers:** keep for now; tune after the live test.
+3. **Pi RAM:** decide later (both 4GB and 8GB stay in the plan; nothing bought).
+4. **Allow-list for the live brain test:** **ISO only (800–12800).** The brain plans every lever, but only ISO changes are made; shutter/aperture/WB proposals are shown as "would change". Expand after the director has seen it behave.
 
 ## Steps
 

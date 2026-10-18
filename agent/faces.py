@@ -11,6 +11,7 @@ target, person by person. Signatures are biometric data, so they are stored only
 this computer (config/face_refs.json, never committed), and "forget" deletes them.
 """
 import json
+import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -41,17 +42,19 @@ class FaceBook:
         self.model = Path(model)
         self._signer = signer
         self.recent = []                     # [(box, person or None, score, t)] from the last frames
+        self.mutex = threading.RLock()       # the dashboard button and the agent loop share the model
 
     @property
     def available(self):
         return self._signer is not None or self.model.exists()
 
     def signer(self, bgr, face):
-        if self._signer is None:             # load SFace (39 MB) only when it's first needed
-            recognizer = cv2.FaceRecognizerSF.create(str(self.model), "")
-            self._signer = lambda img, f: recognizer.feature(
-                recognizer.alignCrop(img, np.array(f["raw"], np.float32))).flatten()
-        return self._signer(bgr, face)
+        with self.mutex:
+            if self._signer is None:         # load SFace (39 MB) only when it's first needed
+                recognizer = cv2.FaceRecognizerSF.create(str(self.model), "")
+                self._signer = lambda img, f: recognizer.feature(
+                    recognizer.alignCrop(img, np.array(f["raw"], np.float32))).flatten()
+            return self._signer(bgr, face)
 
     def _save(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -71,6 +74,10 @@ class FaceBook:
     def label(self, bgr, faces, t):
         """Add "name" and "target" to each face that belongs to a known person. Cheap: a face that
         stays put keeps its identity for REUSE_S before its signature is checked again."""
+        with self.mutex:
+            return self._label(bgr, faces, t)
+
+    def _label(self, bgr, faces, t):
         if not self.available or not self.people:
             return faces
         recent = []
@@ -94,6 +101,10 @@ class FaceBook:
         if not self.available:
             raise RuntimeError("face signatures need models/face_recognition_sface_2021dec.onnx "
                                "(run tools/fetch_models.sh)")
+        with self.mutex:
+            return self._remember(name, bgr, face, stops)
+
+    def _remember(self, name, bgr, face, stops):
         signature = self.signer(bgr, face)
         person, _ = self._match(signature)
         if person is None:
@@ -108,9 +119,10 @@ class FaceBook:
         return person
 
     def forget(self, person_id):
-        self.people = [p for p in self.people if p["id"] != person_id]
-        self.recent = []
-        self._save()
+        with self.mutex:
+            self.people = [p for p in self.people if p["id"] != person_id]
+            self.recent = []
+            self._save()
 
     def summary(self):
         """People without their signatures (safe to show on the dashboard)."""
