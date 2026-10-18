@@ -55,8 +55,10 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
   - ✅ **Tried on a fake camera** (`tools/fake_bridge.py`, same protocol as the bridge) with your real Step 4 frame. It caught a 6400 ↔ 5000 pumping bug, fixed with a "clipping memory" rule + regression test. Keys checked in a real terminal.
   - ✅ 49 tests pass (7 eyes, 33 brain, 9 runner).
   - ⏸ **Waiting on Saad:** decide when to run the **live ISO test** (tonight or tomorrow). Needs the camera, the bridge started *without* `--read-only`, and you at the keyboard (SPACE).
-- [ ] Step 6: The dashboard
-  - To include: the per-person **"this face looks right"** button (set each person once; the agent holds that face's exposure).
+- [x] **Step 6: The dashboard** (built overnight 2026-10-17, fake camera only). [docs/step6-dashboard.md](docs/step6-dashboard.md). *Waiting for director review.*
+  - Live view (clean / zebras / false color, face brackets, light sources), setting tiles, status + last change, Auto (starts Off in live, two presses to turn on), Lock, look picker, **"this face looks right"** (per person, stored only on this computer), highlight meters, 60 s exposure chart with tooltip + table, decisions feed, big kill switch (also Space). S4D style from LANDFALL. Phone layout with the kill switch pinned.
+  - Checked with screenshots driven like a person; 5 bugs found and fixed. 58 tests pass.
+  - ❓ For the director: (1) Lock = "hold everything now" (my reading of your Step 5 rule); (2) face signatures are stored locally (biometric data); (3) screenshots with your face are not committed.
 - [ ] Step 7: Prove it works (test plan written before shooting)
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
 - [ ] Step 9: Package it (README, INTERVIEW.md, resume bullets)

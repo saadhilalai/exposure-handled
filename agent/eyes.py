@@ -278,7 +278,9 @@ class Eyes:
             level = float(np.median(patch))
             faces.append({"box": [round(x), round(y), round(fw), round(fh)], "score": round(float(f[14]), 2),
                           "level": round(level, 1), "stops": round(float(tm.to_stops(level)), 2),
-                          "clipping": bool(np.percentile(patch, 95) >= tm.clip_level - 1)})
+                          "clipping": bool(np.percentile(patch, 95) >= tm.clip_level - 1),
+                          # YuNet's row scaled to this frame (box + 5 landmarks + score), for face signatures
+                          "raw": [round(v, 1) for v in (f[:14] * scale).tolist()] + [round(float(f[14]), 3)]})
         faces.sort(key=lambda f: -f["box"][2] * f["box"][3])
         self.last_faces = faces
         return faces

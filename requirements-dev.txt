@@ -1,0 +1,2 @@
+# For screenshots of the dashboard only (tools/dashboard_screens.py); not needed to run the agent.
+playwright==1.64.0

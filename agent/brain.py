@@ -125,11 +125,14 @@ class Observation:
     headroom: float = 5.0
     light_k: Optional[int] = None
     color_confidence: str = "low"
+    face_target: Optional[float] = None    # this person's "looks right" exposure, if the director set one
+    face_name: Optional[str] = None
 
 
 def observation_from_report(report, t):
     face = report.faces[0] if report.faces else None
     return Observation(t=t, key=report.key_stops, face=face["stops"] if face else None,
+                       face_target=face.get("target") if face else None, face_name=face.get("name") if face else None,
                        face_clipping=bool(face and face.get("clipping")),
                        clipped_important=report.clipped_important_pct,
                        clipped_practical=report.clipped_practical_pct, headroom=report.headroom_stops,
@@ -338,6 +341,11 @@ class Brain:
         key = median([o.key for o in recent])
         faces = [o.face for o in recent if o.face is not None]
         face = median(faces) if look.face_priority and len(faces) >= 0.6 * len(recent) else None
+        # A person the director set with "this face looks right" keeps their own target.
+        known = [o for o in recent if o.face is not None and o.face_target is not None]
+        own = bool(known) and len(known) >= len(faces) / 2
+        target = median([o.face_target for o in known]) if own else look.face_target
+        whose = "%s's target" % known[-1].face_name if own else "target"
         face_clipping = sum(o.face_clipping for o in recent) > len(recent) / 2
         clipped = median([o.clipped_important for o in recent])
         headroom = median([o.headroom for o in recent])
@@ -345,7 +353,7 @@ class Brain:
 
         lo, hi = look.key_window
         if face is not None:
-            exposure_err = look.face_target - face
+            exposure_err = target - face
         else:
             exposure_err = lo - key if key < lo else hi - key if key > hi else 0.0
         total = None                       # full amount needed, for ND/light advice
@@ -355,13 +363,13 @@ class Brain:
             what = "Face clipping" if face_clipping else "Highlights clipping %.1f%% (limit %.1f%%)" % (clipped, look.max_clip_pct)
             D = -max(1 / 3, look.max_step)
             total = min(D, exposure_err)    # clipped detail can't be measured: at least this much
-            if face is not None and face < look.face_target - DEAD_BAND and not face_clipping:
+            if face is not None and face < target - DEAD_BAND and not face_clipping:
                 advice.append("Face is %s stop under, but bright areas clip: add light on the face, or reframe "
-                              "the bright area out" % frac_stops(look.face_target - face))
+                              "the bright area out" % frac_stops(target - face))
         else:
             if face is not None:
                 kind = "face"
-                what = "Face %+.1f st (target %+.1f)" % (face, look.face_target)
+                what = "Face %+.1f st (%s %+.1f)" % (face, whose, target)
             else:
                 kind = "key"
                 what = "Scene %+.1f st (window %+.1f to %+.1f)" % (key, lo, hi)

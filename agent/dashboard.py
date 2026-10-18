@@ -1,0 +1,165 @@
+"""The dashboard: a small web server that shows the runner and lets the operator steer it.
+
+Python's standard library only, so it runs the same on the Pi. Listens on 127.0.0.1
+(this computer only) unless told otherwise.
+
+  GET  /                     the page (files in dashboard/)
+  GET  /api/state            everything on screen, as JSON (the page asks 4 times a second)
+  GET  /api/frame.jpg        next live-view frame: ?mode=clean|zebras|false_color&after=<frame no>
+  POST /api/kill             kill switch (no body)
+  POST /api/auto  {"on": true|false}      POST /api/lock {"on": true|false}
+  POST /api/look  {"key": "interview"}    POST /api/face {"name": "Saad"}   POST /api/forget {"id": "..."}
+
+Every POST must carry the header "X-Camera-Agent: 1". A browser won't add a custom header
+for another website without asking this server first (and it never says yes), so a random
+web page can't press the buttons. The Host header is checked too, against DNS tricks.
+"""
+import json
+import threading
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
+import cv2
+
+from agent.overlay import false_color, zebras
+
+ROOT = Path(__file__).resolve().parent.parent
+PAGE_DIR = ROOT / "dashboard"
+TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
+         ".png": "image/png", ".woff2": "font/woff2", ".svg": "image/svg+xml", ".txt": "text/plain; charset=utf-8"}
+MODES = ("clean", "zebras", "false_color")
+
+
+class Dashboard:
+    def __init__(self, runner, host="127.0.0.1", port=8765):
+        self.runner, self.host, self.port = runner, host, port
+        self.cache = {}                      # mode -> (frame_no, jpeg bytes), shared by every viewer
+        self.cache_lock = threading.Lock()
+        handler = type("Handler", (_Handler,), {"dash": self})
+        self.server = ThreadingHTTPServer((host, port), handler)
+        self.server.daemon_threads = True
+        self.port = self.server.server_address[1]            # port 0 = any free port (tests)
+        self.allowed_hosts = {"%s:%d" % (h, self.port) for h in ("127.0.0.1", "localhost", host)}
+
+    def start(self):
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        return self
+
+    def stop(self):
+        self.server.shutdown()
+        self.server.server_close()
+
+    @property
+    def url(self):
+        return "http://%s:%d/" % ("127.0.0.1" if self.host in ("0.0.0.0", "") else self.host, self.port)
+
+    def frame(self, mode, after, timeout=1.0):
+        """The next frame newer than `after`, drawn in `mode`. Returns (frame_no, jpeg) or (None, None)."""
+        r = self.runner
+        deadline = time.monotonic() + timeout
+        while r.frame_no <= after and time.monotonic() < deadline and not r.killed:
+            time.sleep(0.01)
+        with r.lock:
+            no, jpeg, bgr, report = r.frame_no, r.jpeg, r.bgr, r.report
+        if jpeg is None:
+            return None, None
+        if mode == "clean":
+            return no, jpeg
+        with self.cache_lock:
+            if self.cache.get(mode, (None,))[0] == no:
+                return self.cache[mode]
+        tm = r.eyes.tone_model(report.tone)
+        img = zebras(bgr, tm) if mode == "zebras" else false_color(bgr, tm)
+        out = (no, cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 82])[1].tobytes())
+        with self.cache_lock:
+            self.cache[mode] = out
+        return out
+
+    def control(self, action, body):
+        r = self.runner
+        if action == "kill":
+            r.kill("Kill switch (dashboard)")
+        elif action == "auto":
+            if body.get("on") and not r.live:
+                return 409, {"ok": False, "error": "Dry run: start with --live to let the agent change settings"}
+            r.set_auto(bool(body.get("on")))
+        elif action == "lock":
+            r.hold(bool(body.get("on")))
+        elif action == "look":
+            if body.get("key") not in ("cinematic", "run_and_gun", "interview", "low_light", "photo_portrait"):
+                return 400, {"ok": False, "error": "unknown look"}
+            r.set_look(body["key"])
+        elif action == "face":
+            try:
+                person = r.remember_face((body.get("name") or "").strip()[:40] or None)
+            except Exception as e:
+                return 409, {"ok": False, "error": str(e)}
+            return 200, {"ok": True, "person": {k: person[k] for k in ("id", "name", "target")}}
+        elif action == "forget":
+            r.forget_face(str(body.get("id", "")))
+        else:
+            return 404, {"ok": False, "error": "unknown action"}
+        return 200, {"ok": True}
+
+
+class _Handler(BaseHTTPRequestHandler):
+    dash = None
+    server_version = "camera-agent"
+
+    def log_message(self, *args):          # quiet: the runner has its own log
+        pass
+
+    def _send(self, code, body, ctype="application/json", extra=()):
+        data = body if isinstance(body, bytes) else json.dumps(body, default=float).encode()
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        for k, v in extra:
+            self.send_header(k, v)
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _host_ok(self):
+        if self.dash.host in ("0.0.0.0", ""):   # opened up on purpose (Pi + phone); see docs
+            return True
+        return self.headers.get("Host", "") in self.dash.allowed_hosts
+
+    def do_GET(self):
+        if not self._host_ok():
+            return self._send(403, {"ok": False, "error": "wrong host"})
+        url = urlparse(self.path)
+        if url.path == "/api/state":
+            return self._send(200, self.dash.runner.snapshot())
+        if url.path == "/api/frame.jpg":
+            q = parse_qs(url.query)
+            mode = q.get("mode", ["clean"])[0]
+            try:
+                after = int(q.get("after", ["-1"])[0])
+            except ValueError:
+                after = -1
+            no, jpeg = self.dash.frame(mode if mode in MODES else "clean", after)
+            if jpeg is None:
+                return self._send(503, {"ok": False, "error": "no live view yet"})
+            return self._send(200, jpeg, "image/jpeg", [("X-Frame-No", str(no))])
+        path = (PAGE_DIR / (url.path.lstrip("/") or "index.html")).resolve()
+        if PAGE_DIR.resolve() not in path.parents or not path.is_file() or path.suffix not in TYPES:
+            return self._send(404, {"ok": False, "error": "not found"})
+        return self._send(200, path.read_bytes(), TYPES[path.suffix])
+
+    def do_POST(self):
+        if not self._host_ok() or self.headers.get("X-Camera-Agent") != "1":
+            return self._send(403, {"ok": False, "error": "refused"})
+        url = urlparse(self.path)
+        if not url.path.startswith("/api/"):
+            return self._send(404, {"ok": False, "error": "not found"})
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            body = json.loads(self.rfile.read(min(length, 10000)) or b"{}") if length else {}
+        except (ValueError, json.JSONDecodeError):
+            return self._send(400, {"ok": False, "error": "bad request"})
+        code, reply = self.dash.control(url.path[len("/api/"):], body if isinstance(body, dict) else {})
+        return self._send(code, reply)

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Camera Agent | An S4D project</title>
+<meta name="description" content="An AI camera assistant that runs exposure like a cinematographer and explains every choice. Built by Saad Hilal · S4D.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="brand/favicon.png">
+<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="S4D Camera Agent">
+    <img src="brand/s4d.png" alt="S4D" width="32" height="32">
+    <span class="brand-sep"></span>
+    <span class="wordmark">Camera Agent</span>
+  </a>
+  <div class="topbar-meta">
+    <span class="chip" id="source">Connecting</span>
+    <span class="chip" id="run-mode">—</span>
+    <span class="perf" id="perf"></span>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="viewer" aria-label="Live view and camera settings">
+    <div class="viewer-bar">
+      <div class="seg" role="group" aria-label="Picture">
+        <button type="button" data-mode="clean" aria-pressed="true">Clean</button>
+        <button type="button" data-mode="zebras" aria-pressed="false">Zebras</button>
+        <button type="button" data-mode="false_color" aria-pressed="false">False color</button>
+      </div>
+      <div class="seg" role="group" aria-label="Marks">
+        <button type="button" id="t-faces" aria-pressed="true">Faces</button>
+        <button type="button" id="t-regions" aria-pressed="false">Light sources</button>
+      </div>
+    </div>
+
+    <div class="frame" id="frame">
+      <img id="live" alt="Live view from the camera">
+      <svg id="marks" viewBox="0 0 1024 576" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="frame-state" id="frame-state"><span class="state-dot"></span><span id="frame-state-word">—</span></div>
+      <div class="frame-empty" id="frame-empty">Waiting for live view</div>
+    </div>
+
+    <div class="fc-legend" id="fc-legend" hidden>
+      <span><i style="--c:#800080"></i>Crushed, under −6</span>
+      <span><i style="--c:#002878"></i>Deep shadow</span>
+      <span><i style="--c:#3cc83c"></i>18% grey ±¼</span>
+      <span><i style="--c:#ff78b4"></i>+½ to +1½</span>
+      <span><i style="--c:#3cdce6"></i>90% white</span>
+      <span><i style="--c:#ffdc00"></i>Near clip</span>
+      <span><i style="--c:#ff0000"></i>Clipped</span>
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><span class="label">ISO</span><span class="value" id="v-iso">—</span><span class="note" id="n-iso"></span></div>
+      <div class="tile"><span class="label">Shutter</span><span class="value" id="v-shutter">—</span><span class="note" id="n-shutter"></span></div>
+      <div class="tile"><span class="label">Aperture</span><span class="value" id="v-fnumber">—</span><span class="note" id="n-fnumber"></span></div>
+      <div class="tile"><span class="label">White balance</span><span class="value" id="v-wb">—</span><span class="note" id="n-wb"></span></div>
+      <div class="tile"><span class="label">Frame rate</span><span class="value" id="v-fps">—</span><span class="note" id="n-fps"></span></div>
+    </div>
+
+  </section>
+
+  <aside class="console" aria-label="Agent controls">
+    <div class="console-scroll">
+      <div class="block">
+        <span class="group-label">Agent</span>
+        <div class="state" id="state"><span class="state-icon" id="state-icon"></span><span id="state-word">—</span></div>
+        <p class="status" id="status">Starting</p>
+        <p class="last-change" id="last-change" hidden><span class="lc-k">Last change</span> <span id="last-change-t"></span><span class="lc-text" id="last-change-text"></span></p>
+        <ul class="advice" id="advice"></ul>
+      </div>
+
+      <div class="block">
+        <div class="pair">
+          <button type="button" class="btn switch" id="btn-auto" aria-pressed="false">
+            <span class="btn-k">Auto</span><span class="btn-v" id="auto-v">Off</span>
+          </button>
+          <button type="button" class="btn switch" id="btn-lock" aria-pressed="false">
+            <span class="btn-k">Lock</span><span class="btn-v" id="lock-v">Off</span>
+          </button>
+        </div>
+        <p class="hint" id="auto-hint"></p>
+      </div>
+
+      <div class="block">
+        <span class="group-label">Look</span>
+        <div class="looks" id="looks" role="group" aria-label="Look"></div>
+        <p class="look-desc" id="look-desc"></p>
+      </div>
+
+      <div class="block">
+        <span class="group-label">Faces</span>
+        <button type="button" class="btn wide" id="btn-face">This face looks right</button>
+        <form class="face-form" id="face-form" hidden>
+          <label class="visually-hidden" for="face-name">Name</label>
+          <input id="face-name" maxlength="40" placeholder="Name (optional)" autocomplete="off">
+          <button type="submit" class="btn">Save</button>
+          <button type="button" class="btn ghost" id="face-cancel">Cancel</button>
+        </form>
+        <p class="hint" id="face-hint"></p>
+        <ul class="people" id="people"></ul>
+      </div>
+
+      <div class="block">
+        <span class="group-label">Highlights</span>
+        <div class="meter" id="m-headroom">
+          <div class="meter-row"><span class="meter-k">Headroom to clip</span><span class="meter-v" id="headroom-v">—</span></div>
+          <div class="track"><span class="fill" id="headroom-fill"></span></div>
+        </div>
+        <div class="meter" id="m-clip">
+          <div class="meter-row"><span class="meter-k">Important area clipped</span><span class="meter-v" id="clip-v">—</span></div>
+          <div class="track"><span class="fill" id="clip-fill"></span><span class="limit" id="clip-limit"></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <button type="button" class="kill" id="btn-kill">
+      <span class="kill-title">Kill switch</span>
+      <span class="kill-sub" id="kill-sub">Stops the agent and locks the bridge · Space</span>
+    </button>
+  </aside>
+
+  <section class="insights" aria-label="Exposure history and decisions">
+    <section class="panel chart-panel" aria-labelledby="chart-title">
+      <div class="panel-head">
+        <h2 class="h3" id="chart-title">Exposure · last 60 s</h2>
+        <div class="line-keys" aria-hidden="true">
+          <span><i class="k-face"></i>Face</span>
+          <span><i class="k-key"></i>Scene key</span>
+          <span><i class="k-band"></i>Target ±⅓ stop</span>
+          <span><i class="k-change"></i>Agent change</span>
+        </div>
+        <button type="button" class="link" id="table-toggle" aria-pressed="false">Table</button>
+      </div>
+      <div class="chart" id="chart">
+        <svg id="chart-svg" role="img" aria-label="Face and scene exposure in stops over the last minute"></svg>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+      <div class="table-wrap" id="chart-table" hidden>
+        <table>
+          <thead><tr><th>Time</th><th>Face</th><th>Target</th><th>Scene key</th><th>Headroom</th><th>ISO</th></tr></thead>
+          <tbody id="chart-rows"></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel feed-panel" aria-labelledby="feed-title">
+      <div class="panel-head"><h2 class="h3" id="feed-title">Decisions</h2><span class="panel-note">Newest first</span></div>
+      <ol class="feed" id="feed"></ol>
+    </section>
+  </section>
+</main>
+
+<footer class="footer">
+  <img src="brand/s4d.png" alt="S4D logo" width="44" height="44">
+  <span class="footer-sign">Built by <span class="nowrap">Saad Hilal · S4D</span></span>
+  <p class="credits">Camera: Sony FX2 over Sony's Camera Remote SDK. Faces: OpenCV YuNet and SFace. Typeface: D-DIN by Datto, SIL Open Font License.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

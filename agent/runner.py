@@ -12,11 +12,17 @@ while a change is in flight, and stops the loop. A change already sent finishes
 restarted. A lock from another terminal (tools/kill_switch.py) stops the runner too.
 Runaway guard: more than MAX_CHANGES_PER_MIN changes in a minute trips the kill switch.
 Any other refused or unconfirmed change pauses the agent until the operator resumes.
+
+Operator controls (keyboard or dashboard): Auto on/off (off = the agent only suggests),
+Lock (hold every setting now, the same lock that happens while recording), the look,
+and "this face looks right" (agent/faces.py).
 """
 import json
 import re
+import threading
 import time
 from collections import deque
+from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
@@ -26,6 +32,7 @@ import numpy as np
 from agent.brain import Brain, cam_state_from_settings, observation_from_report
 from agent.bridge_client import BridgeClient
 from agent.eyes import Eyes, context_from_settings
+from agent.faces import FaceBook
 from agent.looks import LOOKS
 from agent.safety import SafetyGate, load_ranges
 from agent.sony_values import describe_value, load_enums
@@ -38,6 +45,8 @@ STATUS_EVERY_S = 1.0         # re-read the bridge status (catches a lock from an
 MAX_CHANGES_PER_MIN = 20     # runaway guard: a smooth agent needs far fewer
 ADVICE_REPEAT_S = 10.0       # show the same advice again only after this long
 WOULD_REPEAT_S = 10.0
+HISTORY_EVERY_S = 0.25       # exposure history for the dashboard chart
+HISTORY_S = 90
 
 
 class RunnerError(Exception):
@@ -51,7 +60,8 @@ def approved_settings(ranges):
 
 class AgentRunner:
     def __init__(self, socket_path, session_dir, look="cinematic", live=False, eyes=None, ranges=None,
-                 clock=time.monotonic, on_event=None):
+                 clock=time.monotonic, on_event=None, auto=True, faces=None):
+        """auto=False starts a live session with Auto off: it suggests until the operator turns Auto on."""
         self.socket_path = socket_path
         self.client = BridgeClient(socket_path)
         self.kill_client = BridgeClient(socket_path)          # its own connection, for the kill switch
@@ -68,8 +78,14 @@ class AgentRunner:
         self.on_event = on_event or (lambda kind, text: None)
         self.killed = False
         self.kill_reason = None
-        self.paused = False
+        self.paused = not auto                  # Auto off: proposals are only shown
+        self.held = False                       # Lock: hold every setting (operator)
         self.stop_requested = False
+        self.book = faces if faces is not None else FaceBook()
+        self.lock = threading.RLock()           # the dashboard reads state from other threads
+        self.events = deque(maxlen=200)
+        self.history = deque(maxlen=int(HISTORY_S / HISTORY_EVERY_S))
+        self.bgr = None
         self.changes = []                       # changes the agent made (and the camera confirmed)
         self.change_times = deque()
         self.shown_advice = {}
@@ -91,6 +107,9 @@ class AgentRunner:
 
     def _event(self, kind, text, **fields):
         self._log(kind, text=text, **fields)
+        with self.lock:
+            self.events.append({"t": round(self.clock() - self.t0, 2) if hasattr(self, "t0") else 0.0,
+                                "kind": kind, "text": text})
         self.on_event(kind, text)
 
     def _text(self, name, props=None):
@@ -113,7 +132,7 @@ class AgentRunner:
         self.props = {n: self.start_props[n] for n in WATCHED if n in self.start_props}
         self._rebuild()
         self.brain = self._new_brain(self.look)
-        self.t_settings = self.t_status = self.t_tick = self.clock()
+        self.t_settings = self.t_status = self.t_tick = self.t_history = self.clock()
         mode = "LIVE" if self.live else "DRY RUN"
         self._event("start", "%s on %s · look: %s · may change: %s · camera: %s" % (
             mode, status.get("model", "?"), self.brain.look.name, ", ".join(sorted(self.allowed)) or "nothing",
@@ -167,13 +186,21 @@ class AgentRunner:
         bgr = cv2.imdecode(np.frombuffer(jpeg, np.uint8), cv2.IMREAD_COLOR)
         if bgr is None:
             return True
-        self.jpeg = jpeg
         t = self.clock()
-        self.report = self.eyes.analyze(bgr, self.ctx)
+        report = self.eyes.analyze(bgr, self.ctx)
+        self.book.label(bgr, report.faces, t)              # known people get their own face target
+        with self.lock:
+            self.jpeg, self.bgr, self.report = jpeg, bgr, report
         self.frames += 1
-        self.eyes_ms.append(self.report.ms)
-        out = self.output = self.brain.update(observation_from_report(self.report, t), self.cam)
+        self.eyes_ms.append(report.ms)
+        cam = replace(self.cam, recording=True) if self.held else self.cam     # Lock = the recording lock, by hand
+        out = self.brain.update(observation_from_report(report, t), cam)
+        if self.held and not self.cam.recording:
+            out.status = "Locked by you: holding every setting"
+        self.output = out
         self._advice(out.advice, t)
+        if t - self.t_history >= HISTORY_EVERY_S:
+            self._sample(t)
         if out.proposal is not None:
             self._act(out.proposal, t)
         self._status(out.status)
@@ -244,6 +271,15 @@ class AgentRunner:
                   clipped_important=r.clipped_important_pct, camera=self.summary(), paused=self.paused)
         self.frames, self.t_tick = 0, t
 
+    def _sample(self, t):
+        r, face = self.report, (self.report.faces[0] if self.report.faces else None)
+        with self.lock:
+            self.history.append({"t": round(t - self.t0, 2), "key": r.key_stops, "face": face and face["stops"],
+                                 "target": face.get("target", self.brain.look.face_target) if face else None,
+                                 "headroom": r.headroom_stops, "clipped": r.clipped_important_pct,
+                                 "iso": self.cam.iso})
+        self.t_history = t
+
     # ------------------------------------------------------------ controls
     def kill(self, why="Kill switch"):
         """Stop now: lock the bridge (no more changes until it's restarted) and end the loop."""
@@ -260,8 +296,86 @@ class AgentRunner:
         self._event("kill", "The bridge was locked (kill switch from another terminal): stopped. The camera is yours.")
 
     def toggle_pause(self):
-        self.paused = not self.paused
-        self._event("pause", "PAUSED: watching only, no changes" if self.paused else "Resumed")
+        self.set_auto(self.paused)
+
+    def set_auto(self, on):
+        """Auto on: the agent makes approved changes (live sessions only). Off: it only suggests."""
+        if self.killed or (on and not self.live) or on == (not self.paused):
+            return
+        self.paused = not on
+        self._event("pause", "Auto ON: the agent changes %s" % ", ".join(sorted(self.allowed)) if on
+                    else "Auto OFF: suggesting only, no changes")
+
+    def hold(self, on):
+        """Lock: hold every setting as it is now (like the recording lock), until unlocked."""
+        if on != self.held and not self.killed:
+            self.held = on
+            self._event("lock", "LOCKED by you: holding every setting" if on else "Unlocked")
+
+    def remember_face(self, name=None):
+        """'This face looks right': the biggest face, at its exposure over the last second."""
+        with self.lock:
+            report, bgr = self.report, self.bgr
+            recent = [h["face"] for h in self.history if h["face"] is not None and h["t"] >= self.history[-1]["t"] - 1.0] \
+                if self.history else []
+        faces = [f for f in (report.faces if report else []) if "raw" in f]
+        if not faces:
+            raise RunnerError("no face in frame")
+        stops = float(np.median(recent)) if recent else faces[0]["stops"]
+        person = self.book.remember(name, bgr, faces[0], stops)
+        self._event("face", "%s: this face looks right at %+.1f st. I'll hold %s there." % (
+            person["name"], person["target"], person["name"]), person=person["id"])
+        return person
+
+    def forget_face(self, person_id):
+        names = [p["name"] for p in self.book.people if p["id"] == person_id]
+        self.book.forget(person_id)
+        if names:
+            self._event("face", "Forgot %s (back to the look's face target)" % names[0])
+
+    def state(self):
+        """One word for the dashboard badge."""
+        if self.killed:
+            return "KILLED"
+        if self.cam.recording:
+            return "RECORDING"
+        if self.held:
+            return "LOCKED"
+        return "AUTO" if self.live and not self.paused else "SUGGESTING"
+
+    def snapshot(self):
+        """Everything the dashboard shows, as plain JSON-ready values."""
+        with self.lock:
+            r, out = self.report, self.output
+            look = self.brain.look
+            snap = {
+                "t": round(self.clock() - self.t0, 2), "frame_no": self.frame_no, "fps": self.fps,
+                "eyes_ms": round(float(np.median(self.eyes_ms)), 1) if self.eyes_ms else None,
+                "mode": "live" if self.live else "dry run", "fake": bool(self.bridge.get("fake")),
+                "model": self.bridge.get("model"), "state": self.state(), "auto": self.live and not self.paused and not self.killed,
+                "held": self.held, "killed": self.killed, "kill_reason": self.kill_reason,
+                "approved": sorted(self.allowed), "changes": len(self.changes),
+                "look": {"key": look.key, "name": look.name, "description": look.description,
+                         "aperture": look.aperture, "face_target": look.face_target, "max_clip_pct": look.max_clip_pct},
+                "looks": [{"key": k, "name": v.name} for k, v in LOOKS.items()],
+                "camera": {"iso": self._text("IsoSensitivity"), "shutter": self._text("ShutterSpeed"),
+                           "fnumber": "f/%g" % self.cam.fnumber, "wb": self.ctx.wb, "wb_kelvin": self.ctx.wb_kelvin,
+                           "frame_rate": self.ctx.frame_rate, "recording": self.cam.recording,
+                           "tone": self.ctx.tone_source},
+                "status": out.status if out else "Starting", "advice": list(dict.fromkeys(out.advice)) if out else [],
+                "events": list(self.events)[-80:], "history": list(self.history),
+                "people": self.book.summary(), "faces_available": self.book.available,
+            }
+            if r is not None:
+                snap["eyes"] = {
+                    "frame": [r.width, r.height], "key": r.key_stops, "headroom": r.headroom_stops,
+                    "clipped": r.clipped_pct, "clipped_important": r.clipped_important_pct,
+                    "clipped_practical": r.clipped_practical_pct, "near_clip": r.near_clip_pct,
+                    "crushed": r.crushed_pct, "light_sources": r.light_source_regions,
+                    "faces": [{k: f.get(k) for k in ("box", "stops", "clipping", "name", "target")} for f in r.faces],
+                    "color": {k: r.color.get(k) for k in ("light_estimate_k", "warm_cool", "green_magenta", "confidence")},
+                }
+        return snap
 
     def set_look(self, key):
         if key in LOOKS and key != self.brain.look.key:

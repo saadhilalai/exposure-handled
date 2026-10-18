@@ -4,17 +4,21 @@ Dry run is the default: the agent watches and says what it WOULD change; nothing
 --live sends approved changes (ISO only, 800-12800) through the safety gate.
 
 Keys:  SPACE   kill switch: stop now, lock the bridge, the camera is yours
-       p       pause / resume changes (keeps watching)
+       p       Auto on / off (off = the agent only suggests)
+       l       Lock: hold every setting now / unlock
        1-5     look: 1 Cinematic, 2 Run and gun, 3 Interview, 4 Low light, 5 Photo portrait
        q       quit (offers to put your starting ISO back)
        Ctrl-C  kill switch + quit
 From any other terminal:  python tools/kill_switch.py
+--dashboard also serves the dashboard at http://127.0.0.1:8765/ (same controls, plus the
+"this face looks right" button). A live session with the dashboard starts with Auto OFF.
 
 Usage:
   python tools/run_agent.py --fake                     # fake camera, made-up scene: no camera at all
   python tools/run_agent.py --fake --live --frame F.jpg --iso 1600 --shutter 50 --fnumber 5.6 --light 20:-1
   python tools/run_agent.py                            # dry run on the real bridge (run/bridge.sock)
   python tools/run_agent.py --live                     # live on the real camera: you type LIVE first
+  python tools/run_agent.py --fake --dashboard          # the dashboard on the fake camera
 """
 import argparse
 import os
@@ -39,11 +43,12 @@ from agent.runner import AgentRunner, RunnerError  # noqa: E402
 
 FAKE_SOCKET = ROOT / "run" / "fake_bridge.sock"
 LOOK_KEYS = dict(zip("12345", LOOKS))
-KEYS_HELP = "SPACE kill switch · p pause/resume · 1-5 look · q quit · h help"
+KEYS_HELP = "SPACE kill switch · p Auto on/off · l Lock · 1-5 look · q quit · h help"
 LABELS = {"start": ("START", "1"), "change": ("CHANGE", "32"), "would_change": ("WOULD", "36"),
           "advice": ("ADVICE", "33"), "kill": ("KILL", "1;31"), "error": ("ERROR", "1;31"),
           "pause": ("PAUSE", "35"), "refused": ("REFUSED", "35"), "look": ("LOOK", "1"),
-          "end": ("END", "1"), "restore": ("RESTORE", "32"), "help": ("KEYS", "2"), "status": ("status", "2")}
+          "end": ("END", "1"), "restore": ("RESTORE", "32"), "help": ("KEYS", "2"), "status": ("status", "2"),
+          "face": ("FACE", "1"), "dashboard": ("WEB", "1")}
 
 
 class Console:
@@ -83,7 +88,8 @@ class Console:
         if r is None or r.report is None or now - self.last_draw < 0.1:     # redraw at most 10x a second
             return
         self.last_draw = now
-        mode = "KILLED" if r.killed else "PAUSED" if r.paused else "LIVE" if r.live else "DRY RUN"
+        mode = "KILLED" if r.killed else "LOCKED" if r.held else "AUTO OFF" if r.live and r.paused else \
+            "LIVE" if r.live else "DRY RUN"
         rep = r.report
         face = " · face %+.1f" % rep.faces[0]["stops"] if rep.faces else ""
         line = "[%s · %s] %s │ key %+.1f%s · headroom %.1f │ %s fps │ %s" % (
@@ -173,6 +179,11 @@ def main():
     fake.add_argument("--light", nargs="*", metavar="T:STOPS", help="from T s on, the light is STOPS brighter")
     fake.add_argument("--record", nargs="*", metavar="T0:T1", help="the fake records from T0 to T1 s")
     fake.add_argument("--fake-read-only", action="store_true")
+    web = ap.add_argument_group("dashboard")
+    web.add_argument("--dashboard", action="store_true", help="serve the dashboard (http://127.0.0.1:8765/)")
+    web.add_argument("--port", type=int, default=8765)
+    web.add_argument("--host", default="127.0.0.1", help="0.0.0.0 opens it to your network (Pi + phone): no password yet")
+    web.add_argument("--face-refs", help="where 'this face looks right' is stored (default config/face_refs.json)")
     args = ap.parse_args()
 
     socket_path = Path(args.socket) if args.socket else FAKE_SOCKET if args.fake else DEFAULT_SOCKET
@@ -184,20 +195,29 @@ def main():
         sys.exit("No bridge at %s. Start the bridge first (PROGRESS.md, 'How to start things again')." % socket_path)
 
     console = Console()
-    runner = AgentRunner(socket_path, session, look=args.look, live=args.live, on_event=console.event)
+    from agent.faces import FaceBook
+    runner = AgentRunner(socket_path, session, look=args.look, live=args.live, on_event=console.event,
+                         auto=not args.dashboard, faces=FaceBook(args.face_refs) if args.face_refs else None)
     console.runner = runner
-    keyboard = None
+    keyboard = dashboard = None
     try:
         if args.live:
             confirm_live(args, runner.client.status())
         runner.start()
         console.event("help", KEYS_HELP if sys.stdin.isatty() else "no keyboard: stop with tools/kill_switch.py")
+        if args.dashboard:
+            from agent.dashboard import Dashboard
+            dashboard = Dashboard(runner, args.host, args.port).start()
+            console.event("dashboard", "Dashboard: %s%s" % (dashboard.url, "  (Auto is OFF: press Auto to let it change ISO)"
+                                                              if args.live else ""))
 
         def on_key(ch):
             if ch == " ":
                 runner.kill("Kill switch (SPACE)")
             elif ch in "pP":
                 runner.toggle_pause()
+            elif ch in "lL":
+                runner.hold(not runner.held)
             elif ch in LOOK_KEYS:
                 runner.set_look(LOOK_KEYS[ch])
             elif ch in "qQ":
@@ -208,8 +228,14 @@ def main():
         if sys.stdin.isatty():
             keyboard = Keyboard(on_key)
         signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
+        deadline = None if args.seconds is None else time.monotonic() + args.seconds
         try:
             runner.run(seconds=args.seconds)
+            if dashboard and runner.killed:
+                # Leave the dashboard up so the operator can see it say KILLED.
+                console.event("dashboard", "Stopped. The dashboard stays up to show it; q or Ctrl-C closes it.")
+                while not runner.stop_requested and (deadline is None or time.monotonic() < deadline):
+                    time.sleep(0.2)
         except KeyboardInterrupt:
             runner.kill("Kill switch (Ctrl-C)")
         finally:
@@ -232,6 +258,8 @@ def main():
     except RunnerError as e:
         sys.exit("Not started: %s" % e)
     finally:
+        if dashboard:
+            dashboard.stop()
         runner.close()
         if fake_proc:
             try:

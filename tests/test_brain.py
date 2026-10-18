@@ -186,3 +186,24 @@ def test_no_pumping_when_one_step_brighter_clips():
     assert before == [6400, 5000]                       # tried once, clipped, came back, then held
     assert after and after[0][1] > 5000                 # light dropped: brighter again
     assert all(math.log2(iso / 5000) - 1.0 < clip_ev - 0.01 for _, iso in after)   # never back into clipping
+
+
+def test_a_person_set_with_this_face_looks_right_keeps_their_own_target():
+    """The director marked this person's face as right at -0.4 st: hold them there, not at the look's +0.5."""
+    from dataclasses import replace
+    from agent.brain import Observation
+    cam = SimCamera(iso=4000, shutter_s=1 / 48).state()
+    brain = Brain("cinematic", allowed={"IsoSensitivity"})
+    seen = []
+    for k in range(10 * 24):
+        out = brain.update(Observation(t=k / 24, key=-0.5, face=-0.4, face_target=-0.4, face_name="Saad",
+                                       headroom=3.0), cam)
+        seen.append(out)
+    assert not any(o.proposal for o in seen)                       # at his target: nothing to do
+    out = brain.update(Observation(t=11, key=-1.5, face=-1.4, face_target=-0.4, face_name="Saad", headroom=3.0), cam)
+    for k in range(1, 3 * 24):
+        out = brain.update(Observation(t=11 + k / 24, key=-1.5, face=-1.4, face_target=-0.4, face_name="Saad",
+                                       headroom=3.0), cam)
+        if out.proposal:
+            break
+    assert out.proposal and "Saad's target -0.4" in out.proposal.reason
