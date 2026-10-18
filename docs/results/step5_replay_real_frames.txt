@@ -1,0 +1,38 @@
+
+=== Real frame: after your shoot, ISO 102400 (overexposed)  [Cinematic 24p (shallow)]
+    camera: ISO 102400  1/160  f/2.8  WB AWB  FlexibleISO  camera: Log shooting (FlexibleISO) records S-Log3
+     0.00 s  ADVICE        180° shutter (1/48) needs about 1⅔ stops less light first: add ND (ISO is outside your range, so I can't make room with it)
+     0.00 s  ADVICE        ISO 102400 is outside your approved 800-12800: I won't change exposure until it's inside (set it by hand, or allow me to bring it in)
+    virtual camera at the end: ISO 102400  1/160  f/2.8  (+0.00 stops vs the recording)
+    eyes on the last real frame: key +0.6 st, clipped 10.1% (important 10.1%), headroom 0.0 st, faces 0
+
+=== Real frames: Step 3 ISO test (dark room, laptop screen, chat window + hand)  [Cinematic 24p (shallow)]
+    camera: ISO 800  1/160  f/2.8  WB AWB  FlexibleISO  camera: Log shooting (FlexibleISO) records S-Log3
+     0.00 s  WOULD CHANGE  180° shutter for 23.98p: 1/160 → 1/48; exposure follows next
+     0.04 s  status        Waiting for the last change to settle
+     0.33 s  status        Scene -5.1 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     0.57 s  status        Scene -3.4 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     1.87 s  WOULD CHANGE  Scene -3.4 st (window -1.0 to +1.0): ISO 1000 → 1250
+     2.04 s  status        Scene -3.3 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     2.11 s  status        Scene -3.1 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     2.15 s  status        Scene -3.0 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     2.35 s  status        Scene -2.9 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     2.43 s  status        Scene -2.7 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     2.66 s  status        Scene -2.6 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     3.27 s  status        Scene -2.7 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     3.43 s  WOULD CHANGE  Scene -2.7 st (window -1.0 to +1.0): ISO 1250 → 1600
+     3.95 s  status        Scene -2.6 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     4.01 s  status        Scene -2.7 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     4.12 s  status        Scene -2.6 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     4.21 s  status        Scene -2.7 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     4.25 s  status        Scene -2.8 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     4.31 s  status        Scene -2.9 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     4.92 s  status        Scene -3.0 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     4.97 s  WOULD CHANGE  Scene -3.0 st (window -1.0 to +1.0): ISO 1600 → 2000
+     5.08 s  status        Scene -3.1 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     5.50 s  status        Scene -2.9 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     5.54 s  status        Scene -2.7 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+     6.50 s  WOULD CHANGE  Scene -2.7 st (window -1.0 to +1.0): ISO 2000 → 2500
+     7.09 s  status        Scene -2.4 st (window -1.0 to +1.0): waiting to be sure it's not a passing change
+    virtual camera at the end: ISO 2500  1/48  f/2.8  (+3.06 stops vs the recording)
+    eyes on the last real frame: key -5.5 st, clipped 0.0% (important 0.0%), headroom 4.4 st, faces 0

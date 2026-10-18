@@ -1,7 +1,7 @@
 {
   "approved_by": "Saad Hilal (director)",
   "approved_on": "2026-10-17",
-  "note": "Python safety layer. The C++ bridge has its own compiled-in allow-list; both must agree before anything changes. Anything not listed here is blocked.",
+  "note": "Python safety layer. The C++ bridge has its own compiled-in allow-list; both must agree before anything changes. Anything not listed here is blocked. Numeric limits on settings with change_allowed=false are read by the brain to plan; they do NOT make the setting changeable.",
   "settings": {
     "IsoSensitivity": {
       "change_allowed": true,
@@ -12,17 +12,23 @@
     "ShutterSpeed": {
       "change_allowed": false,
       "approved_range": "1/100 to 1/48 (video only)",
-      "note": "Never touch in Step 3."
+      "note": "Never touch in Step 3.",
+      "min_seconds": 0.01,
+      "max_seconds": 0.020833
     },
     "FNumber": {
       "change_allowed": false,
       "approved_range": "f/2.8 to f/11",
-      "note": "Never touch in Step 3."
+      "note": "Never touch in Step 3.",
+      "min_f": 2.8,
+      "max_f": 11.0
     },
     "Colortemp": {
       "change_allowed": false,
       "approved_range": "2800K to 7500K",
-      "note": "Never touch in Step 3."
+      "note": "Never touch in Step 3.",
+      "min_k": 2800,
+      "max_k": 7500
     },
     "FocusMode": {
       "change_allowed": false,

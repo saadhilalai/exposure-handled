@@ -108,6 +108,10 @@ class FrameReport:
     key_stops: float                     # scene exposure vs 18% grey, light sources left out
     region_stops: list                   # 6x8 grid, stops vs grey
     light_source_regions: list           # [(row, col)] much brighter than the rest
+    practical_regions: list = field(default_factory=list)   # small light sources (lamps, screens): may clip
+    clipped_practical_pct: float = 0.0   # clipping inside practicals (allowed)
+    clipped_important_pct: float = 0.0   # all other clipping: skies, windows, faces, walls (protected)
+    headroom_stops: float = 0.0          # how far the brightest important area can rise before clipping
     faces: list = field(default_factory=list)
     color: dict = field(default_factory=dict)
     change: Optional[dict] = None        # vs previous frame: exposure shift + changed regions
@@ -120,6 +124,29 @@ def rgb_to_xyz_matrix(primaries, white):
     p = np.array(cols).T
     w = np.array([white[0] / white[1], 1.0, (1 - white[0] - white[1]) / white[1]])
     return p * np.linalg.solve(p, w)
+
+
+def small_clusters(mask, max_size):
+    """Regions of `mask` that belong to a connected group (4-neighbour) of at most `max_size` regions."""
+    rows, cols = mask.shape
+    seen = np.zeros_like(mask, dtype=bool)
+    out = np.zeros_like(mask, dtype=bool)
+    for r0, c0 in np.argwhere(mask):
+        if seen[r0, c0]:
+            continue
+        stack, group = [(r0, c0)], []
+        seen[r0, c0] = True
+        while stack:
+            r, c = stack.pop()
+            group.append((r, c))
+            for nr, nc in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)):
+                if 0 <= nr < rows and 0 <= nc < cols and mask[nr, nc] and not seen[nr, nc]:
+                    seen[nr, nc] = True
+                    stack.append((nr, nc))
+        if len(group) <= max_size:
+            for r, c in group:
+                out[r, c] = True
+    return out
 
 
 def biggest_agreeing_group(deltas, tolerances):
@@ -195,6 +222,16 @@ class Eyes:
         rest = region_stops[~light_source]
         key = float(np.median(rest)) if rest.size >= 6 else all_key
 
+        # Small light sources (practicals, screens) may clip; big bright areas (sky, windows) may not.
+        practical = small_clusters(light_source, max_size=4)
+        clipped_full = luma >= tm.clip_level - 1
+        hh, ww = h - h % GRID_ROWS, w - w % GRID_COLS
+        region_clip = clipped_full[:hh, :ww].reshape(GRID_ROWS, hh // GRID_ROWS, GRID_COLS, ww // GRID_COLS).mean(axis=(1, 3))
+        clipped_practical = float(region_clip[practical].sum() * 100.0 / region_clip.size)
+        cell_p99 = np.percentile(cells, 99, axis=2)
+        important = ~practical
+        highlight = float(tm.to_stops(cell_p99[important]).max()) if important.any() else float(tm.to_stops(cell_p99).max())
+
         report = FrameReport(
             width=w, height=h, tone=tone, tone_source=tone_source,
             histogram=counts.reshape(64, 4).sum(axis=1).tolist(),
@@ -202,6 +239,10 @@ class Eyes:
             crushed_pct=round(float(crushed_pct), 2), key_stops=round(key, 2),
             region_stops=np.round(region_stops, 2).tolist(),
             light_source_regions=[tuple(map(int, rc)) for rc in np.argwhere(light_source)],
+            practical_regions=[tuple(map(int, rc)) for rc in np.argwhere(practical)],
+            clipped_practical_pct=round(clipped_practical, 2),
+            clipped_important_pct=round(max(0.0, float(clipped_pct) - clipped_practical), 2),
+            headroom_stops=round(tm.clip_stops - highlight, 2),
         )
         report.faces = self._faces(bgr, luma, tm)
         report.color = self._color(small, small_luma, tm, ctx, crush_level)
@@ -236,7 +277,8 @@ class Eyes:
                 continue
             level = float(np.median(patch))
             faces.append({"box": [round(x), round(y), round(fw), round(fh)], "score": round(float(f[14]), 2),
-                          "level": round(level, 1), "stops": round(float(tm.to_stops(level)), 2)})
+                          "level": round(level, 1), "stops": round(float(tm.to_stops(level)), 2),
+                          "clipping": bool(np.percentile(patch, 95) >= tm.clip_level - 1)})
         faces.sort(key=lambda f: -f["box"][2] * f["box"][3])
         self.last_faces = faces
         return faces
