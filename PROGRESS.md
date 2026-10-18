@@ -46,7 +46,8 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
     - Derived: 18% grey = 95.2.
     - Validated: the real ISO third-stop measures +0.331 (truth +0.333).
     - Optional later: wall at f/8 and f/11 to check the deep-shadow range.
-  - ⏸ **Waiting on Saad, needs camera:** overlay screenshots on a well-lit scene with a face and a bright highlight.
+  - ✅ **Overlay screenshots done (22:14):** face found (94%), lamp flagged as a practical and zebra-striped, 24 fps. Saved in sessions/ (not committed: they show the director's face).
+  - ❓ **Director to decide:** the default face target +1 st suits lighter skin. Lower the default now, and/or build the per-person "this face looks right" reference in Step 6.
 - [~] **Step 5: The brain.** Notes: [docs/step5-brain.md](docs/step5-brain.md). Rules + 5 looks built and tested with no camera: simulator (14 scenes, 0 back-and-forth) and recorded frames. 37 tests pass.
   - ✅ Decided: ISO/aperture starting outside the approved range → warn and pause.
   - ⏸ **Waiting on Saad, needs camera:** live closed-loop test, **ISO-only** allow-list (decided); other levers shown as "would change".

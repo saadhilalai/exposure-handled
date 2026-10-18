@@ -70,7 +70,21 @@ What it means:
 
 ## Overlay (`agent/overlay.py`, `tools/eyes_snapshot.py`)
 
-Zebras (red/white = clipped, yellow = within ½ stop of clip), false color in stops vs grey, face boxes with stops, a region view (light sources / changed), and a numbers panel. Screenshots are saved per session (not committed: they show the room and screen).
+Zebras (red/white = clipped, yellow = within ½ stop of clip), false color in stops vs grey, face boxes with stops, a region view (light sources / changed), and a numbers panel. Screenshots are saved per session (not committed: they show the director's face and room).
+
+**Live screenshots (2026-10-17, 22:14, read-only, 0 change requests).** Setup: director in frame, ISO 1600, 1/50, f/5.6, AWB, a lamp in the top-right of the frame.
+
+- Eyes ran at 24.0 fps (median 9.9 ms per frame).
+- **Face found** (94% confidence), measured −2.3 st; scene key −0.5 st.
+- The lamp (top right) is the only clipping (0.3%). It's flagged as a light source and zebra-striped, and treated as a practical (allowed to clip).
+- False color shows the lamp-lit wall in the skin/90%-white bands.
+- Color: warm cast, medium confidence (camera on AWB, so no Kelvin estimate).
+
+What the brain would do on that frame (offline replay, nothing sent):
+- *Cinematic:* 1/50 → 1/48, then f/5.6 → f/2.8, then "add light to the subject" (brightening further would clip the lit wall).
+- *Interview:* 1/48, ISO 1600 → 2000 → 4000 → 5000 → 6400, then the same advice.
+
+**Fairness note:** the default face target (+1 st) assumes lighter skin; for darker skin a correct exposure sits lower. Planned fix: a per-person "this face looks right" reference (Step 6 dashboard). The director may also lower the default.
 
 False-color scale: purple < −6 st (crushed) · dark blue −6 to −3 · green −¼ to +¼ (18% grey) · pink +½ to +1½ (light skin) · cyan +2 to +2.6 (90% white) · yellow within ½ stop of clip · red clipped · grey everything else.
 
