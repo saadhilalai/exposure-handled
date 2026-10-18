@@ -13,12 +13,13 @@ The director went to sleep and asked for everything that doesn't need him or the
 - Step 9 started: README + [INTERVIEW.md](INTERVIEW.md)
 - 62 tests pass.
 
-**Decisions for the director (morning):**
-1. Step 6: "Lock" = hold every setting now (my reading of "LOCK all settings while recording"). OK?
-2. Step 6: face signatures are biometric data, stored only on this computer. OK, or a no-recognition version?
-3. Step 6: screenshots with your face are not committed (`sessions/2026-10-17_dashboard-screens-with-face/`). OK to keep it that way?
-4. Step 7: approve the draft plan and its 8 open questions (the big one: recording while the agent works).
-5. Step 8: 4GB vs 8GB (evidence now says 4GB is plenty).
+**Director's decisions (2026-10-18 morning):**
+1. ✅ Lock = hold every setting now.
+2. ✅ Keep face memory: local only, never uploaded, Forget deletes it, **only for people who agree** (note added to the dashboard, README, Step 6 doc).
+3. ✅ Face screenshots stay off the public repo.
+4. ✅ Allow ISO changes while recording **only for Step 7 agent takes**, behind a switch that's **off by default** (to build: brain, Python gate and C++ bridge all refuse while recording today).
+5. ✅ Pi: **4GB**.
+6. ⏳ Step 7 plan: going through its 8 questions one at a time before approval.
 
 **Needs Saad at the camera:**
 1. **Live ISO test (Step 5)**, ~10 min:
@@ -71,7 +72,7 @@ Parked 2026-10-17, 19:40 (director stepped away)
 
 1. **Out-of-range ISO/aperture:** warn and pause (the brain's default; now confirmed).
 2. **Look numbers:** keep for now; tune after the live test.
-3. **Pi RAM:** decide later (both 4GB and 8GB stay in the plan; nothing bought).
+3. **Pi RAM:** decided 2026-10-18: **4GB** (nothing bought).
 4. **Allow-list for the live brain test:** **ISO only (800–12800).** The brain plans every lever, but only ISO changes are made; shutter/aperture/WB proposals are shown as "would change". Expand after the director has seen it behave.
 
 ## Steps

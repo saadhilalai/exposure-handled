@@ -7,7 +7,7 @@ whenever the eyes find that person, the brain holds their face at that exposure
 instead of the look's default (+0.5).
 
 There is no skin-tone classification anywhere: the cinematographer's eye sets the
-target, person by person. Signatures are biometric data, so they are stored only on
+target, person by person. Only for people who agree to it. Signatures are biometric data, so they are stored only on
 this computer (config/face_refs.json, never committed), and "forget" deletes them.
 """
 import json

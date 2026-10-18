@@ -155,7 +155,7 @@ function renderControls(s) {
   faceBtn.disabled = s.killed || !s.faces_available || !faces.length;
   $("face-hint").textContent = !s.faces_available ? "Needs the face model: run tools/fetch_models.sh."
     : !faces.length ? "No face in frame."
-    : "Frame the person, then press it. The agent holds this person at this exposure from now on. Stored only on this computer.";
+    : "Only for people who agree. Frame them, then press it: the agent holds them at this exposure from now on. Saved only on this computer, never uploaded; Forget deletes it.";
 
   const kill = $("btn-kill");
   kill.classList.toggle("done", s.killed);

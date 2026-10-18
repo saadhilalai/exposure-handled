@@ -64,7 +64,7 @@ The agent is designed to expose correctly across skin tones.
 
 - **It never guesses or labels anyone's skin tone.** It measures how bright each face is, in stops relative to 18% grey, and compares that with a target.
 - **The default face target is +0.5 stop.** The common "skin at +1 stop" rule of thumb comes from lighter skin and pushes darker skin too bright, so the default sits lower (director's decision, 2026-10-17).
-- **Set each person once: "this face looks right."** Frame the person and press it. The agent remembers that person (a face signature from OpenCV's SFace model) and holds their face at the exposure *you* approved. The cinematographer's eye decides, not a formula. Signatures stay on the computer, never in this repo, and "Forget" deletes them.
+- **Set each person once: "this face looks right."** Frame the person and press it. The agent remembers that person (a face signature from OpenCV's SFace model) and holds their face at the exposure *you* approved. The cinematographer's eye decides, not a formula. Saved only for people who agree, only on this computer (never uploaded, never in this repo), and "Forget" deletes them.
 - **Faces never clip:** a clipping face is treated like a clipping window, for everyone.
 - **Honest status:** not yet tested on a range of skin tones with the real camera. That is part of the Step 7 test plan.
 

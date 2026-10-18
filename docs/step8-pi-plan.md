@@ -90,7 +90,7 @@ Measured on the Mac with the fake camera, the agent at 24 fps **plus** a browser
 | Face signature ("this face looks right"), once per second per face | 5.9 ms | ~17 ms |
 | Clean view | 0 ms (passes the camera's own JPEG through) | 0 ms |
 
-**RAM (your decision, still open):** these numbers say **4GB is plenty** (the agent uses ~150 MB). 8GB only buys headroom for things we haven't planned. My recommendation stays the 4GB Pi.
+**RAM: 4GB (director's decision, 2026-10-18).** The agent uses ~150 MB.
 
 ## Phone access (the dashboard on the rig)
 
