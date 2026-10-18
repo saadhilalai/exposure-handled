@@ -2,6 +2,13 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## Resumed 2026-10-17, 21:48: director's answers
+
+1. **Out-of-range ISO/aperture:** warn and pause (the brain's default; now confirmed).
+2. **Look numbers:** keep for now; tune after the live test.
+3. **Pi RAM:** decide later (both 4GB and 8GB stay in the plan; nothing bought).
+4. **Allow-list for the live brain test:** **ISO only (800–12800).** The brain plans every lever, but only ISO changes are made; shutter/aperture/WB proposals are shown as "would change". Expand after the director has seen it behave.
+
 ## ⏸ PARKED: 2026-10-17, 19:40 (director stepped away)
 
 **Stopped at a clean point:** Steps 5 (no-camera part) and 8 are finished and committed. The last report to the director (Step 5 + Step 8 summary and four questions) was delivered and is awaiting replies. Nothing was half-done.
@@ -37,8 +44,8 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
   - ⏸ **Waiting on Saad, needs camera:** grey card / white paper calibration (`tools/calibrate_grey.py`; setup steps in docs/step4-eyes.md).
   - ⏸ **Waiting on Saad, needs camera:** overlay screenshots on a well-lit scene with a face and a bright highlight.
 - [~] **Step 5: The brain.** Notes: [docs/step5-brain.md](docs/step5-brain.md). Rules + 5 looks built and tested with no camera: simulator (14 scenes, 0 back-and-forth) and recorded frames. 37 tests pass.
-  - ❓ **Decision needed:** what to do when ISO/aperture starts outside the approved range (default now: warn and pause).
-  - ⏸ **Waiting on Saad, needs camera:** live closed-loop test (also needs your OK to add shutter/aperture/WB to the bridge allow-list).
+  - ✅ Decided: ISO/aperture starting outside the approved range → warn and pause.
+  - ⏸ **Waiting on Saad, needs camera:** live closed-loop test, **ISO-only** allow-list (decided); other levers shown as "would change".
 - [ ] Step 6: The dashboard
 - [ ] Step 7: Prove it works (test plan written before shooting)
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*

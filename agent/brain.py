@@ -169,7 +169,7 @@ def median(values):
 class Brain:
     def __init__(self, look="cinematic", ranges=None, allow_while_recording=False, out_of_range="warn"):
         """out_of_range: what to do when ISO or aperture starts OUTSIDE the director's ranges.
-        "warn" (default, until the director decides): pause exposure changes and say so.
+        "warn" (director's decision, 2026-10-17): pause exposure changes and say so.
         "bring_in": propose the nearest approved value, even if that's a big jump."""
         self.look = LOOKS[look] if isinstance(look, str) else look
         self.ranges = ranges or Ranges.from_file()
