@@ -22,34 +22,31 @@
 
 === sunset  [Cinematic 24p (shallow)]
     expect: Light falls 3 stops over 100 s: small steps up, always the same direction, base ISO preferred.
-    changes 9, reversals 0, clipping 0.0 s
+    changes 7, reversals 0, clipping 0.0 s
      21.38 s  CHANGE  Face +0.7 st (target +1.0): ISO 800 → 1000
      32.62 s  CHANGE  Face +0.7 st (target +1.0): ISO 1000 → 1250
      43.21 s  CHANGE  Face +0.6 st (target +1.0): ISO 1250 → 1600
      55.79 s  CHANGE  Face +0.6 st (target +1.0): ISO 1600 → 2000
-     66.17 s  CHANGE  Face +0.6 st (target +1.0): ISO 2000 → 2500
-     76.46 s  CHANGE  Face +0.6 st (target +1.0): ISO 2500 → 3200
-     88.42 s  CHANGE  Face +0.6 st (target +1.0): ISO 3200 → 4000 (base ISO)
+     66.17 s  CHANGE  Face +0.6 st (target +1.0): ISO 2000 → 4000 (base ISO)
      98.83 s  CHANGE  Face +0.7 st (target +1.0): ISO 4000 → 5000
     110.46 s  CHANGE  Face +0.6 st (target +1.0): ISO 5000 → 6400
+     71.17 s  ADVICE  Holding base ISO 4000: ⅓ stop brighter than target, highlights safe
+     71.21 s  ADVICE  Holding base ISO 4000: ⅔ stop brighter than target, highlights safe
     end: ISO 6400  f/2.8  1/48  ND 0.00  WB 5600K | face 1.0, scene -0.0 st
 
 === backlit_window_face  [Interview (face priority)]
     expect: Big window behind a darker face: protect the window and tell the operator to light the face.
-    changes 1, reversals 0, clipping 2.3 s
-      2.00 s  CHANGE  Highlights clipping 5.6% (limit 2.0%): closing to f/4.5
-      0.00 s  ADVICE  Face is 2⅓ stop under, but bright areas clip: add light on the face, or reframe the bright area out
-      0.04 s  ADVICE  Face is 2⅔ stop under, but bright areas clip: add light on the face, or reframe the bright area out
-      2.58 s  ADVICE  Face -1.8 st (target +1.0), but brightening would clip the brightest area (0.1 st headroom): add light to the subject instead
-      2.71 s  ADVICE  Face -1.9 st (target +1.0), but brightening would clip the brightest area (0.1 st headroom): add light to the subject instead
-    end: ISO 800  f/4.5  1/48  ND 0.00  WB 5600K | face -1.88, scene -1.4 st
+    changes 1, reversals 0, clipping 0.0 s
+      2.00 s  CHANGE  Face -1.5 st (target +1.0): ISO 800 → 1000
+      2.58 s  ADVICE  Face -1.2 st (target +1.0), but brightening would clip the brightest area (0.4 st headroom): add light to the subject instead
+    end: ISO 1000  f/4  1/48  ND 0.00  WB 5600K | face -1.21, scene -0.7 st
 
 === shade_to_sun  [Run and gun]
     expect: Subject walks from shade into sun (+3.8 stops): bring it down quickly, then ask for ND.
-    changes 5, reversals 0, clipping 2.3 s, settled 3.7 s after the change
-      8.75 s  CHANGE  Highlights clipping 25.0% (limit 1.5%): ISO 3200 → 2000
-      9.38 s  CHANGE  Highlights clipping 25.0% (limit 1.5%): ISO 2000 → 1250
-     10.00 s  CHANGE  Highlights clipping 11.3% (limit 1.5%): ISO 1250 → 800 (base ISO)
+    changes 5, reversals 0, clipping 1.7 s, settled 3.7 s after the change
+      8.75 s  CHANGE  Highlights clipping 20.9% (limit 1.5%): ISO 3200 → 2000
+      9.38 s  CHANGE  Highlights clipping 3.9% (limit 1.5%): ISO 2000 → 1250
+     10.46 s  CHANGE  Face +3.3 st (target +1.0): ISO 1250 → 800 (base ISO)
      11.08 s  CHANGE  Face +2.7 st (target +1.0): closing to f/7.1
      11.71 s  CHANGE  Face +2.0 st (target +1.0): closing to f/8
      12.33 s  ADVICE  Too bright at ISO 800 and f/8: add about ⅔ stops of ND
@@ -81,14 +78,14 @@
 
 === bright_day_no_nd  [Cinematic 24p (shallow)]
     expect: Bright day at f/2.8 base ISO: ask for ND; if nobody adds it, close to f/4 as a last resort.
-    changes 3, reversals 0, clipping 30.0 s
-      6.50 s  CHANGE  Highlights clipping 25.0% (limit 0.5%) and no ND added: last resort, closing to f/3.2
-      8.04 s  CHANGE  Highlights clipping 25.0% (limit 0.5%) and no ND added: last resort, closing to f/3.5
-      9.58 s  CHANGE  Highlights clipping 25.0% (limit 0.5%) and no ND added: last resort, closing to f/4
+    changes 3, reversals 0, clipping 9.9 s
+      6.50 s  CHANGE  Highlights clipping 20.9% (limit 0.5%) and no ND added: last resort, closing to f/3.2
+      8.04 s  CHANGE  Highlights clipping 11.2% (limit 0.5%) and no ND added: last resort, closing to f/3.5
+      9.58 s  CHANGE  Highlights clipping 4.8% (limit 0.5%) and no ND added: last resort, closing to f/4
       1.50 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add at least 3 stops of ND
       8.04 s  ADVICE  Too bright at ISO 800 and f/3.2: add at least 2⅔ stops of ND
       9.58 s  ADVICE  Too bright at ISO 800 and f/3.5: add at least 2⅓ stops of ND
-     11.12 s  ADVICE  Too bright at ISO 800 and f/4: add at least 2 stops of ND
+     11.67 s  ADVICE  Too bright at ISO 800 and f/4: add about 2 stops of ND
     end: ISO 800  f/4  1/48  ND 0.00  WB 5600K | face 2.96, scene +2.0 st
 
 === bright_day_with_operator  [Cinematic 24p (shallow)]

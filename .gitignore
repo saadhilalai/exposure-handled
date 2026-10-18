@@ -26,3 +26,6 @@ run/
 
 # Downloaded models (see tools/fetch_models.sh)
 models/
+
+# Local backups made by tools/calibrate_grey.py apply (git keeps the history)
+config/*.before-*.json

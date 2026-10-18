@@ -40,10 +40,15 @@ def synthetic(level, screen_level=None):
     return cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
 
+def grey_level():
+    """8-bit level of 18% grey, from the current calibration (not hard-coded)."""
+    return ToneModel("slog3", load_calibration()).level_for_stops(0.0)
+
+
 def test_bright_screen_does_not_move_the_key():
     eyes = Eyes(face_model="none")
-    plain = eyes.analyze(synthetic(104), LOG, compare=False)
-    with_screen = eyes.analyze(synthetic(104, screen_level=230), LOG, compare=False)
+    plain = eyes.analyze(synthetic(grey_level()), LOG, compare=False)
+    with_screen = eyes.analyze(synthetic(grey_level(), screen_level=230), LOG, compare=False)
     assert plain.key_stops == pytest.approx(0.0, abs=0.05)
     assert with_screen.key_stops == pytest.approx(plain.key_stops, abs=0.05)
     assert {(1, 5), (1, 6), (2, 5), (2, 6)} <= set(with_screen.light_source_regions)
@@ -53,7 +58,7 @@ def test_exposure_shift_ignores_a_screen_going_dark():
     """A third of a stop brighter overall while a bright screen in shot goes dark."""
     eyes = Eyes(face_model="none")
     tm = eyes.tone_model("slog3")
-    eyes.analyze(synthetic(104, screen_level=230), LOG)
+    eyes.analyze(synthetic(grey_level(), screen_level=230), LOG)
     third_stop_up = tm.level_for_stops(1 / 3)
     after = eyes.analyze(synthetic(third_stop_up, screen_level=40), LOG)
     assert after.change["exposure_shift_stops"] == pytest.approx(1 / 3, abs=0.06)

@@ -62,7 +62,7 @@ def capture(folder, label):
         sys.exit("Refusing to run: start the bridge with --read-only.")
     enums = load_enums()
     props = client.get("IsoSensitivity", "ShutterSpeed", "FNumber", "MeteredManualLevel",
-                       "MovieShootingMode", "WhiteBalance", "RecordingState")
+                       "MovieShootingMode", "WhiteBalance", "Colortemp", "RecordingState")
     samples, last, t_end = [], -1, time.monotonic() + SECONDS
     keep = None
     while time.monotonic() < t_end:
@@ -85,6 +85,8 @@ def capture(folder, label):
         "settings_text": "%s %s %s" % tuple(describe_value(n, props[n]["current"], enums)
                                            for n in ("IsoSensitivity", "ShutterSpeed", "FNumber")),
         "log_mode": describe_value("MovieShootingMode", props["MovieShootingMode"]["current"], enums),
+        "white_balance": describe_value("WhiteBalance", props["WhiteBalance"]["current"], enums),
+        "wb_kelvin": props["Colortemp"]["current"] if "Colortemp" in props else None,
         "recording": props["RecordingState"]["current"] != 0,
         "patch_luma": round(statistics.median(s["luma"] for s in samples), 2),
         "patch_rgb": [round(statistics.median(s["rgb"][c] for s in samples), 1) for c in range(3)],
@@ -111,8 +113,9 @@ def capture(folder, label):
     return result
 
 
-def fit(folder):
+def fit(folder, exclude=()):
     rows = [json.loads(line) for line in (Path(folder) / "captures.jsonl").read_text().splitlines()]
+    rows = [r for r in rows if r["label"] not in exclude]
     black = [r for r in rows if r["label"].startswith("black")]
     lit = [r for r in rows if not r["label"].startswith("black")]
     if len(lit) < 2:
@@ -121,14 +124,15 @@ def fit(folder):
     for r in lit:
         r["ev"] = (np.log2(r["iso"] / ref["iso"]) + np.log2(r["shutter_s"] / ref["shutter_s"])
                    - 2 * np.log2(r["f_number"] / ref["f_number"]))
-    # Clip: once more exposure stops raising the level, it's clipped.
+    # Clip: a clipped capture is perfectly flat (no texture, no unevenness), or stops rising.
     lit.sort(key=lambda r: r["ev"])
-    clip_level = None
+    flat = [r for r in lit if r["evenness_levels"] <= 0.5 and r["texture_levels"] <= 3
+            and r["patch_p99"] - r["patch_luma"] <= 3]
+    clip_level = round(statistics.median(r["patch_luma"] for r in flat)) if flat else None
     for a, b in zip(lit, lit[1:]):
-        if b["ev"] - a["ev"] >= 0.9 and b["patch_luma"] - a["patch_luma"] < 3:
+        if clip_level is None and b["ev"] - a["ev"] >= 0.9 and b["patch_luma"] - a["patch_luma"] < 3:
             clip_level = round(max(a["patch_luma"], b["patch_luma"]))
-            break
-    usable = [r for r in lit if 25 < r["patch_luma"] < (clip_level - 6 if clip_level else 212)]
+    usable = [r for r in lit if r not in flat and 25 < r["patch_luma"] < (clip_level - 8 if clip_level else 212)]
     if len(usable) < 2:
         sys.exit("Need at least two captures between shadows and clipping.")
     ev = np.array([r["ev"] for r in usable])
@@ -136,8 +140,10 @@ def fit(folder):
     slope, intercept = np.polyfit(ev, lv, 1)
     residuals = (lv - (slope * ev + intercept)).round(2).tolist()
     result = {"levels_per_stop": round(float(slope), 2), "points_used": len(usable),
-              "residuals_levels": residuals, "clip_level": clip_level}
-    meters = [(r["ev"], r["camera_meter"]) for r in usable]
+              "points": [(r["label"], round(float(r["ev"]), 2), r["patch_luma"]) for r in usable],
+              "residuals_levels": residuals, "clip_level": clip_level,
+              "excluded": list(exclude), "clipped_captures": [r["label"] for r in flat]}
+    meters = [(r["ev"], r["camera_meter"]) for r in usable if -4000 < r["camera_meter"] < 4000 and r["camera_meter"] != 0]
     if len(meters) >= 2:
         m_slope = np.polyfit([m[0] for m in meters], [m[1] for m in meters], 1)[0]
         result["camera_meter_units_per_stop"] = round(float(m_slope), 1)
@@ -175,13 +181,14 @@ def main():
     ap.add_argument("action", choices=["capture", "black", "fit", "apply"])
     ap.add_argument("folder")
     ap.add_argument("label", nargs="?")
+    ap.add_argument("--exclude", nargs="*", default=[])
     a = ap.parse_args()
     if a.action == "capture":
         capture(a.folder, a.label or "lit")
     elif a.action == "black":
         capture(a.folder, "black")
     elif a.action == "fit":
-        fit(a.folder)
+        fit(a.folder, a.exclude)
     else:
         apply(a.folder)
 

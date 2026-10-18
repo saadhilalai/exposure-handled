@@ -35,6 +35,39 @@ The first version used the plain middle value of all region changes and was fool
 - Early evidence the guess is close: a capped lens reads 9/255, exactly what the guess predicts for S-Log3 black, and the real ISO third-stop measured as +0.31 stops.
 - **Open:** the camera's own meter read −3.3 (if its units are 1000 per stop) while the eyes said −6.5 stops for the same dark room. The calibration measures the meter's units and should explain the gap.
 
+## Calibration result (2026-10-17, matte white wall, read-only)
+
+The director changed ISO/aperture by hand; the bridge ran `--read-only` (0 change requests). Settings: S-Log3 Flexible ISO, 1/50, AWB.
+
+| Capture | Wall (8-bit) | Camera meter |
+|---|---|---|
+| ISO 800, f/4 (first; light/AWB shifted, **left out**) | 85.3 | 0 |
+| ISO 800, f/4 (repeat) | 83.1 | 0 |
+| ISO 1600, f/5.6 (aperture step) | 82.1 | 0 |
+| ISO 1600, f/4 | 102.1 | 700 |
+| ISO 3200 | 123.1 | 1700 |
+| ISO 6400 | 144.1 | 2700 |
+| ISO 12800 | 164.1 | 3700 |
+| ISO 51200 | 206.1 | 4300 (meter's ceiling) |
+| ISO 102400 | 221.0 flat (clipped) | 4300 |
+| Lens cap, ISO 800 | 10.0 | −7000 |
+
+| Number | Guess | Result | Confidence |
+|---|---|---|---|
+| Levels per stop (B) | 22.9 | **20.63** | **Measured**: 7 points over 6 stops, all within ±1.1 levels of a straight line |
+| Clip level | 221 | **221** | **Measured** (flat clipped frame) |
+| Black | ~9 | **10.0** | **Measured** (lens cap) |
+| 18% grey (A) | 103.6 | **95.2** | **Derived** from black + B + Sony's S-Log3 curve; assumes the line holds down to black (checked only from level ~82 up) |
+| Camera meter | ? | **1000 per stop**, reads 0 within ~⅓ stop, tops out at 4300 | **Measured** |
+
+What it means:
+- The old guess read mid-tones about 0.4 stop too dark.
+- Highlights clip about **6.2 stops above 18% grey**.
+- **Independent check:** the real Step 3 ISO third-stop now measures **+0.331 stops (truth +0.333)**, up from +0.31 with the guess.
+- The camera's own meter aims about ⅓ stop below Sony's S-Log3 grey.
+
+**Not resolved:** in the very dark Step 4 room, the camera meter (≈ −3.6 on our scale) and the frame's average light by our scale (−5.3) differ by about 1.7 stops. Likely reasons: that room sits at levels 10-20, deep in the shadows, where our scale is extrapolated rather than measured; and the camera's own metering pattern. Optional check: the same wall at f/8 and f/11 to measure the lower range.
+
 ## Overlay (`agent/overlay.py`, `tools/eyes_snapshot.py`)
 
 Zebras (red/white = clipped, yellow = within ½ stop of clip), false color in stops vs grey, face boxes with stops, a region view (light sources / changed), and a numbers panel. Screenshots are saved per session (not committed: they show the room and screen).

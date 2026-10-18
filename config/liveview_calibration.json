@@ -1,16 +1,24 @@
 {
   "note": "How the FX2's 8-bit live-view JPEG relates to exposure. 'status' says how much each number is trusted. The grey card test (Step 4) replaces the guesses with measurements.",
   "slog3": {
-    "grey_level": 103.6,
-    "levels_per_stop": 22.9,
+    "grey_level": 95.2,
+    "levels_per_stop": 20.63,
     "clip_level": 221,
-    "floor_level": 9,
+    "floor_level": 10.0,
     "status": {
-      "grey_level": "GUESS: legal-range S-Log3 stretched to 0-255 (18% grey = code 420 -> 103.6). Not yet measured.",
-      "levels_per_stop": "GUESS (22.9 for legal range). Step 3 dark-region data suggests the real value may be lower. Not yet measured.",
-      "clip_level": "MEASURED ONCE: highlights piled up at 221 on a frame at ISO 102400 (2026-10-17). Confirm with the paper/card test.",
-      "floor_level": "OBSERVED: deepest shadows sat at 9-12 in log frames."
-    }
+      "grey_level": "DERIVED 2026-10-17: measured black (10.0, lens cap) + measured levels per stop (20.63) + Sony's S-Log3 curve (grey = code 420, black = code 95). Assumes the preview stays linear in S-Log3 code down to black (verified only from level ~82 up). Cross-check: camera meter '0' lands ~1/3 stop below this.",
+      "levels_per_stop": "MEASURED 2026-10-17: 20.63 levels/stop from 7 captures over 6 stops of a matte white wall (ISO 800-51200 and an aperture step), residuals within +/-1.1 levels. Slightly lower (19.5-20) around 82-102.",
+      "clip_level": "MEASURED 2026-10-17: flat clipped wall at ISO 102400 = 221 on all three channels.",
+      "floor_level": "MEASURED 2026-10-17: lens cap at ISO 800 = 10.0."
+    },
+    "camera_meter": {
+      "units_per_stop": 1000,
+      "dead_band_stops": 0.33,
+      "max": 4300,
+      "min": -7000,
+      "status": "MEASURED 2026-10-17: +1000 per stop; reads 0 within about 1/3 stop of its target; tops out at 4300."
+    },
+    "source_session": "sessions/2026-10-17_215409_step4-calibration (not committed)"
   },
   "rec709": {
     "clip_level": 250,
