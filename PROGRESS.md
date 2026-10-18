@@ -2,6 +2,32 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## ⏸ PARKED: 2026-10-17, 19:40 (director stepped away)
+
+**Stopped at a clean point:** Steps 5 (no-camera part) and 8 are finished and committed. The last report to the director (Step 5 + Step 8 summary and four questions) was delivered and is awaiting replies. Nothing was half-done.
+
+**State when parked:**
+- Camera: **not connected**. No bridge running (`run/` empty), no camera tools running.
+- Training: this project has none. The robot-walker training belongs to another project and was **not touched** (ground rule).
+- Repo: everything committed; 37 tests pass (`.venv/bin/python -m pytest -q`).
+
+**On "resume", in this order:**
+1. Read this file. Ask the director for the four open answers (unless already given):
+   - (a) out-of-range policy: warn-and-pause (current default) / bring in / ask on dashboard;
+   - (b) are the look numbers OK (face +1 st, cinematic reacts after 1.5 s, etc.);
+   - (c) Pi 4GB or 8GB (nothing to be bought without a go);
+   - (d) OK to add shutter 1/48–1/100, aperture f/2.8–f/11, WB 2800–7500K to the bridge allow-list for live Step 5 tests.
+2. **If the camera is available** (director says "camera ready"), in this order, each read-only unless stated:
+   1. Grey card / paper calibration: `tools/calibrate_grey.py`. Bridge must run with `--read-only`; the director changes ISO by hand. Steps in docs/step4-eyes.md.
+   2. Overlay screenshots: `tools/eyes_snapshot.py --live` (read-only bridge), on a lit scene with a face and a bright highlight.
+   3. Live closed-loop brain test. Needs (d) approved and the allow-list updated; not started.
+3. **If no camera:** don't start Step 6 or 7 without the director's go. Both are possible with recorded frames: the Step 6 dashboard (phone-friendly, per the Pi plan) and the Step 7 written test plan.
+
+**How to start things again:**
+- Build: `cmake --build build/bridge -j2`
+- Read-only bridge: `cd build/bridge && ./camera_bridge ~/camera-agent/run/bridge.sock ~/camera-agent/sessions/<new folder> --read-only`
+- Python: `~/camera-agent/.venv/bin/python`
+
 ## Steps
 
 - [x] **Step 1: Read Sony's kit** (no camera). Findings: [docs/step1-sdk-findings.md](docs/step1-sdk-findings.md). Reviewed and approved by director.
@@ -34,7 +60,6 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 3. CMake: install with `brew install cmake` at the start of Step 2.
 4. Warranty clause: director has read it and chose to continue.
 
-Next: Step 3 starts only when the director says **"camera ready"** (camera is out on a shoot as of 2026-10-17 evening).
 
 ## Approved safe ranges (director, 2026-10-17)
 
