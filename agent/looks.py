@@ -33,21 +33,21 @@ LOOKS = {
                     "Brightness is handled with base ISO and your ND; the agent asks for ND rather than "
                     "stopping down. Slow, small moves so changes never show on screen.",
         aperture=2.8, aperture_range=(2.8, 2.8), aperture_last_resort=4.0, iso_policy="base_first",
-        face_priority=True, face_target=1.0, key_window=(-1.0, 1.0), max_clip_pct=0.5,
+        face_priority=True, face_target=0.5, key_window=(-1.0, 1.0), max_clip_pct=0.5,
         react_after_s=1.5, max_step=1 / 3, min_gap_s=1.0, shutter_180=True),
     "run_and_gun": Look(
         key="run_and_gun", name="Run and gun",
         description="Deeper focus (f/5.6) so a moving subject stays sharp, and quick reactions. ISO is the "
                     "main lever, then aperture between f/4 and f/8. Accepts a little more clipping to keep up.",
         aperture=5.6, aperture_range=(4.0, 8.0), aperture_last_resort=8.0, iso_policy="free",
-        face_priority=True, face_target=1.0, key_window=(-0.5, 0.7), max_clip_pct=1.5,
+        face_priority=True, face_target=0.5, key_window=(-0.5, 0.7), max_clip_pct=1.5,
         react_after_s=0.5, max_step=2 / 3, min_gap_s=0.5, shutter_180=True),
     "interview": Look(
         key="interview", name="Interview (face priority)",
         description="The face is everything: it holds the face at its target and moves slowly so the "
                     "exposure never pumps during an answer. Background windows may clip a little; the face may not.",
         aperture=4.0, aperture_range=(2.8, 5.6), aperture_last_resort=5.6, iso_policy="base_first",
-        face_priority=True, face_target=1.0, key_window=(-1.5, 1.5), max_clip_pct=2.0,
+        face_priority=True, face_target=0.5, key_window=(-1.5, 1.5), max_clip_pct=2.0,
         react_after_s=2.0, max_step=1 / 3, min_gap_s=2.0, shutter_180=True),
     "low_light": Look(
         key="low_light", name="Low light",
@@ -61,6 +61,6 @@ LOOKS = {
         description="Stills portrait: shallow f/2.8 (up to f/4), exposure set for the face. Shutter is left to "
                     "you, because the approved shutter range is for video only.",
         aperture=2.8, aperture_range=(2.8, 4.0), aperture_last_resort=4.0, iso_policy="base_first",
-        face_priority=True, face_target=1.0, key_window=(-1.0, 1.0), max_clip_pct=0.5,
+        face_priority=True, face_target=0.5, key_window=(-1.0, 1.0), max_clip_pct=0.5,
         react_after_s=1.0, max_step=1 / 3, min_gap_s=1.0, shutter_180=False),
 }

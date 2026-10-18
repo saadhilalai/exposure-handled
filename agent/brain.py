@@ -30,6 +30,12 @@ SETTLE_S = 0.6                # a change shows in the picture ~0.3 s after it's 
 REVERSAL_WINDOW_S = 5.0
 DEAD_BAND = 0.3               # stops; about a third of a stop
 ND_LAST_RESORT_AFTER_S = 5.0  # cinematic: if ND advice is ignored and highlights still clip
+CEILING_S = 60.0              # after darkening for clipping, don't go back up to that exposure for this long
+
+
+def cam_ev(cam):
+    """The camera's exposure in stops (bigger = brighter picture)."""
+    return math.log2(cam.iso) - 2 * math.log2(cam.fnumber) + math.log2(cam.shutter_s)
 
 
 def frac_stops(x):
@@ -148,6 +154,11 @@ class Output:
     status: str
 
 
+def would(p):
+    """A proposal for a setting the director hasn't approved, as advice."""
+    return "Would change, not approved yet: " + p.reason
+
+
 def iso_raw(iso):
     return int(iso)
 
@@ -167,20 +178,26 @@ def median(values):
 
 
 class Brain:
-    def __init__(self, look="cinematic", ranges=None, allow_while_recording=False, out_of_range="warn"):
+    def __init__(self, look="cinematic", ranges=None, allow_while_recording=False, out_of_range="warn",
+                 allowed=None):
         """out_of_range: what to do when ISO or aperture starts OUTSIDE the director's ranges.
         "warn" (director's decision, 2026-10-17): pause exposure changes and say so.
-        "bring_in": propose the nearest approved value, even if that's a big jump."""
+        "bring_in": propose the nearest approved value, even if that's a big jump.
+        allowed: Sony setting names the brain may actually change (None = all). Anything else
+        becomes advice ("Would change, not approved yet: ...") and the brain moves on."""
         self.look = LOOKS[look] if isinstance(look, str) else look
         self.ranges = ranges or Ranges.from_file()
         self.allow_while_recording = allow_while_recording
         self.out_of_range = out_of_range
+        self.allowed = None if allowed is None else set(allowed)
         self.history = deque()
         self.pending = None                  # (kind, sign, since)
         self.last_change_t = -1e9
         self.last_change_sign = 0
         self.nd_advice_since = None
         self.highlight_guard_until = -1e9
+        self.ceiling = None                  # (camera EV that clipped, scene level then, time)
+        self.cap = None                      # brightening allowed by the ceiling this frame (stops)
 
     # ------------------------------------------------------------------ main
     def update(self, obs, cam):
@@ -193,7 +210,11 @@ class Brain:
         settling = obs.t - self.last_change_t < max(SETTLE_S, self.look.min_gap_s)
 
         self._pending_advice = None
+        not_approved = []
         p = self._shutter_rule(cam, obs)
+        if p and not self.may(p.setting):
+            not_approved.append(would(p))
+            p = None
         if p:
             if settling:
                 return Output(None, [], "Waiting for the last change to settle")
@@ -201,20 +222,27 @@ class Brain:
         shutter_advice = [self._pending_advice] if self._pending_advice else []
         outside = self._outside_ranges(cam)
         if outside:
-            if self.out_of_range != "bring_in":
-                return Output(None, shutter_advice + [o[0] for o in outside],
+            if self.out_of_range != "bring_in" or not self.may(outside[0][2].setting):
+                return Output(None, not_approved + shutter_advice + [o[0] for o in outside],
                               "Paused: %s outside your approved range" % " and ".join(o[1] for o in outside))
             if settling:
                 return Output(None, [], "Waiting for the last change to settle")
             return self._commit(outside[0][2], obs.t, 0)
         p = self._aperture_rule(cam, obs)
+        if p and not self.may(p.setting):
+            not_approved.append(would(p))
+            p = None
         if p:
             if settling:
                 return Output(None, [], "Waiting for the last change to settle")
             return self._commit(p, obs.t, 0)
         out = self._exposure(cam, obs, settling)
-        out.advice = shutter_advice + out.advice
+        out.advice = not_approved + shutter_advice + out.advice
         return out
+
+    def may(self, setting):
+        """May the brain actually change this setting (director's approval)?"""
+        return self.allowed is None or setting in self.allowed
 
     def _outside_ranges(self, cam):
         """[(advice text, short name, proposal to bring it in)] for ISO / aperture outside the director's ranges."""
@@ -257,7 +285,7 @@ class Brain:
         if abs(math.log2(cam.shutter_s / target)) < 0.05:
             return None
         stops = math.log2(target / cam.shutter_s)
-        if stops > 0 and obs.headroom - stops < 1 / 3:
+        if stops > 0 and obs.headroom - stops < 1 / 3 and self.may("ShutterSpeed"):
             # The slower shutter would push highlights into clipping: make room with ISO first.
             lo, hi = self.ranges.iso
             room_iso = [i for i in cam.iso_options if lo <= i <= hi and i <= cam.iso / 2 ** (stops - (obs.headroom - 1 / 3))]
@@ -305,6 +333,7 @@ class Brain:
 
     def _exposure(self, cam, obs, settling):
         look = self.look
+        self.cap = None
         recent = self._recent()
         key = median([o.key for o in recent])
         faces = [o.face for o in recent if o.face is not None]
@@ -346,15 +375,26 @@ class Brain:
                         advice.append("%s, but brightening would clip the brightest area (%.1f st headroom): "
                                       "add light to the subject instead" % (what, headroom))
                     D = max(0.0, room)
+                self.cap = self._ceiling_room(cam, key, obs.t)
+                if self.cap is not None and self.cap < D:
+                    if self.cap < DEAD_BAND <= D:           # (headroom advice already covers smaller D)
+                        advice.append("%s, but going brighter clipped the bright area a moment ago: "
+                                      "add light to the subject instead" % what)
+                    D = max(0.0, self.cap)
 
         if abs(D) < DEAD_BAND:
             self.pending = None
             self.nd_advice_since = None
             wb = self._white_balance(cam, obs, settling)
-            if wb:
-                return wb
-            return Output(None, advice + self._wb_advice(cam), "Exposure good: scene %+.1f st%s" % (
-                key, ", face %+.1f st" % face if face is not None else ""))
+            if wb and not self.may(wb.setting):
+                advice.append(would(wb))
+            elif wb:
+                return self._commit(wb, obs.t, 0)
+            if abs(exposure_err) >= DEAD_BAND:                  # held short of the target by clipping
+                status = "Holding: %s; any brighter would clip" % what
+            else:
+                status = "Exposure good: scene %+.1f st%s" % (key, ", face %+.1f st" % face if face is not None else "")
+            return Output(None, advice + self._wb_advice(cam), status)
 
         sign = 1 if D > 0 else -1
         react = look.react_after_s       # same for every problem, so a walk-by never triggers a change
@@ -376,16 +416,28 @@ class Brain:
             return Output(None, advice, advice[-1] if advice else what + ": nothing left to adjust on the camera")
         if kind == "highlights":
             self.highlight_guard_until = obs.t + 15.0
+            self.ceiling = (cam_ev(cam), key - cam_ev(cam), obs.t)
         out = self._commit(proposal, obs.t, sign)
         out.advice = advice
         return out
 
+    def _ceiling_room(self, cam, key, t):
+        """Stops of brightening left before the exposure that clipped last time (None = no limit).
+        If the light itself has dropped since then (measured), the limit moves up by that much."""
+        if self.ceiling is None:
+            return None
+        ev_clipped, scene_then, since = self.ceiling
+        if t - since > CEILING_S:
+            self.ceiling = None
+            return None
+        return ev_clipped + (scene_then - (key - cam_ev(cam))) - cam_ev(cam) - 1 / 3
+
     def _levers(self, cam, step, D, kind, what, headroom):
         """Turn an exposure change (stops) into ONE camera change, or advice."""
         look, advice = self.look, []
-        iso_ok = cam.log_mode not in ("CineEI", "CineEIQuick")      # Cine EI: recorded ISO is locked to base
+        iso_ok = cam.log_mode not in ("CineEI", "CineEIQuick") and self.may("IsoSensitivity")   # Cine EI: ISO locked to base
         isos = sorted(i for i in cam.iso_options if self.ranges.iso[0] <= i <= self.ranges.iso[1])
-        fs = self._f_options(cam)
+        fs = self._f_options(cam) if self.may("FNumber") else []
         lo_f, hi_f = look.aperture_range
 
         if step > 0:
@@ -436,7 +488,8 @@ class Brain:
             if step > 0 and iso < 4000 <= isos[-1] and want >= 2000:
                 extra = math.log2(4000 / want)
                 # Only if the WHOLE jump keeps the brightest important area 2/3 stop below clipping.
-                if extra <= 2 / 3 and headroom - math.log2(4000 / iso) >= 2 / 3:
+                jump = math.log2(4000 / iso)
+                if extra <= 2 / 3 and headroom - jump >= 2 / 3 and (self.cap is None or jump <= self.cap + 0.05):
                     return 4000                     # high base ISO: cleaner than 2500-3200
             if step < 0 and want <= 800 * 2 ** (1 / 3) and 800 in isos:
                 return 800
@@ -476,6 +529,5 @@ class Brain:
         target = int(round(min(max(light, lo), hi) / 100.0) * 100)
         if target == cam.wb_kelvin:
             return None
-        p = Proposal("Colortemp", target, "%dK" % cam.wb_kelvin, "%dK" % target,
-                     "Light measures about %dK, WB is %dK: setting %dK" % (light, cam.wb_kelvin, target))
-        return self._commit(p, obs.t, 0)
+        return Proposal("Colortemp", target, "%dK" % cam.wb_kelvin, "%dK" % target,
+                        "Light measures about %dK, WB is %dK: setting %dK" % (light, cam.wb_kelvin, target))

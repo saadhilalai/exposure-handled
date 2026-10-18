@@ -4,6 +4,24 @@ An AI camera assistant that runs exposure like a cinematographer. It watches the
 
 Status: early development. See [PROGRESS.md](PROGRESS.md).
 
+## Exposing every skin tone correctly
+
+The agent is designed to expose correctly across skin tones.
+
+- **It never guesses or labels anyone's skin tone.** It measures how bright each face is, in stops relative to 18% grey, and compares that with a target.
+- **The default face target is +0.5 stop.** The common "skin at +1 stop" rule of thumb comes from lighter skin and pushes darker skin too bright, so the default sits lower (director's decision, 2026-10-17).
+- **Set each person once (planned for the dashboard, Step 6):** frame the person, press "this face looks right", and the agent holds that exposure for that person from then on. The cinematographer's eye decides, not a formula.
+- **Faces never clip:** a clipping face is treated like a clipping window, for everyone.
+- **Honest status:** not yet tested on a range of skin tones with the real camera. That is part of the Step 7 test plan.
+
+## Try the agent without a camera
+
+```
+.venv/bin/python tools/run_agent.py --fake
+```
+
+This runs the full loop (eyes → brain → safety gate → bridge) against a fake FX2 that speaks the real bridge's protocol. Keys: SPACE kill switch, `p` pause, `1`-`5` look, `q` quit. Details: [docs/step5-brain.md](docs/step5-brain.md).
+
 ## Getting Sony's Camera Remote SDK
 
 This project talks to the camera through Sony's Camera Remote SDK. Sony's license does not allow the SDK files (libraries, headers, sample code, docs) to be shared, so they are **not** in this repo. Each developer downloads them from Sony:

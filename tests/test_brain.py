@@ -71,8 +71,10 @@ def test_shade_to_sun_comes_down_fast_and_asks_for_nd():
 
 def test_bright_day_asks_for_enough_nd_then_last_resort_aperture():
     result, cam = run("bright_day_no_nd")
+    from agent.sim import parse_stops
     first_nd = next(a for _, a in result.advice if "of ND" in a)
-    assert "at least 3 stops" in first_nd
+    assert "at least" in first_nd
+    assert parse_stops(first_nd.split(" stops of ND")[0].split(" ")[-1]) >= 3
     assert cam.fnumber == 4.0                        # last resort, never past f/4 for this look
 
 
@@ -130,3 +132,57 @@ def test_low_light_says_it_needs_light():
     result, cam = run("low_light")
     assert cam.iso == 12800
     assert any("Too dark" in a for _, a in result.advice)
+
+
+def test_iso_only_brain_still_fixes_exposure_and_only_advises_the_rest():
+    """Director's live-test setting: only ISO may change. Shutter/aperture/WB become advice."""
+    from agent.sim import SceneState
+    # Bright enough that ISO alone can fix it at 1/160, f/5.6 (3.7 stops darker than 1/48, f/2.8).
+    scene = lambda t: SceneState(key=2.0, face=3.0, highlight=4.0, highlight_area=2, light_k=3200)
+    cam = SimCamera(shutter_s=1 / 160, fnumber=5.6)
+    result = simulate(scene, cam, Brain("cinematic", allowed={"IsoSensitivity"}), 30)
+    assert result.changes and all(p.setting == "IsoSensitivity" for _, p in result.changes)
+    advice = " | ".join(a for _, a in result.advice)
+    assert "not approved yet: 180° shutter" in advice
+    assert "not approved yet: Cinematic 24p look wants f/2.8" in advice
+    assert "not approved yet: Light measures about 3200K" in advice
+    assert cam.shutter_s == 1 / 160 and cam.fnumber == 5.6 and cam.wb_kelvin == 5600
+
+
+def test_iso_only_brain_never_lowers_iso_to_make_room_for_an_unapproved_shutter():
+    from agent.sim import SceneState
+    scene = lambda t: SceneState(key=-0.5, face=0.4, highlight=4.9, highlight_area=20)
+    cam = SimCamera(iso=4000, shutter_s=1 / 160)
+    result = simulate(scene, cam, Brain("cinematic", allowed={"IsoSensitivity"}), 10)
+    assert not any("Making room" in p.reason for _, p in result.changes)
+
+
+def test_no_pumping_when_one_step_brighter_clips():
+    """Found with the fake camera on the real Step 4 frame: at ISO 6400 the lamp-lit wall counts as
+    clipping (1.5%), at 5000 it doesn't. After darkening once, hold, unless the light itself drops."""
+    import math
+    from dataclasses import replace
+    from agent.brain import Observation
+
+    clip_ev = math.log2(6400 / 5000)
+    light = lambda t: 0.0 if t < 30 else -1.0          # the room gets 1 stop darker at 30 s
+
+    def observe(t, iso):
+        ev = math.log2(iso / 5000) + light(t)
+        clipped = ev >= clip_ev - 0.01
+        return Observation(t=t, key=1.2 + ev, face=-0.6 + ev, clipped_important=1.5 if clipped else 0.0,
+                           headroom=0.0 if clipped else 1.02 - ev)
+
+    cam = SimCamera(iso=5000, shutter_s=1 / 48).state()
+    brain, changes = Brain("cinematic", allowed={"IsoSensitivity"}), []
+    for k in range(60 * 24):
+        t = k / 24
+        out = brain.update(observe(t, cam.iso), cam)
+        if out.proposal:
+            changes.append((t, out.proposal.raw))
+            cam = replace(cam, iso=out.proposal.raw)
+    before = [iso for t, iso in changes if t < 30]
+    after = [(t, iso) for t, iso in changes if t >= 30]
+    assert before == [6400, 5000]                       # tried once, clipped, came back, then held
+    assert after and after[0][1] > 5000                 # light dropped: brighter again
+    assert all(math.log2(iso / 5000) - 1.0 < clip_ev - 0.01 for _, iso in after)   # never back into clipping

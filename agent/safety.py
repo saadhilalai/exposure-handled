@@ -48,11 +48,15 @@ class SafetyGate:
                    "new": describe_value(name, raw, self.enums), "reason": reason, "refused_because": why})
         return {"ok": False, "refused": True, "error": why}
 
-    def kill(self):
-        """Kill switch: stop all changes now and hand control back to the operator."""
+    def kill(self, client=None, why="kill switch"):
+        """Kill switch: stop all changes now and hand control back to the operator.
+        `client`: a second bridge connection, so the lock gets through even while a change is in flight."""
         self.killed = True
-        reply = self.client.lock()
-        self._log({"event": "kill_switch", "bridge_locked": reply.get("locked", False)})
+        try:
+            reply = (client or self.client).lock()
+        except Exception as e:  # bridge gone: nothing can change the camera anyway
+            reply = {"ok": False, "error": str(e)}
+        self._log({"event": "kill_switch", "why": why, "bridge_locked": reply.get("locked", False)})
         return reply
 
     def change_setting(self, name, raw, reason):

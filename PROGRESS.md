@@ -47,11 +47,16 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
     - Validated: the real ISO third-stop measures +0.331 (truth +0.333).
     - Optional later: wall at f/8 and f/11 to check the deep-shadow range.
   - ✅ **Overlay screenshots done (22:14):** face found (94%), lamp flagged as a practical and zebra-striped, 24 fps. Saved in sessions/ (not committed: they show the director's face).
-  - ❓ **Director to decide:** the default face target +1 st suits lighter skin. Lower the default now, and/or build the per-person "this face looks right" reference in Step 6.
-- [~] **Step 5: The brain.** Notes: [docs/step5-brain.md](docs/step5-brain.md). Rules + 5 looks built and tested with no camera: simulator (14 scenes, 0 back-and-forth) and recorded frames. 37 tests pass.
+  - ✅ **Decided (22:20):** default face target lowered to **+0.5 st** for every look; the per-person "this face looks right" button goes in Step 6. README notes the agent is designed to expose correctly across skin tones.
+- [~] **Step 5: The brain + the runner.** Notes: [docs/step5-brain.md](docs/step5-brain.md). Rules + 5 looks tested with no camera: simulator (14 scenes, 0 back-and-forth) and recorded frames.
   - ✅ Decided: ISO/aperture starting outside the approved range → warn and pause.
-  - ⏸ **Waiting on Saad, needs camera:** live closed-loop test, **ISO-only** allow-list (decided); other levers shown as "would change".
+  - ✅ **Brain, ISO-only mode:** only approved settings change; shutter/aperture/WB show as "Would change, not approved yet: …".
+  - ✅ **Runner built (no camera):** `tools/run_agent.py` (eyes → brain → safety gate → bridge). Dry run by default; `--live` needs typing LIVE on the real camera. Kill switch: SPACE / Ctrl-C / `tools/kill_switch.py` / USB. Runaway guard (20 changes/min). Session snapshot + offer to restore ISO.
+  - ✅ **Tried on a fake camera** (`tools/fake_bridge.py`, same protocol as the bridge) with your real Step 4 frame. It caught a 6400 ↔ 5000 pumping bug, fixed with a "clipping memory" rule + regression test. Keys checked in a real terminal.
+  - ✅ 49 tests pass (7 eyes, 33 brain, 9 runner).
+  - ⏸ **Waiting on Saad:** decide when to run the **live ISO test** (tonight or tomorrow). Needs the camera, the bridge started *without* `--read-only`, and you at the keyboard (SPACE).
 - [ ] Step 6: The dashboard
+  - To include: the per-person **"this face looks right"** button (set each person once; the agent holds that face's exposure).
 - [ ] Step 7: Prove it works (test plan written before shooting)
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
 - [ ] Step 9: Package it (README, INTERVIEW.md, resume bullets)

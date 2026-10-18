@@ -2,67 +2,70 @@
 === static  [Cinematic 24p (shallow)]
     expect: Nothing to fix: no changes at all.
     changes 0, reversals 0, clipping 0.0 s
+      1.50 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add about ⅓ stops of ND
     end: ISO 800  f/2.8  1/48  ND 0.00  WB 5600K | face 0.85, scene -0.3 st
 
 === walk_by_window  [Cinematic 24p (shallow)]
     expect: A window flashes into frame for 1 s (someone walks past): ignore it.
     changes 0, reversals 0, clipping 1.0 s
+      1.50 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add about ⅓ stops of ND
     end: ISO 800  f/2.8  1/48  ND 0.00  WB 5600K | face 0.85, scene -0.3 st
 
 === person_walks_through  [Cinematic 24p (shallow)]
     expect: Someone crosses in front of the lens for 1.2 s: ignore it.
     changes 0, reversals 0, clipping 0.0 s
+      1.50 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add about ⅓ stops of ND
     end: ISO 800  f/2.8  1/48  ND 0.00  WB 5600K | face 0.87, scene -0.2 st
 
 === flicker_bait  [Cinematic 24p (shallow)]
     expect: Face wobbles right at the edge of 'too dark': at most one change, never back and forth.
     changes 1, reversals 0, clipping 0.0 s
-      3.25 s  CHANGE  Face +0.7 st (target +1.0): ISO 800 → 1000
-    end: ISO 1000  f/2.8  1/48  ND 0.00  WB 5600K | face 1.19, scene +0.0 st
+      3.25 s  CHANGE  Face +0.2 st (target +0.5): ISO 800 → 1000
+    end: ISO 1000  f/2.8  1/48  ND 0.00  WB 5600K | face 0.69, scene +0.0 st
 
 === sunset  [Cinematic 24p (shallow)]
     expect: Light falls 3 stops over 100 s: small steps up, always the same direction, base ISO preferred.
-    changes 7, reversals 0, clipping 0.0 s
-     21.38 s  CHANGE  Face +0.7 st (target +1.0): ISO 800 → 1000
-     32.62 s  CHANGE  Face +0.7 st (target +1.0): ISO 1000 → 1250
-     43.21 s  CHANGE  Face +0.6 st (target +1.0): ISO 1250 → 1600
-     55.79 s  CHANGE  Face +0.6 st (target +1.0): ISO 1600 → 2000
-     66.17 s  CHANGE  Face +0.6 st (target +1.0): ISO 2000 → 4000 (base ISO)
-     98.83 s  CHANGE  Face +0.7 st (target +1.0): ISO 4000 → 5000
-    110.46 s  CHANGE  Face +0.6 st (target +1.0): ISO 5000 → 6400
-     71.17 s  ADVICE  Holding base ISO 4000: ⅓ stop brighter than target, highlights safe
-     71.21 s  ADVICE  Holding base ISO 4000: ⅔ stop brighter than target, highlights safe
-    end: ISO 6400  f/2.8  1/48  ND 0.00  WB 5600K | face 1.0, scene -0.0 st
+    changes 6, reversals 0, clipping 0.0 s
+     38.92 s  CHANGE  Face +0.1 st (target +0.5): ISO 800 → 1000
+     49.54 s  CHANGE  Face +0.2 st (target +0.5): ISO 1000 → 1250
+     60.12 s  CHANGE  Face +0.2 st (target +0.5): ISO 1250 → 1600
+     71.92 s  CHANGE  Face +0.2 st (target +0.5): ISO 1600 → 2000
+     82.08 s  CHANGE  Face +0.2 st (target +0.5): ISO 2000 → 2500
+     93.58 s  CHANGE  Face +0.1 st (target +0.5): ISO 2500 → 4000 (base ISO)
+      1.50 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add about ⅓ stops of ND
+      1.96 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add about ⅔ stops of ND
+    end: ISO 4000  f/2.8  1/48  ND 0.00  WB 5600K | face 0.32, scene -0.7 st
 
 === backlit_window_face  [Interview (face priority)]
     expect: Big window behind a darker face: protect the window and tell the operator to light the face.
     changes 1, reversals 0, clipping 0.0 s
-      2.00 s  CHANGE  Face -1.5 st (target +1.0): ISO 800 → 1000
-      2.58 s  ADVICE  Face -1.2 st (target +1.0), but brightening would clip the brightest area (0.4 st headroom): add light to the subject instead
+      2.00 s  CHANGE  Face -1.5 st (target +0.5): ISO 800 → 1000
+      2.58 s  ADVICE  Face -1.2 st (target +0.5), but brightening would clip the brightest area (0.4 st headroom): add light to the subject instead
     end: ISO 1000  f/4  1/48  ND 0.00  WB 5600K | face -1.21, scene -0.7 st
 
 === shade_to_sun  [Run and gun]
     expect: Subject walks from shade into sun (+3.8 stops): bring it down quickly, then ask for ND.
-    changes 5, reversals 0, clipping 1.7 s, settled 3.7 s after the change
-      8.75 s  CHANGE  Highlights clipping 20.9% (limit 1.5%): ISO 3200 → 2000
-      9.38 s  CHANGE  Highlights clipping 3.9% (limit 1.5%): ISO 2000 → 1250
-     10.46 s  CHANGE  Face +3.3 st (target +1.0): ISO 1250 → 800 (base ISO)
-     11.08 s  CHANGE  Face +2.7 st (target +1.0): closing to f/7.1
-     11.71 s  CHANGE  Face +2.0 st (target +1.0): closing to f/8
-     12.33 s  ADVICE  Too bright at ISO 800 and f/8: add about ⅔ stops of ND
+    changes 6, reversals 0, clipping 1.1 s, settled 3.7 s after the change
+      0.50 s  CHANGE  Face +0.9 st (target +0.5): ISO 3200 → 2500
+      8.75 s  CHANGE  Highlights clipping 12.0% (limit 1.5%): ISO 2500 → 1600
+      9.83 s  CHANGE  Face +3.7 st (target +0.5): ISO 1600 → 1000
+     10.46 s  CHANGE  Face +3.1 st (target +0.5): ISO 1000 → 800 (base ISO)
+     11.08 s  CHANGE  Face +2.7 st (target +0.5): closing to f/7.1
+     11.71 s  CHANGE  Face +2.0 st (target +0.5): closing to f/8
+     12.33 s  ADVICE  Too bright at ISO 800 and f/8: add about 1⅓ stops of ND
+     12.62 s  ADVICE  Too bright at ISO 800 and f/8: add about 1 stops of ND
     end: ISO 800  f/8  1/48  ND 0.00  WB 5600K | face 1.66, scene +0.5 st
 
 === tungsten_interior  [Cinematic 24p (shallow)]
     expect: Dim tungsten room, WB still on 5600K: lift the face with ISO (prefer base 4000), set WB to 3200K.
     changes 6, reversals 0, clipping 0.0 s
-      1.50 s  CHANGE  Face -1.0 st (target +1.0): ISO 800 → 1000
-      3.04 s  CHANGE  Face -0.7 st (target +1.0): ISO 1000 → 1250
-      4.58 s  CHANGE  Face -0.4 st (target +1.0): ISO 1250 → 1600
-      6.12 s  CHANGE  Face +0.0 st (target +1.0): ISO 1600 → 2000
-      7.67 s  CHANGE  Face +0.3 st (target +1.0): ISO 2000 → 4000 (base ISO)
-     11.38 s  CHANGE  Light measures about 3200K, WB is 5600K: setting 3200K
-     13.04 s  ADVICE  Holding base ISO 4000: ⅓ stop brighter than target, highlights safe
-    end: ISO 4000  f/2.8  1/48  ND 0.00  WB 3200K | face 1.31, scene -0.2 st
+      1.50 s  CHANGE  Face -2.0 st (target +0.5): ISO 800 → 1000
+      3.04 s  CHANGE  Face -1.7 st (target +0.5): ISO 1000 → 1250
+      4.58 s  CHANGE  Face -1.4 st (target +0.5): ISO 1250 → 1600
+      6.12 s  CHANGE  Face -1.0 st (target +0.5): ISO 1600 → 2000
+      7.67 s  CHANGE  Face -0.7 st (target +0.5): ISO 2000 → 4000 (base ISO)
+      8.67 s  CHANGE  Light measures about 3200K, WB is 5600K: setting 3200K
+    end: ISO 4000  f/2.8  1/48  ND 0.00  WB 3200K | face 0.31, scene -0.7 st
 
 === low_light  [Low light]
     expect: Very dark: go to ISO 12800 and then say it needs more light.
@@ -82,38 +85,42 @@
       6.50 s  CHANGE  Highlights clipping 20.9% (limit 0.5%) and no ND added: last resort, closing to f/3.2
       8.04 s  CHANGE  Highlights clipping 11.2% (limit 0.5%) and no ND added: last resort, closing to f/3.5
       9.58 s  CHANGE  Highlights clipping 4.8% (limit 0.5%) and no ND added: last resort, closing to f/4
-      1.50 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add at least 3 stops of ND
-      8.04 s  ADVICE  Too bright at ISO 800 and f/3.2: add at least 2⅔ stops of ND
-      9.58 s  ADVICE  Too bright at ISO 800 and f/3.5: add at least 2⅓ stops of ND
-     11.67 s  ADVICE  Too bright at ISO 800 and f/4: add about 2 stops of ND
+      1.50 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add at least 3⅓ stops of ND
+      1.96 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add at least 3⅔ stops of ND
+      8.04 s  ADVICE  Too bright at ISO 800 and f/3.2: add at least 3 stops of ND
+      9.58 s  ADVICE  Too bright at ISO 800 and f/3.5: add at least 3 stops of ND
+     11.67 s  ADVICE  Too bright at ISO 800 and f/4: add about 2⅓ stops of ND
     end: ISO 800  f/4  1/48  ND 0.00  WB 5600K | face 2.96, scene +2.0 st
 
 === bright_day_with_operator  [Cinematic 24p (shallow)]
     expect: Same, but the operator adds the advised ND after 3 s: no aperture change needed.
     changes 0, reversals 0, clipping 4.7 s
-      1.50 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add at least 3 stops of ND
-    end: ISO 800  f/2.8  1/48  ND 3.00  WB 5600K | face 0.99, scene +0.0 st
+      1.50 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add at least 3⅓ stops of ND
+      1.96 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add at least 3⅔ stops of ND
+    end: ISO 800  f/2.8  1/48  ND 3.67  WB 5600K | face 0.33, scene -0.7 st
 
 === recording_lock  [Cinematic 24p (shallow)]
     expect: Sunset again, but recording from 20 s to 100 s: no changes while rolling.
-    changes 7, reversals 0, clipping 0.0 s
-    101.50 s  CHANGE  Face -1.7 st (target +1.0): ISO 800 → 1000
-    103.04 s  CHANGE  Face -1.5 st (target +1.0): ISO 1000 → 1250
-    104.58 s  CHANGE  Face -1.2 st (target +1.0): ISO 1250 → 1600
-    106.12 s  CHANGE  Face -0.9 st (target +1.0): ISO 1600 → 2000
-    107.67 s  CHANGE  Face -0.6 st (target +1.0): ISO 2000 → 4000 (base ISO)
-    109.21 s  CHANGE  Face +0.3 st (target +1.0): ISO 4000 → 5000
-    110.75 s  CHANGE  Face +0.7 st (target +1.0): ISO 5000 → 6400
-    end: ISO 6400  f/2.8  1/48  ND 0.00  WB 5600K | face 1.0, scene -0.0 st
+    changes 5, reversals 0, clipping 0.0 s
+    101.50 s  CHANGE  Face -1.7 st (target +0.5): ISO 800 → 1000
+    103.04 s  CHANGE  Face -1.5 st (target +0.5): ISO 1000 → 1250
+    104.58 s  CHANGE  Face -1.2 st (target +0.5): ISO 1250 → 1600
+    106.12 s  CHANGE  Face -0.9 st (target +0.5): ISO 1600 → 2000
+    107.67 s  CHANGE  Face -0.6 st (target +0.5): ISO 2000 → 4000 (base ISO)
+      1.50 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add about ⅓ stops of ND
+      1.96 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add about ⅔ stops of ND
+    end: ISO 4000  f/2.8  1/48  ND 0.00  WB 5600K | face 0.32, scene -0.7 st
 
 === cine_ei  [Cinematic 24p (shallow)]
     expect: Cine EI mode: recorded ISO is locked to base, so never touch ISO.
     changes 0, reversals 0, clipping 0.0 s
-      1.50 s  ADVICE  Too dark by about 2 stops at ISO 800, f/2.8: add light, or take ND off if any is fitted
+      1.50 s  ADVICE  Too dark by about 1⅔ stops at ISO 800, f/2.8: add light, or take ND off if any is fitted
+      1.96 s  ADVICE  Too dark by about 1⅓ stops at ISO 800, f/2.8: add light, or take ND off if any is fitted
     end: ISO 800  f/2.8  1/48  ND 0.00  WB 5600K | face -1.01, scene -2.5 st
 
 === wrong_shutter_start  [Cinematic 24p (shallow)]
     expect: Camera starts at 1/160 (like after your shoot): put it on 180° (1/48), then fix exposure.
     changes 1, reversals 0, clipping 0.0 s
       0.00 s  CHANGE  180° shutter for 23.98p: 1/160 → 1/48; exposure follows next
+      2.12 s  ADVICE  Too bright at ISO 800 and f/2.8 (the look's aperture): add about ⅓ stops of ND
     end: ISO 800  f/2.8  1/48  ND 0.00  WB 5600K | face 0.9, scene -0.2 st
