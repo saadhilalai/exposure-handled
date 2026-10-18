@@ -25,22 +25,31 @@ def _luma(bgr):
     return out[..., 0] if out.ndim == 3 else out
 
 
+_LUTS = {}
+_STRIPES = {}
+
+
+def false_color_lut(tm):
+    """The color for each of the 256 brightness levels (false color depends on brightness only)."""
+    if tm not in _LUTS:
+        levels = np.arange(256)
+        stops = tm.to_stops(levels)
+        lut = np.repeat((levels * 0.8).astype(np.uint8)[:, None], 3, axis=1)
+        for _, lo, hi, color in FALSE_COLOR_BANDS:
+            mask = np.ones(256, dtype=bool)
+            if lo is not None:
+                mask &= stops >= lo
+            if hi is not None:
+                mask &= stops < hi
+            lut[mask] = color
+        lut[levels >= tm.level_for_stops(tm.clip_stops - 0.5)] = NEAR_CLIP
+        lut[levels >= tm.clip_level - 1] = CLIPPED
+        _LUTS[tm] = lut
+    return _LUTS[tm]
+
+
 def false_color(bgr, tm):
-    luma = _luma(bgr)
-    stops = tm.to_stops(luma)
-    grey = (luma.astype(np.float32) * 0.8).astype(np.uint8)
-    out = cv2.cvtColor(grey, cv2.COLOR_GRAY2BGR)
-    for _, lo, hi, color in FALSE_COLOR_BANDS:
-        mask = np.ones_like(luma, dtype=bool)
-        if lo is not None:
-            mask &= stops >= lo
-        if hi is not None:
-            mask &= stops < hi
-        out[mask] = color
-    near = luma >= tm.level_for_stops(tm.clip_stops - 0.5)
-    out[near] = NEAR_CLIP
-    out[luma >= tm.clip_level - 1] = CLIPPED
-    return out
+    return false_color_lut(tm)[_luma(bgr)]
 
 
 def zebras(bgr, tm, stripe=6):
@@ -48,8 +57,10 @@ def zebras(bgr, tm, stripe=6):
     out = bgr.copy()
     luma = _luma(bgr)
     h, w = luma.shape
-    yy, xx = np.mgrid[0:h, 0:w]
-    stripes = ((xx + yy) // stripe) % 2 == 0
+    if (h, w, stripe) not in _STRIPES:
+        yy, xx = np.mgrid[0:h, 0:w]
+        _STRIPES[(h, w, stripe)] = ((xx + yy) // stripe) % 2 == 0
+    stripes = _STRIPES[(h, w, stripe)]
     clipped = luma >= tm.clip_level - 1
     near = (luma >= tm.level_for_stops(tm.clip_stops - 0.5)) & ~clipped
     out[near & stripes] = NEAR_CLIP
