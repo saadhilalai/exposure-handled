@@ -59,7 +59,9 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
   - Live view (clean / zebras / false color, face brackets, light sources), setting tiles, status + last change, Auto (starts Off in live, two presses to turn on), Lock, look picker, **"this face looks right"** (per person, stored only on this computer), highlight meters, 60 s exposure chart with tooltip + table, decisions feed, big kill switch (also Space). S4D style from LANDFALL. Phone layout with the kill switch pinned.
   - Checked with screenshots driven like a person; 5 bugs found and fixed. 58 tests pass.
   - ❓ For the director: (1) Lock = "hold everything now" (my reading of your Step 5 rule); (2) face signatures are stored locally (biometric data); (3) screenshots with your face are not committed.
-- [ ] Step 7: Prove it works (test plan written before shooting)
+- [~] **Step 7: Prove it works.** [docs/step7-test-plan.md](docs/step7-test-plan.md) is a **DRAFT** (not final until the director approves; frozen after that).
+  - Ready, no camera needed: `metrics.csv` logging + `m` mark key, `tools/score_take.py` (measurement definitions fixed in code, 4 tests), balanced take order from a fixed seed (`tools/make_test_order.py`).
+  - ❓ 8 open questions in the plan; the big one is recording (the agent locks while recording).
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
 - [ ] Step 9: Package it (README, INTERVIEW.md, resume bullets)
 

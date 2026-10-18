@@ -86,6 +86,7 @@ class AgentRunner:
         self.events = deque(maxlen=200)
         self.history = deque(maxlen=int(HISTORY_S / HISTORY_EVERY_S))
         self.bgr = None
+        self.shift = 0.0                        # picture brightness change since the last sample (stops)
         self.changes = []                       # changes the agent made (and the camera confirmed)
         self.change_times = deque()
         self.shown_advice = {}
@@ -136,7 +137,7 @@ class AgentRunner:
         mode = "LIVE" if self.live else "DRY RUN"
         self._event("start", "%s on %s · look: %s · may change: %s · camera: %s" % (
             mode, status.get("model", "?"), self.brain.look.name, ", ".join(sorted(self.allowed)) or "nothing",
-            self.summary()), mode=mode, allowed=sorted(self.allowed), bridge=status,
+            self.summary()), mode=mode, look=self.brain.look.key, allowed=sorted(self.allowed), bridge=status,
             settings={n: self._text(n) for n in SUMMARY})
 
     def _new_brain(self, look):
@@ -192,6 +193,7 @@ class AgentRunner:
         with self.lock:
             self.jpeg, self.bgr, self.report = jpeg, bgr, report
         self.frames += 1
+        self.shift += (report.change or {}).get("exposure_shift_stops", 0.0)
         self.eyes_ms.append(report.ms)
         cam = replace(self.cam, recording=True) if self.held else self.cam     # Lock = the recording lock, by hand
         out = self.brain.update(observation_from_report(report, t), cam)
@@ -272,12 +274,21 @@ class AgentRunner:
         self.frames, self.t_tick = 0, t
 
     def _sample(self, t):
+        """4 times a second: one row for the chart and for metrics.csv (what Step 7 measures)."""
         r, face = self.report, (self.report.faces[0] if self.report.faces else None)
+        row = {"t": round(t - self.t0, 2), "key": r.key_stops, "face": face and face["stops"],
+               "target": face.get("target", self.brain.look.face_target) if face else None,
+               "headroom": r.headroom_stops, "clipped": r.clipped_important_pct, "iso": self.cam.iso,
+               "shift": round(self.shift, 3), "state": self.state()}
         with self.lock:
-            self.history.append({"t": round(t - self.t0, 2), "key": r.key_stops, "face": face and face["stops"],
-                                 "target": face.get("target", self.brain.look.face_target) if face else None,
-                                 "headroom": r.headroom_stops, "clipped": r.clipped_important_pct,
-                                 "iso": self.cam.iso})
+            self.history.append(row)
+        path = self.session / "metrics.csv"
+        new = not path.exists()
+        with path.open("a") as f:
+            if new:
+                f.write(",".join(row) + "\n")
+            f.write(",".join("" if v is None else str(v) for v in row.values()) + "\n")
+        self.shift = 0.0
         self.t_history = t
 
     # ------------------------------------------------------------ controls
@@ -384,6 +395,10 @@ class AgentRunner:
 
     def stop(self):
         self.stop_requested = True
+
+    def mark(self, label="light change"):
+        """The operator marks a scene event (Step 7: settle time is measured from here)."""
+        self._event("mark", "Mark: %s" % label, label=label)
 
     # ---------------------------------------------------------------- end
     def finish(self):

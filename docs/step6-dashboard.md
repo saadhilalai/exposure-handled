@@ -27,7 +27,7 @@ python tools/run_agent.py --live --dashboard              # live: type LIVE, the
 | **Decisions** | Every change, would-change, advice, lock, look and face event, newest first, each with its reason. |
 | **Kill switch** | Always on screen: bottom of the side panel on a computer, pinned to the bottom of the screen on a phone. **Space** works too. It stops the agent and locks the bridge; the page then says **KILLED** and stays up so you can see it. |
 
-Keyboard on the page: **Space** kill switch · **a** Auto · **l** Lock · **1–5** look. The terminal keys still work at the same time (SPACE, p, l, 1–5, q).
+Keyboard on the page: **Space** kill switch · **a** Auto · **l** Lock · **m** mark a scene event (Step 7) · **1–5** look. The terminal keys still work at the same time (SPACE, p, l, m, 1–5, q).
 
 ## Faces: "this face looks right"
 

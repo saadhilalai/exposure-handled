@@ -6,6 +6,7 @@ Dry run is the default: the agent watches and says what it WOULD change; nothing
 Keys:  SPACE   kill switch: stop now, lock the bridge, the camera is yours
        p       Auto on / off (off = the agent only suggests)
        l       Lock: hold every setting now / unlock
+       m       mark a scene event (e.g. the moment a light changes; used by the Step 7 test)
        1-5     look: 1 Cinematic, 2 Run and gun, 3 Interview, 4 Low light, 5 Photo portrait
        q       quit (offers to put your starting ISO back)
        Ctrl-C  kill switch + quit
@@ -43,12 +44,12 @@ from agent.runner import AgentRunner, RunnerError  # noqa: E402
 
 FAKE_SOCKET = ROOT / "run" / "fake_bridge.sock"
 LOOK_KEYS = dict(zip("12345", LOOKS))
-KEYS_HELP = "SPACE kill switch · p Auto on/off · l Lock · 1-5 look · q quit · h help"
+KEYS_HELP = "SPACE kill switch · p Auto on/off · l Lock · m mark · 1-5 look · q quit · h help"
 LABELS = {"start": ("START", "1"), "change": ("CHANGE", "32"), "would_change": ("WOULD", "36"),
           "advice": ("ADVICE", "33"), "kill": ("KILL", "1;31"), "error": ("ERROR", "1;31"),
           "pause": ("PAUSE", "35"), "refused": ("REFUSED", "35"), "look": ("LOOK", "1"),
           "end": ("END", "1"), "restore": ("RESTORE", "32"), "help": ("KEYS", "2"), "status": ("status", "2"),
-          "face": ("FACE", "1"), "dashboard": ("WEB", "1")}
+          "face": ("FACE", "1"), "dashboard": ("WEB", "1"), "mark": ("MARK", "1;36")}
 
 
 class Console:
@@ -218,6 +219,8 @@ def main():
                 runner.toggle_pause()
             elif ch in "lL":
                 runner.hold(not runner.held)
+            elif ch in "mM":
+                runner.mark()
             elif ch in LOOK_KEYS:
                 runner.set_look(LOOK_KEYS[ch])
             elif ch in "qQ":

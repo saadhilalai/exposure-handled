@@ -8,7 +8,7 @@ const VIEW_FPS = 12;                  // live-view refresh in the browser (the a
 const WINDOW_S = 60;                  // chart time window
 const KIND = {
   change: "Changed", would_change: "Would change", advice: "Advice", kill: "Kill switch", pause: "Auto",
-  lock: "Lock", look: "Look", face: "Face", start: "Start", end: "End", refused: "Refused", error: "Error", restore: "Restore",
+  lock: "Lock", look: "Look", face: "Face", mark: "Mark", start: "Start", end: "End", refused: "Refused", error: "Error", restore: "Restore",
 };
 const ICONS = {
   AUTO: '<svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="4.5" fill="currentColor"/></svg>',
@@ -442,6 +442,7 @@ document.addEventListener("keydown", (ev) => {
   if (ev.code === "Space") { ev.preventDefault(); kill(); }
   else if (ev.key === "a") toggleAuto();
   else if (ev.key === "l") toggleLock();
+  else if (ev.key === "m") post("mark", { label: "light change" });
   else if (state && /^[1-5]$/.test(ev.key)) post("look", { key: state.looks[Number(ev.key) - 1].key });
 });
 window.addEventListener("resize", () => state && render());
