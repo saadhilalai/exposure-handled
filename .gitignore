@@ -23,3 +23,6 @@ sessions/
 
 # Bridge socket
 run/
+
+# Downloaded models (see tools/fetch_models.sh)
+models/

@@ -21,7 +21,8 @@
 //     value the camera currently offers, never while recording, never after "lock".
 //   - Commands (record, format, reset, ...) are poisoned for the whole file.
 //
-// Usage: camera_bridge <socket_path> <log_dir>
+// Usage: camera_bridge <socket_path> <log_dir> [--read-only]
+//   --read-only: every "set" is refused for the whole run (used in Step 4).
 
 #include <poll.h>
 #include <signal.h>
@@ -77,6 +78,7 @@ const AllowRule kAllowList[] = {
 std::atomic<bool> g_running{true};
 std::atomic<bool> g_connected{false};
 std::atomic<bool> g_locked{false};
+std::atomic<bool> g_read_only{false};  // set by --read-only at startup; cannot be turned off
 SDK::CrDeviceHandle g_handle = 0;
 std::mutex g_sdk_mutex;  // one SDK call at a time
 std::mutex g_set_mutex;  // one setting change at a time
@@ -153,6 +155,7 @@ std::string refuse(const std::string& name, long long raw, const std::string& re
 std::string guarded_set(const std::string& name, long long raw) {
     std::lock_guard<std::mutex> one_at_a_time(g_set_mutex);
 
+    if (g_read_only) return refuse(name, raw, "bridge was started read-only");
     if (g_locked) return refuse(name, raw, "kill switch is on (bridge locked)");
     if (!g_connected) return refuse(name, raw, "camera not connected");
 
@@ -360,7 +363,8 @@ void live_view_loop() {
 std::string cmd_status() {
     std::ostringstream o;
     o << "{\"ok\": true, \"model\": \"" << kExpectedModel << "\", \"connected\": " << (g_connected ? "true" : "false")
-      << ", \"locked\": " << (g_locked ? "true" : "false") << ", \"allow_list\": [";
+      << ", \"locked\": " << (g_locked ? "true" : "false")
+      << ", \"read_only\": " << (g_read_only ? "true" : "false") << ", \"allow_list\": [";
     bool first = true;
     for (const auto& r : kAllowList) {
         o << (first ? "" : ", ") << "{\"name\": \"" << r.name << "\", \"min\": " << r.min << ", \"max\": " << r.max << "}";
@@ -565,10 +569,11 @@ void on_signal(int) { g_running = false; }
 }  // namespace
 
 int main(int argc, char** argv) {
-    if (argc != 3) {
-        std::cerr << "usage: camera_bridge <socket_path> <log_dir>\n";
+    if (argc < 3 || argc > 4 || (argc == 4 && std::string(argv[3]) != "--read-only")) {
+        std::cerr << "usage: camera_bridge <socket_path> <log_dir> [--read-only]\n";
         return 2;
     }
+    g_read_only = (argc == 4);
     const std::string socket_path = argv[1];
     g_log.open(std::string(argv[2]) + "/bridge_log.jsonl", std::ios::app);
     ::signal(SIGPIPE, SIG_IGN);
@@ -612,7 +617,7 @@ int main(int argc, char** argv) {
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));  // let the settings list populate
     log_event("\"event\": \"connected\", \"model\": \"" + std::string(kExpectedModel) + "\"");
-    std::cout << "Connected to " << kExpectedModel << ". Allow-list: IsoSensitivity 800-12800 only.\n";
+    std::cout << "Connected to " << kExpectedModel << (g_read_only ? ". READ-ONLY: all changes refused.\n" : ". Allow-list: IsoSensitivity 800-12800 only.\n");
 
     // Private local socket: only programs on this Mac (this user) can connect.
     int server = ::socket(AF_UNIX, SOCK_STREAM, 0);

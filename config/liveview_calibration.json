@@ -1,0 +1,20 @@
+{
+  "note": "How the FX2's 8-bit live-view JPEG relates to exposure. 'status' says how much each number is trusted. The grey card test (Step 4) replaces the guesses with measurements.",
+  "slog3": {
+    "grey_level": 103.6,
+    "levels_per_stop": 22.9,
+    "clip_level": 221,
+    "floor_level": 9,
+    "status": {
+      "grey_level": "GUESS: legal-range S-Log3 stretched to 0-255 (18% grey = code 420 -> 103.6). Not yet measured.",
+      "levels_per_stop": "GUESS (22.9 for legal range). Step 3 dark-region data suggests the real value may be lower. Not yet measured.",
+      "clip_level": "MEASURED ONCE: highlights piled up at 221 on a frame at ISO 102400 (2026-10-17). Confirm with the paper/card test.",
+      "floor_level": "OBSERVED: deepest shadows sat at 9-12 in log frames."
+    }
+  },
+  "rec709": {
+    "clip_level": 250,
+    "floor_level": 3,
+    "status": "APPROXIMATE: BT.709 curve. Camera profiles like S-Cinetone differ; only used when not shooting log."
+  }
+}
