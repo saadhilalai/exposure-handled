@@ -15,7 +15,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
   - ⏸ **Waiting on Saad, needs camera:** live closed-loop test (also needs your OK to add shutter/aperture/WB to the bridge allow-list).
 - [ ] Step 6: The dashboard
 - [ ] Step 7: Prove it works (test plan written before shooting)
-- [ ] Step 8: Raspberry Pi 5 plan (plan only)
+- [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
 - [ ] Step 9: Package it (README, INTERVIEW.md, resume bullets)
 
 ## Step 1 summary
