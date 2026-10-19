@@ -20,7 +20,7 @@ The director went to sleep and asked for everything that doesn't need him or the
 4. ✅ Allow ISO changes while recording **only for Step 7 agent takes**, behind a switch that's **off by default** (to build: brain, Python gate and C++ bridge all refuse while recording today).
 5. ✅ Pi: **4GB**.
 6. ✅ Step 7's 8 questions answered (2026-10-18): ISO only; FX2 Auto ISO only; advice not followed in scored takes + one bonus take per face scene and person; Sony's official LUT; a private rater page I build; 2+ people with different skin tones (everyone in S1 and S4, others split); dates later.
-7. ✅ Step 7 plan **approved as FINAL** (2026-10-18). LUT = the FX2's Display LUT, read from the camera (read-only) at the next connection, named in the plan before any grading. Building now: the recording switch, the rater page (anonymous IDs, answers off the repo), the printable run sheet.
+7. ✅ Step 7 plan **approved as FINAL** (2026-10-18). LUT = the FX2's Display LUT, read from the camera (read-only) at the next connection, named in the plan before any grading. Built: the recording switch, the rater page (anonymous IDs, answers off the repo), the printable run sheet.
 
 **Needs Saad at the camera:**
 1. **Live ISO test (Step 5)**, ~10 min:
@@ -30,8 +30,9 @@ The director went to sleep and asked for everything that doesn't need him or the
    - a 1-minute dry run first, then Auto on
    - a scene with your face and a lamp; change a light; press SPACE once
 2. **Face button on the real camera:** press "this face looks right" once during that test.
-3. Later, Step 7 shoot (after the plan is approved).
-4. Optional: wall at f/8 and f/11, for the deep-shadow calibration.
+3. **Read the Display LUT** (read-only, ~1 min): `tools/read_display_lut.py` with the bridge `--read-only`, before starting the live bridge.
+4. Later, the Step 7 shoot (plan approved; run sheet ready).
+5. Optional: wall at f/8 and f/11, for the deep-shadow calibration.
 
 **How to start things again:**
 - Build: `cmake --build build/bridge -j2`
@@ -104,6 +105,9 @@ Parked 2026-10-17, 19:40 (director stepped away)
   - Ready, no camera needed: `metrics.csv` logging + `m` mark key, `tools/score_take.py` (measurement definitions fixed in code, 4 tests), balanced take order from a fixed seed (`tools/make_test_order.py`).
   - ✅ All 8 questions answered 2026-10-18 and written into the plan (63 scored takes + 6 bonus + sunset, ~3.5–4 h, two sessions).
   - ✅ **Approved as FINAL 2026-10-18; frozen at commit 22d1165 (tag `step7-plan-final`).**
+  - ✅ Tools built (no camera): recording switch (all 3 layers, off by default, agent takes only), read-only Display LUT reader, printable run sheet (87 rows), private anonymous rating page + counting. [docs/step7-tools.md](docs/step7-tools.md).
+  - ❓ Not in the frozen plan, needed before ratings: count partial raters' answered scenes or completers only; how remote raters reach the page.
+  - ⏳ Needs the camera: read the Display LUT (read-only) and name the LUT file in the plan.
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
 - [~] **Step 9: Package it.** Started overnight: README rewritten (what it does, how it thinks, safety, skin tones, results so far with sources, setup, honest limits, "How this was built"); [INTERVIEW.md](INTERVIEW.md) drafted with 10 Q&As + 3 draft resume bullets (real numbers only). Waiting on Step 7 results and a demo video.
 

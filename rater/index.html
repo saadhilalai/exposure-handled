@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Exposure test | S4D</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="/brand/favicon.png">
+<link rel="stylesheet" href="/static/rater.css">
+</head>
+<body>
+<header class="top">
+  <img src="/brand/s4d.png" alt="S4D" width="30" height="30">
+  <span class="sep"></span>
+  <span class="wordmark">Exposure test</span>
+  <span class="progress-text" id="progress-text"></span>
+</header>
+<div class="progress"><span id="progress-bar"></span></div>
+
+<main>
+  <section id="intro" class="screen">
+    <h1 class="title">Which looks best?</h1>
+    <p class="lead">You'll watch <b id="n-scenes">a few</b> short scenes. Each one was filmed three different ways, labelled <b>A</b>, <b>B</b> and <b>C</b>. For each scene, pick the clip with the best exposure, then rate each one from 1 to 5.</p>
+    <div class="look-for">
+      <span class="label">What to look for</span>
+      <ul>
+        <li>Bright areas blown out to plain white</li>
+        <li>Faces too dark, or too bright</li>
+        <li>Brightness jumping or pumping during the clip</li>
+      </ul>
+    </div>
+    <p class="small">Anonymous: no name, no email. About 10 minutes. The clips have no sound.</p>
+    <button type="button" class="btn primary" id="start">Start</button>
+  </section>
+
+  <section id="scene" class="screen" hidden>
+    <h2 class="label" id="scene-title">Scene</h2>
+    <button type="button" class="btn ghost" id="play-all">Play all three together</button>
+    <div class="clips" id="clips"></div>
+    <div class="question">
+      <span class="label">1 · Which has the best exposure?</span>
+      <div class="choice" id="best" role="radiogroup" aria-label="Best exposure"></div>
+    </div>
+    <div class="question">
+      <span class="label">2 · Rate each clip's exposure</span>
+      <p class="small">1 = poor · 5 = excellent</p>
+      <div id="ratings"></div>
+    </div>
+    <p class="error" id="error" hidden></p>
+    <button type="button" class="btn primary" id="next" disabled>Next scene</button>
+  </section>
+
+  <section id="done" class="screen" hidden>
+    <h1 class="title">Thank you</h1>
+    <p class="lead">That's everything. Your answers are saved, and you can close this page.</p>
+  </section>
+
+  <section id="bad" class="screen" hidden>
+    <h1 class="title">Link not found</h1>
+    <p class="lead">This link doesn't work. Ask the person who sent it for a new one.</p>
+  </section>
+</main>
+
+<footer class="foot"><img src="/brand/s4d.png" alt="" width="22" height="22"><span>Built by Saad Hilal · S4D</span></footer>
+<script src="/static/rater.js"></script>
+</body>
+</html>
