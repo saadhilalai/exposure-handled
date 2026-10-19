@@ -4,6 +4,9 @@ change_setting() checks the director's approved ranges, refuses while the
 camera is recording or after the kill switch, asks the bridge to make the
 change (the bridge checks again with its own compiled-in allow-list), and
 logs time, old value, new value, reason and timings to changes.jsonl.
+
+One exception, approved for Step 7 agent takes only: with iso_while_recording
+on (off by default), ISO, and nothing else, may change while recording.
 """
 import json
 import time
@@ -31,8 +34,9 @@ def within_range(name, raw, rule):
 
 
 class SafetyGate:
-    def __init__(self, client, log_path, ranges=None):
+    def __init__(self, client, log_path, ranges=None, iso_while_recording=False):
         self.client = client
+        self.iso_while_recording = iso_while_recording   # Step 7 agent takes only; off by default
         self.log_path = Path(log_path)
         self.ranges = ranges if ranges is not None else load_ranges()
         self.enums = load_enums()
@@ -70,7 +74,8 @@ class SafetyGate:
             return self._refuse(name, raw, reason, "outside the approved range")
 
         before = self.client.get(name, "RecordingState")
-        if before["RecordingState"]["current"] != NOT_RECORDING:
+        recording = before["RecordingState"]["current"] != NOT_RECORDING
+        if recording and not (self.iso_while_recording and name == "IsoSensitivity"):
             return self._refuse(name, raw, reason, "camera is recording")
         old_raw = before[name]["current"]
 
@@ -81,7 +86,7 @@ class SafetyGate:
         entry = {"event": "change", "setting": name, "reason": reason,
                  "old_raw": old_raw, "old": describe_value(name, old_raw, self.enums),
                  "new_raw": raw, "new": describe_value(name, raw, self.enums),
-                 "ok": reply.get("ok", False), "round_trip_ms": round(round_trip_ms, 1)}
+                 "ok": reply.get("ok", False), "round_trip_ms": round(round_trip_ms, 1), "while_recording": recording}
         for key in ("confirmed", "camera_reports", "ms_sdk_return", "ms_first_callback", "ms_confirmed", "error", "refused"):
             if key in reply:
                 entry[key] = reply[key]

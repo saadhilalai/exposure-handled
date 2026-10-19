@@ -58,6 +58,9 @@ img { display: block; }
 }
 .chip.live { color: var(--white); border-color: var(--line-strong); }
 .chip.fake { color: var(--caution); border-color: rgba(245, 184, 61, 0.45); }
+.chip.rec { color: var(--black); background: var(--stop); border-color: var(--stop); }
+.chip.rec::before { content: "● "; }
+.chip.switch-chip { color: var(--caution); border-color: rgba(245, 184, 61, 0.45); }
 .perf { font-size: 13px; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 /* ---- Layout -------------------------------------------------------------------- */

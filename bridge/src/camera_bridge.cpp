@@ -18,11 +18,14 @@
 //   - SetDeviceProperty appears once, inside guarded_set(), and is poisoned right after it,
 //     so no other line in this file can call it.
 //   - guarded_set() only accepts settings on kAllowList, inside the director's ranges, with a
-//     value the camera currently offers, never while recording, never after "lock".
+//     value the camera currently offers, never after "lock", and never while recording, with one
+//     exception the director approved for Step 7 agent takes only: started with
+//     --allow-iso-while-recording, ISO (and nothing else) may change while recording.
 //   - Commands (record, format, reset, ...) are poisoned for the whole file.
 //
-// Usage: camera_bridge <socket_path> <log_dir> [--read-only]
+// Usage: camera_bridge <socket_path> <log_dir> [--read-only | --allow-iso-while-recording]
 //   --read-only: every "set" is refused for the whole run (used in Step 4).
+//   --allow-iso-while-recording: Step 7 agent takes only. Off unless given; can't be turned on later.
 
 #include <poll.h>
 #include <signal.h>
@@ -79,6 +82,7 @@ std::atomic<bool> g_running{true};
 std::atomic<bool> g_connected{false};
 std::atomic<bool> g_locked{false};
 std::atomic<bool> g_read_only{false};  // set by --read-only at startup; cannot be turned off
+std::atomic<bool> g_iso_while_recording{false};  // --allow-iso-while-recording (Step 7); startup only
 SDK::CrDeviceHandle g_handle = 0;
 std::mutex g_sdk_mutex;  // one SDK call at a time
 std::mutex g_set_mutex;  // one setting change at a time
@@ -168,7 +172,8 @@ std::string guarded_set(const std::string& name, long long raw) {
     const CrInt32u rec_code = SDK::CrDeviceProperty_RecordingState;
     auto props = read_props({rule->code, rec_code});
     if (!props[rec_code].found) return refuse(name, raw, "could not read recording state");
-    if (props[rec_code].current != SDK::CrMovie_Recording_State_Not_Recording)
+    const bool recording = props[rec_code].current != SDK::CrMovie_Recording_State_Not_Recording;
+    if (recording && !(g_iso_while_recording && rule->code == SDK::CrDeviceProperty_IsoSensitivity))
         return refuse(name, raw, "camera is recording");
     const PropInfo& target = props[rule->code];
     if (!target.found) return refuse(name, raw, "could not read current value");
@@ -227,7 +232,8 @@ std::string guarded_set(const std::string& name, long long raw) {
     std::string fields = "\"name\": \"" + json_escape(name) + "\", \"old\": " + std::to_string(old_value) +
                          ", \"new\": " + std::to_string(raw) + ", \"confirmed\": " + (t_confirm ? "true" : "false") +
                          ", \"camera_reports\": " + std::to_string(seen) + ", \"ms_sdk_return\": " + ms(t_return) +
-                         ", \"ms_first_callback\": " + ms(t_callback) + ", \"ms_confirmed\": " + ms(t_confirm);
+                         ", \"ms_first_callback\": " + ms(t_callback) + ", \"ms_confirmed\": " + ms(t_confirm) +
+                         ", \"while_recording\": " + (recording ? "true" : "false");
     log_event("\"event\": \"set\", " + fields);
     return std::string("{\"ok\": ") + (t_confirm ? "true" : "false") + ", \"changed\": true, " + fields + "}";
 }
@@ -364,7 +370,8 @@ std::string cmd_status() {
     std::ostringstream o;
     o << "{\"ok\": true, \"model\": \"" << kExpectedModel << "\", \"connected\": " << (g_connected ? "true" : "false")
       << ", \"locked\": " << (g_locked ? "true" : "false")
-      << ", \"read_only\": " << (g_read_only ? "true" : "false") << ", \"allow_list\": [";
+      << ", \"read_only\": " << (g_read_only ? "true" : "false")
+      << ", \"iso_while_recording\": " << (g_iso_while_recording ? "true" : "false") << ", \"allow_list\": [";
     bool first = true;
     for (const auto& r : kAllowList) {
         o << (first ? "" : ", ") << "{\"name\": \"" << r.name << "\", \"min\": " << r.min << ", \"max\": " << r.max << "}";
@@ -569,11 +576,13 @@ void on_signal(int) { g_running = false; }
 }  // namespace
 
 int main(int argc, char** argv) {
-    if (argc < 3 || argc > 4 || (argc == 4 && std::string(argv[3]) != "--read-only")) {
-        std::cerr << "usage: camera_bridge <socket_path> <log_dir> [--read-only]\n";
+    const std::string flag = argc == 4 ? argv[3] : "";
+    if (argc < 3 || argc > 4 || (argc == 4 && flag != "--read-only" && flag != "--allow-iso-while-recording")) {
+        std::cerr << "usage: camera_bridge <socket_path> <log_dir> [--read-only | --allow-iso-while-recording]\n";
         return 2;
     }
-    g_read_only = (argc == 4);
+    g_read_only = (flag == "--read-only");
+    g_iso_while_recording = (flag == "--allow-iso-while-recording");
     const std::string socket_path = argv[1];
     g_log.open(std::string(argv[2]) + "/bridge_log.jsonl", std::ios::app);
     ::signal(SIGPIPE, SIG_IGN);
@@ -616,8 +625,11 @@ int main(int argc, char** argv) {
         return 1;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));  // let the settings list populate
-    log_event("\"event\": \"connected\", \"model\": \"" + std::string(kExpectedModel) + "\"");
+    log_event("\"event\": \"connected\", \"model\": \"" + std::string(kExpectedModel) + "\", \"iso_while_recording\": " +
+              (g_iso_while_recording ? "true" : "false"));
     std::cout << "Connected to " << kExpectedModel << (g_read_only ? ". READ-ONLY: all changes refused.\n" : ". Allow-list: IsoSensitivity 800-12800 only.\n");
+    if (g_iso_while_recording)
+        std::cout << "STEP 7 SWITCH ON: ISO (only) may change while the camera records. Restart without it after the take.\n";
 
     // Private local socket: only programs on this Mac (this user) can connect.
     int server = ::socket(AF_UNIX, SOCK_STREAM, 0);

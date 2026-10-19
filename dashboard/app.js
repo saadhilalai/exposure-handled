@@ -91,6 +91,9 @@ function render() {
   $("source").classList.toggle("fake", !!s.fake);
   $("run-mode").textContent = s.mode === "live" ? "Live" : "Dry run";
   $("run-mode").classList.toggle("live", s.mode === "live");
+  $("rec-chip").hidden = !s.recording;
+  $("switch-chip").hidden = !s.iso_while_recording;
+  if (s.take) $("switch-chip").textContent = "Rec switch on · " + s.take;
   $("perf").textContent = (s.fps ? s.fps.toFixed(0) + " fps" : "") + (s.eyes_ms ? " · eyes " + s.eyes_ms.toFixed(0) + " ms" : "");
 
   // state

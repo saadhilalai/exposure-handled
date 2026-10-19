@@ -13,6 +13,9 @@ Keys:  SPACE   kill switch: stop now, lock the bridge, the camera is yours
 From any other terminal:  python tools/kill_switch.py
 --dashboard also serves the dashboard at http://127.0.0.1:8765/ (same controls, plus the
 "this face looks right" button). A live session with the dashboard starts with Auto OFF.
+--take S1_R3_A_agent names the Step 7 take (session folder + logs). --allow-iso-while-recording
+is the Step 7 recording switch: agent takes only, needs --live, a take name ending in _agent,
+and a bridge started with the same flag. Off unless given.
 
 Usage:
   python tools/run_agent.py --fake                     # fake camera, made-up scene: no camera at all
@@ -133,6 +136,8 @@ def start_fake(args, socket_path, session):
             cmd += ["--" + flag] + getattr(args, flag)
     if args.fake_read_only:
         cmd.append("--read-only")
+    if args.allow_iso_while_recording:
+        cmd.append("--allow-iso-while-recording")
     # Own process group, so Ctrl-C reaches only the runner (which then stops the fake itself).
     proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=(session / "fake_bridge_errors.log").open("w"),
                             start_new_session=True)
@@ -185,11 +190,16 @@ def main():
     web.add_argument("--port", type=int, default=8765)
     web.add_argument("--host", default="127.0.0.1", help="0.0.0.0 opens it to your network (Pi + phone): no password yet")
     web.add_argument("--face-refs", help="where 'this face looks right' is stored (default config/face_refs.json)")
+    step7 = ap.add_argument_group("Step 7")
+    step7.add_argument("--take", help="run-sheet name of this take, e.g. S1_R3_A_agent")
+    step7.add_argument("--allow-iso-while-recording", action="store_true",
+                       help="Step 7 agent takes only: the agent may change ISO while the camera records")
     args = ap.parse_args()
 
     socket_path = Path(args.socket) if args.socket else FAKE_SOCKET if args.fake else DEFAULT_SOCKET
-    session = ROOT / "sessions" / ("%s_runner-%s%s" % (datetime.now().strftime("%Y-%m-%d_%H%M%S"),
-                                                       "live" if args.live else "dry", "-fake" if args.fake else ""))
+    session = ROOT / "sessions" / ("%s_%s%s" % (datetime.now().strftime("%Y-%m-%d_%H%M%S"),
+                                               args.take or "runner-" + ("live" if args.live else "dry"),
+                                               "-fake" if args.fake else ""))
     session.mkdir(parents=True)
     fake_proc = start_fake(args, socket_path, session) if args.fake else None
     if not fake_proc and not socket_path.exists():
@@ -198,7 +208,8 @@ def main():
     console = Console()
     from agent.faces import FaceBook
     runner = AgentRunner(socket_path, session, look=args.look, live=args.live, on_event=console.event,
-                         auto=not args.dashboard, faces=FaceBook(args.face_refs) if args.face_refs else None)
+                         auto=not args.dashboard, faces=FaceBook(args.face_refs) if args.face_refs else None,
+                         iso_while_recording=args.allow_iso_while_recording, take=args.take)
     console.runner = runner
     keyboard = dashboard = None
     try:
@@ -206,6 +217,9 @@ def main():
             confirm_live(args, runner.client.status())
         runner.start()
         console.event("help", KEYS_HELP if sys.stdin.isatty() else "no keyboard: stop with tools/kill_switch.py")
+        if args.allow_iso_while_recording:
+            console.event("pause", "STEP 7 RECORDING SWITCH ON for take %s: the agent may change ISO (only) while "
+                                   "the camera records. Kill switch: SPACE." % args.take)
         if args.dashboard:
             from agent.dashboard import Dashboard
             dashboard = Dashboard(runner, args.host, args.port).start()

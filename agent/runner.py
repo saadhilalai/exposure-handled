@@ -16,6 +16,10 @@ Any other refused or unconfirmed change pauses the agent until the operator resu
 Operator controls (keyboard or dashboard): Auto on/off (off = the agent only suggests),
 Lock (hold every setting now, the same lock that happens while recording), the look,
 and "this face looks right" (agent/faces.py).
+
+Step 7 recording switch (iso_while_recording, off by default): lets the agent change ISO,
+and only ISO, while the camera records. Only for a live Step 7 agent take (a take name
+like S1_R3_A_agent), and only if the bridge was also started with --allow-iso-while-recording.
 """
 import json
 import re
@@ -29,7 +33,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from agent.brain import Brain, cam_state_from_settings, observation_from_report
+from agent.brain import Brain, Output, cam_state_from_settings, observation_from_report
 from agent.bridge_client import BridgeClient
 from agent.eyes import Eyes, context_from_settings
 from agent.faces import FaceBook
@@ -43,6 +47,7 @@ SUMMARY = ("IsoSensitivity", "ShutterSpeed", "FNumber", "WhiteBalance", "Colorte
 SETTINGS_EVERY_S = 0.25      # re-read the camera's settings (catches recording and hand changes)
 STATUS_EVERY_S = 1.0         # re-read the bridge status (catches a lock from another terminal)
 MAX_CHANGES_PER_MIN = 20     # runaway guard: a smooth agent needs far fewer
+AGENT_TAKE = re.compile(r"S[1-6]_\w+_agent")   # Step 7 run-sheet names, e.g. S1_R3_A_agent, S1_BONUS_A_agent
 ADVICE_REPEAT_S = 10.0       # show the same advice again only after this long
 WOULD_REPEAT_S = 10.0
 HISTORY_EVERY_S = 0.25       # exposure history for the dashboard chart
@@ -60,8 +65,9 @@ def approved_settings(ranges):
 
 class AgentRunner:
     def __init__(self, socket_path, session_dir, look="cinematic", live=False, eyes=None, ranges=None,
-                 clock=time.monotonic, on_event=None, auto=True, faces=None):
-        """auto=False starts a live session with Auto off: it suggests until the operator turns Auto on."""
+                 clock=time.monotonic, on_event=None, auto=True, faces=None, iso_while_recording=False, take=None):
+        """auto=False starts a live session with Auto off: it suggests until the operator turns Auto on.
+        iso_while_recording: the Step 7 switch (see above). take: the run-sheet name of this take."""
         self.socket_path = socket_path
         self.client = BridgeClient(socket_path)
         self.kill_client = BridgeClient(socket_path)          # its own connection, for the kill switch
@@ -72,7 +78,10 @@ class AgentRunner:
         self.eyes = eyes or Eyes()
         self.ranges = ranges if ranges is not None else load_ranges()
         self.allowed = approved_settings(self.ranges)
-        self.gate = SafetyGate(self.client, self.session / "changes.jsonl", self.ranges)
+        self.iso_while_recording = iso_while_recording
+        self.take = take
+        self.gate = SafetyGate(self.client, self.session / "changes.jsonl", self.ranges,
+                               iso_while_recording=iso_while_recording)
         self.enums = load_enums()
         self.clock = clock
         self.on_event = on_event or (lambda kind, text: None)
@@ -127,6 +136,15 @@ class AgentRunner:
             raise RunnerError("the bridge is locked (kill switch was used): restart the bridge first")
         if self.live and status.get("read_only"):
             raise RunnerError("live mode needs a bridge started WITHOUT --read-only")
+        if self.iso_while_recording:
+            if not self.live:
+                raise RunnerError("the recording switch only makes sense in a live agent take")
+            if not (self.take and AGENT_TAKE.fullmatch(self.take)):
+                raise RunnerError("the recording switch is for Step 7 agent takes only: give the take name, "
+                                  "e.g. --take S1_R3_A_agent")
+            if not status.get("iso_while_recording"):
+                raise RunnerError("the bridge wasn't started with --allow-iso-while-recording, so it would refuse "
+                                  "anyway (both switches must be on)")
         self.t0 = self.clock()
         self.start_props = self.client.settings()
         (self.session / "settings_start.json").write_text(json.dumps(self.start_props, indent=1))
@@ -138,10 +156,11 @@ class AgentRunner:
         self._event("start", "%s on %s · look: %s · may change: %s · camera: %s" % (
             mode, status.get("model", "?"), self.brain.look.name, ", ".join(sorted(self.allowed)) or "nothing",
             self.summary()), mode=mode, look=self.brain.look.key, allowed=sorted(self.allowed), bridge=status,
+            take=self.take, iso_while_recording=self.iso_while_recording,
             settings={n: self._text(n) for n in SUMMARY})
 
     def _new_brain(self, look):
-        return Brain(look, allowed=self.allowed)
+        return Brain(look, allowed=self.allowed, allow_while_recording=self.iso_while_recording)
 
     def _rebuild(self):
         self.ctx = context_from_settings(self.props, self.enums)
@@ -195,10 +214,10 @@ class AgentRunner:
         self.frames += 1
         self.shift += (report.change or {}).get("exposure_shift_stops", 0.0)
         self.eyes_ms.append(report.ms)
-        cam = replace(self.cam, recording=True) if self.held else self.cam     # Lock = the recording lock, by hand
-        out = self.brain.update(observation_from_report(report, t), cam)
-        if self.held and not self.cam.recording:
-            out.status = "Locked by you: holding every setting"
+        if self.held:                                    # Lock: the brain is paused, nothing is proposed
+            out = Output(None, [], "Locked by you: holding every setting")
+        else:
+            out = self.brain.update(observation_from_report(report, t), self.cam)
         self.output = out
         self._advice(out.advice, t)
         if t - self.t_history >= HISTORY_EVERY_S:
@@ -321,6 +340,7 @@ class AgentRunner:
         """Lock: hold every setting as it is now (like the recording lock), until unlocked."""
         if on != self.held and not self.killed:
             self.held = on
+            self.brain.pending = None            # after unlocking, problems must last their full wait again
             self._event("lock", "LOCKED by you: holding every setting" if on else "Unlocked")
 
     def remember_face(self, name=None):
@@ -348,11 +368,12 @@ class AgentRunner:
         """One word for the dashboard badge."""
         if self.killed:
             return "KILLED"
-        if self.cam.recording:
-            return "RECORDING"
         if self.held:
             return "LOCKED"
-        return "AUTO" if self.live and not self.paused else "SUGGESTING"
+        auto = self.live and not self.paused
+        if self.cam.recording and not (self.iso_while_recording and auto):
+            return "RECORDING"
+        return "AUTO" if auto else "SUGGESTING"
 
     def snapshot(self):
         """Everything the dashboard shows, as plain JSON-ready values."""
@@ -365,6 +386,7 @@ class AgentRunner:
                 "mode": "live" if self.live else "dry run", "fake": bool(self.bridge.get("fake")),
                 "model": self.bridge.get("model"), "state": self.state(), "auto": self.live and not self.paused and not self.killed,
                 "held": self.held, "killed": self.killed, "kill_reason": self.kill_reason,
+                "recording": self.cam.recording, "iso_while_recording": self.iso_while_recording, "take": self.take,
                 "approved": sorted(self.allowed), "changes": len(self.changes),
                 "look": {"key": look.key, "name": look.name, "description": look.description,
                          "aperture": look.aperture, "face_target": look.face_target, "max_clip_pct": look.max_clip_pct},
