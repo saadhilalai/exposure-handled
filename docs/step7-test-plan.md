@@ -1,6 +1,6 @@
 # Step 7: Prove it works — test plan
 
-> **DRAFT, waiting for your approval.** Written 2026-10-17 before any shooting; your answers to its 8 questions added 2026-10-18. When you approve it, it's frozen (the commit is recorded here), and **no rule changes after seeing results**. If something has to change on the day, it goes under "Deviations" with the reason, and the original rule is still reported.
+> **FINAL: approved by the director on 2026-10-18, before any shooting.** Frozen at the commit tagged `step7-plan-final` (hash recorded in PROGRESS.md). **No rule changes after seeing results.** If something has to change on the day, it goes under "Deviations" with the reason, and the original rule is still reported. The only blank this plan allows to be filled in later is the LUT file name (see the blind test), and it must be filled in before any clip is graded.
 
 ## The question
 
@@ -107,7 +107,8 @@ Each one is reported as **supported / not supported / unclear**, with the number
   - S5: block round 2
   - That's 7 sets of 3 clips. If a take is unusable for a reason that **isn't** exposure (focus miss, someone walks in, recording failed), use that person's next round, and write down why *before* anyone rates.
 - **Same treatment:**
-  - **Sony's official S-Log3/S-Gamut3.Cine → Rec.709 LUT**, identical for every clip, no other grading. The exact LUT file is named here before any clip is graded.
+  - **The same LUT your FX2's Display LUT is set to** (its selected Base Look), identical for every clip, no other grading. It's read from the camera, read-only, the next time it's connected (`tools/read_display_lut.py`), and the exact file is named here **before any clip is graded**:
+    - **LUT file: _not read yet_** (Base Look: ___, Display LUT: ___, read on ___)
   - the same 12-second window, starting 3 s before the mark (S5: the middle 12 s of the block)
   - no audio, same export settings
   - file names are random codes
@@ -146,7 +147,7 @@ Each one is reported as **supported / not supported / unclear**, with the number
 2. Levers: **ISO only**.
 3. FX2 auto: **Auto ISO only**.
 4. Advice: **nobody follows it in scored takes**; one **bonus take** per face scene and person where you follow it, not scored against the others.
-5. LUT: **Sony's official S-Log3 → Rec.709 LUT**.
+5. LUT: **the same LUT as the FX2's Display LUT**, read from the camera (read-only) at the next connection; the exact file is named above before any clip is graded (refines "Sony's official LUT", 2026-10-18).
 6. Raters: **a small private page I build**; at least 10, ideally 15–20, none at the shoot.
 7. Subjects: **2+ people with different skin tones**. Everyone does S1 and S4; S2, S3 and S5 are split.
 8. Dates and places: **you'll pick them later** (one daytime indoor session, one clear-day session).
@@ -162,4 +163,4 @@ All camera safety rules stay:
 
 ## Deviations
 
-None yet (the plan isn't final).
+None.

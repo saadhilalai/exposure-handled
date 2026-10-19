@@ -20,7 +20,7 @@ The director went to sleep and asked for everything that doesn't need him or the
 4. ✅ Allow ISO changes while recording **only for Step 7 agent takes**, behind a switch that's **off by default** (to build: brain, Python gate and C++ bridge all refuse while recording today).
 5. ✅ Pi: **4GB**.
 6. ✅ Step 7's 8 questions answered (2026-10-18): ISO only; FX2 Auto ISO only; advice not followed in scored takes + one bonus take per face scene and person; Sony's official LUT; a private rater page I build; 2+ people with different skin tones (everyone in S1 and S4, others split); dates later.
-7. ⏳ Step 7 plan: updated draft waiting for approval.
+7. ✅ Step 7 plan **approved as FINAL** (2026-10-18). LUT = the FX2's Display LUT, read from the camera (read-only) at the next connection, named in the plan before any grading. Building now: the recording switch, the rater page (anonymous IDs, answers off the repo), the printable run sheet.
 
 **Needs Saad at the camera:**
 1. **Live ISO test (Step 5)**, ~10 min:
@@ -100,9 +100,10 @@ Parked 2026-10-17, 19:40 (director stepped away)
   - Live view (clean / zebras / false color, face brackets, light sources), setting tiles, status + last change, Auto (starts Off in live, two presses to turn on), Lock, look picker, **"this face looks right"** (per person, stored only on this computer), highlight meters, 60 s exposure chart with tooltip + table, decisions feed, big kill switch (also Space). S4D style from LANDFALL. Phone layout with the kill switch pinned.
   - Checked with screenshots driven like a person; 5 bugs found and fixed. 58 tests pass.
   - ❓ For the director: (1) Lock = "hold everything now" (my reading of your Step 5 rule); (2) face signatures are stored locally (biometric data); (3) screenshots with your face are not committed.
-- [~] **Step 7: Prove it works.** [docs/step7-test-plan.md](docs/step7-test-plan.md) is a **DRAFT** (not final until the director approves; frozen after that).
+- [~] **Step 7: Prove it works.** [docs/step7-test-plan.md](docs/step7-test-plan.md): **FINAL** (approved 2026-10-18, frozen). Shooting not started.
   - Ready, no camera needed: `metrics.csv` logging + `m` mark key, `tools/score_take.py` (measurement definitions fixed in code, 4 tests), balanced take order from a fixed seed (`tools/make_test_order.py`).
-  - ✅ All 8 questions answered 2026-10-18 and written into the plan (63 scored takes + 6 bonus + sunset, ~3.5–4 h, two sessions). ⏳ Waiting for the director's approval; then frozen.
+  - ✅ All 8 questions answered 2026-10-18 and written into the plan (63 scored takes + 6 bonus + sunset, ~3.5–4 h, two sessions).
+  - ✅ **Approved as FINAL 2026-10-18; frozen at tag `step7-plan-final`.**
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
 - [~] **Step 9: Package it.** Started overnight: README rewritten (what it does, how it thinks, safety, skin tones, results so far with sources, setup, honest limits, "How this was built"); [INTERVIEW.md](INTERVIEW.md) drafted with 10 Q&As + 3 draft resume bullets (real numbers only). Waiting on Step 7 results and a demo video.
 
