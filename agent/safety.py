@@ -7,6 +7,9 @@ logs time, old value, new value, reason and timings to changes.jsonl.
 
 One exception, approved for Step 7 agent takes only: with iso_while_recording
 on (off by default), ISO, and nothing else, may change while recording.
+
+The exposure switch (exposure=True, off by default; approved 2026-10-19): aperture,
+shutter and white balance may change too, inside their ranges. Without it, only ISO.
 """
 import json
 import time
@@ -30,13 +33,24 @@ def within_range(name, raw, rule):
             return False
         iso = raw & 0xFFFFFF
         return rule["min_iso"] <= iso <= rule["max_iso"]
-    return False  # no other setting has an approved numeric range yet
+    if name == "FNumber":
+        return round(rule["min_f"] * 100) <= raw <= round(rule["max_f"] * 100)
+    if name == "ShutterSpeed":
+        num, den = (raw >> 16) & 0xFFFF, raw & 0xFFFF       # packed numerator / denominator
+        fastest, slowest = round(1 / rule["min_seconds"]), round(1 / rule["max_seconds"])   # 100, 48
+        return not raw >> 32 and num >= 1 and num * slowest <= den <= num * fastest
+    if name == "Colortemp":
+        return rule["min_k"] <= raw <= rule["max_k"]
+    if name == "WhiteBalance":
+        return raw in rule["modes_raw"]
+    return False  # nothing else has an approved range
 
 
 class SafetyGate:
-    def __init__(self, client, log_path, ranges=None, iso_while_recording=False):
+    def __init__(self, client, log_path, ranges=None, iso_while_recording=False, exposure=False):
         self.client = client
         self.iso_while_recording = iso_while_recording   # Step 7 agent takes only; off by default
+        self.exposure = exposure                         # aperture / shutter / WB too; off by default
         self.log_path = Path(log_path)
         self.ranges = ranges if ranges is not None else load_ranges()
         self.enums = load_enums()
@@ -70,6 +84,8 @@ class SafetyGate:
         rule = self.ranges.get(name)
         if not rule or not rule.get("change_allowed"):
             return self._refuse(name, raw, reason, "not approved for changes")
+        if rule.get("switch") == "allow_exposure" and not self.exposure:
+            return self._refuse(name, raw, reason, "only ISO may change (exposure switch is off)")
         if not within_range(name, raw, rule):
             return self._refuse(name, raw, reason, "outside the approved range")
 

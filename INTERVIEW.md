@@ -36,11 +36,11 @@ Ten questions you're likely to get, each with a short answer to say out loud (30
 
 ### 8. How did you test it without risking the camera?
 
-"In stages. First the program was read-only. The code literally can't compile a 'set' call. Then one supervised ISO change to measure the camera: it confirms in 119 to 172 milliseconds and shows in the picture about 0.3 seconds later. The brain was built in a simulator with those real delays, then a fake camera that speaks the same protocol as the real bridge and uses my real frames. There are 62 automated tests, including the kill switch and 'nothing changes while recording'."
+"In stages. First the program was read-only. The code literally can't compile a 'set' call. Then one supervised ISO change to measure the camera: it confirms in 119 to 172 milliseconds and shows in the picture about 0.3 seconds later. The brain was built in a simulator with those real delays, then a fake camera that speaks the same protocol as the real bridge and uses my real frames. There are 89 automated tests, including the kill switch and 'nothing changes while recording'. Then the first live run, on a wall and a lamp: I set ISO two stops too bright and it came back in five one-third-stop steps in about eight seconds. Then it left everything alone for a full minute, and the kill switch stopped it in 33 milliseconds. Afterwards every setting was back exactly as I'd left it."
 
 ### 9. What did you do, and what did the AI do?
 
-"I directed it and designed the cinematography. I set the goal, the looks, the safety rules and the ranges for my own camera, and I made every decision along the way, like only allowing ISO for the first live test. I ran every camera test myself and did the calibration. The AI wrote the code: the C++ bridge to Sony's SDK, the Python agent, the tests and the dashboard. We worked one step at a time, and I reviewed each step before the next one started."
+"I directed it and designed the cinematography. I set the goal, the looks, the safety rules and the ranges for my own camera, and I made every decision along the way, like only allowing ISO for the first live test. I set up and approved every camera test, ran the early ones and the calibration myself, and gave the go for the first live run, which ran unattended. The AI wrote the code: the C++ bridge to Sony's SDK, the Python agent, the tests and the dashboard. We worked one step at a time, and I reviewed each step before the next one started."
 
 ### 10. How will you prove it works, and what's next?
 

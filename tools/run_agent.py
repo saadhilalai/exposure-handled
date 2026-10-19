@@ -1,7 +1,8 @@
 """Run the camera agent: eyes → brain → safety gate → bridge, with a keyboard kill switch.
 
 Dry run is the default: the agent watches and says what it WOULD change; nothing is sent.
---live sends approved changes (ISO only, 800-12800) through the safety gate.
+--live sends approved changes (ISO only, 800-12800) through the safety gate; with --allow-exposure
+also aperture f/2.8-f/11, shutter 1/48-1/100 and WB 2800-7500K (bridge started with the same flag).
 
 Keys:  SPACE   kill switch: stop now, lock the bridge, the camera is yours
        p       Auto on / off (off = the agent only suggests)
@@ -138,6 +139,8 @@ def start_fake(args, socket_path, session):
         cmd.append("--read-only")
     if args.allow_iso_while_recording:
         cmd.append("--allow-iso-while-recording")
+    if args.allow_exposure:
+        cmd.append("--allow-exposure")
     # Own process group, so Ctrl-C reaches only the runner (which then stops the fake itself).
     proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=(session / "fake_bridge_errors.log").open("w"),
                             start_new_session=True)
@@ -157,7 +160,10 @@ def confirm_live(args, status):
     if status.get("fake"):
         return
     print("\nLIVE on the real camera (%s)." % status.get("model"))
-    print("  The agent may change: ISO, 800-12800 only. Shutter, aperture and WB are advice only.")
+    if args.allow_exposure:
+        print("  The agent may change: ISO 800-12800, f/2.8-f/11, shutter 1/48-1/100, WB Auto/2800-7500K.")
+    else:
+        print("  The agent may change: ISO, 800-12800 only. Shutter, aperture and WB are advice only.")
     print("  Kill switch: SPACE (or Ctrl-C, or tools/kill_switch.py from another terminal, or unplug USB).")
     if not sys.stdin.isatty():
         if not args.yes:
@@ -194,6 +200,8 @@ def main():
     step7.add_argument("--take", help="run-sheet name of this take, e.g. S1_R3_A_agent")
     step7.add_argument("--allow-iso-while-recording", action="store_true",
                        help="Step 7 agent takes only: the agent may change ISO while the camera records")
+    ap.add_argument("--allow-exposure", action="store_true",
+                    help="aperture, shutter and WB may change too (bridge must be started with --allow-exposure)")
     args = ap.parse_args()
 
     socket_path = Path(args.socket) if args.socket else FAKE_SOCKET if args.fake else DEFAULT_SOCKET
@@ -209,7 +217,8 @@ def main():
     from agent.faces import FaceBook
     runner = AgentRunner(socket_path, session, look=args.look, live=args.live, on_event=console.event,
                          auto=not args.dashboard, faces=FaceBook(args.face_refs) if args.face_refs else None,
-                         iso_while_recording=args.allow_iso_while_recording, take=args.take)
+                         iso_while_recording=args.allow_iso_while_recording, take=args.take,
+                         exposure=args.allow_exposure)
     console.runner = runner
     keyboard = dashboard = None
     try:

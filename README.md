@@ -149,8 +149,9 @@ Keys: **Space** kill switch · `p` Auto on/off · `l` Lock · `m` mark an event 
 
 ## Honest limits
 
-- **The agent has not yet run live on the real camera.** Reading and one hand-supervised ISO test have; the closed loop runs on the fake camera only. The live ISO test is next.
-- Only **ISO** is approved to change. Shutter, aperture and WB are advice until approved.
+- **Live so far: one static scene.** On 2026-10-19 the agent ran live on the FX2, pointed at a white wall lit by a lamp. That was the ISO test, a self-test of aperture, shutter and WB, and a short automatic run with all four ([docs/step5-live-test.md](docs/step5-live-test.md)). Lighting changes, people and faces haven't been tested live yet; that's Step 7.
+- **ISO** is the only setting that changes by default. Aperture (f/2.8–f/11), shutter (1/48–1/100) and WB (Auto or 2800–7500K) are approved too, but only behind a startup switch, `--allow-exposure`, that's off by default. The Step 7 test uses ISO only.
+- The WB reading is only trusted within about 100 mired of the light. If the WB is set further off than that, the agent leaves WB alone rather than guess.
 - No focus actions (by design, for now).
 - The live view is S-Log3 as the FX2 sends it; there's no viewing LUT on the dashboard yet.
 - The calibration is measured from level ~82 up. The very deep shadows are extrapolated, and in a very dark room the camera's own meter and our reading differed by ~1.7 stops (likely reasons in [docs/step4-eyes.md](docs/step4-eyes.md)).
@@ -160,7 +161,7 @@ Keys: **Space** kill switch · `p` Auto on/off · `l` Lock · `m` mark an event 
 
 ## How this was built
 
-**I directed the project and designed the cinematography rules, and an AI coding assistant wrote the code.** I set the goal, the looks, the safety rules and approved ranges for my own camera, and every decision (for example: ISO only for the first live test; warn and pause when a setting starts outside my ranges; face target +0.5 with a per-person reference). I ran every camera test, did the calibration at the camera, and reviewed each step before the next began. The AI read Sony's SDK, wrote the C++ bridge, the Python agent, the tests and the dashboard, and reported what didn't work as clearly as what did. Each step ended with a check-in and a commit; the record is in [PROGRESS.md](PROGRESS.md) and `docs/`.
+**I directed the project and designed the cinematography rules, and an AI coding assistant wrote the code.** I set the goal, the looks, the safety rules and approved ranges for my own camera, and every decision (for example: ISO only for the first live test; warn and pause when a setting starts outside my ranges; face target +0.5 with a per-person reference). I set up and approved every camera test, ran the early ones and the calibration myself, and gave the go for the first live agent run, which ran unattended. I reviewed each step before the next began. The AI read Sony's SDK, wrote the C++ bridge, the Python agent, the tests and the dashboard, and reported what didn't work as clearly as what did. Each step ended with a check-in and a commit; the record is in [PROGRESS.md](PROGRESS.md) and `docs/`.
 
 ## Credits
 

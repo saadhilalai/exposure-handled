@@ -23,9 +23,11 @@
 //     --allow-iso-while-recording, ISO (and nothing else) may change while recording.
 //   - Commands (record, format, reset, ...) are poisoned for the whole file.
 //
-// Usage: camera_bridge <socket_path> <log_dir> [--read-only | --allow-iso-while-recording]
+// Usage: camera_bridge <socket_path> <log_dir> [--read-only | --allow-iso-while-recording | --allow-exposure]
 //   --read-only: every "set" is refused for the whole run (used in Step 4).
 //   --allow-iso-while-recording: Step 7 agent takes only. Off unless given; can't be turned on later.
+//   --allow-exposure: aperture f/2.8-f/11, shutter 1/48-1/100 and WB (Auto or Color Temp 2800-7500K)
+//     may change too (director, 2026-10-19). Off unless given: ISO only.
 
 #include <poll.h>
 #include <signal.h>
@@ -59,9 +61,10 @@ namespace {
 const char* kExpectedModel = "ILME-FX2";
 
 // ---------------------------------------------------------------------------
-// Allow-list. Director-approved ranges (PROGRESS.md, 2026-10-17).
-// Step 3 allows ISO only. Shutter, iris, WB and focus are added only when the
-// director approves them for a later step. Anything not listed is refused.
+// Allow-list. Director-approved ranges (PROGRESS.md, 2026-10-17 and 2026-10-19).
+// ISO is always on the list. Aperture, shutter and white balance (approved
+// 2026-10-19) only count when the bridge is started with --allow-exposure.
+// Focus and everything else are refused.
 // ---------------------------------------------------------------------------
 struct AllowRule {
     const char* name;
@@ -69,10 +72,17 @@ struct AllowRule {
     SDK::CrDataType type;
     long long min;
     long long max;
+    bool needs_exposure_switch;
 };
 
 const AllowRule kAllowList[] = {
-    {"IsoSensitivity", SDK::CrDeviceProperty_IsoSensitivity, SDK::CrDataType_UInt32Array, 800, 12800},
+    {"IsoSensitivity", SDK::CrDeviceProperty_IsoSensitivity, SDK::CrDataType_UInt32Array, 800, 12800, false},
+    {"FNumber", SDK::CrDeviceProperty_FNumber, SDK::CrDataType_UInt16Array, 280, 1100, true},   // f/2.8-f/11 (x100)
+    {"ShutterSpeed", SDK::CrDeviceProperty_ShutterSpeed, SDK::CrDataType_UInt32Array, 48, 100, true},  // 1/48-1/100
+    {"Colortemp", SDK::CrDeviceProperty_Colortemp, SDK::CrDataType_UInt16, 2800, 7500, true},   // Kelvin
+    // WB mode: only Auto (how the director left it) and Color Temp (needed to set Kelvin).
+    {"WhiteBalance", SDK::CrDeviceProperty_WhiteBalance, SDK::CrDataType_UInt16Array, SDK::CrWhiteBalance_AWB,
+     SDK::CrWhiteBalance_ColorTemp, true},
 };
 
 // ---------------------------------------------------------------------------
@@ -83,6 +93,7 @@ std::atomic<bool> g_connected{false};
 std::atomic<bool> g_locked{false};
 std::atomic<bool> g_read_only{false};  // set by --read-only at startup; cannot be turned off
 std::atomic<bool> g_iso_while_recording{false};  // --allow-iso-while-recording (Step 7); startup only
+std::atomic<bool> g_allow_exposure{false};       // --allow-exposure: aperture, shutter, WB too; startup only
 SDK::CrDeviceHandle g_handle = 0;
 std::mutex g_sdk_mutex;  // one SDK call at a time
 std::mutex g_set_mutex;  // one setting change at a time
@@ -142,7 +153,27 @@ bool rule_allows(const AllowRule& rule, long long raw) {
         long long iso = raw & 0xFFFFFF;
         return iso >= rule.min && iso <= rule.max;
     }
+    if (rule.code == SDK::CrDeviceProperty_ShutterSpeed) {
+        // Packed numerator (upper 16 bits) / denominator (lower 16). Allowed: 1/max .. 1/min seconds,
+        // i.e. num/den between 1/100 and 1/48. Rules out Bulb (0) and "none" (0xFFFFFFFF).
+        long long num = (raw >> 16) & 0xFFFF, den = raw & 0xFFFF;
+        if ((raw >> 32) != 0 || num < 1 || den < 1) return false;
+        return num * rule.min <= den && den <= num * rule.max;
+    }
+    if (rule.code == SDK::CrDeviceProperty_WhiteBalance) return raw == rule.min || raw == rule.max;  // two modes only
     return raw >= rule.min && raw <= rule.max;
+}
+
+// Is `raw` one of the values the camera offers? Lists are checked value by value;
+// ranges ("min, max, step") by min/max/step.
+bool camera_offers(CrInt32u type, const std::vector<long long>& settable, long long raw) {
+    if ((type & SDK::CrDataType_RangeBit) && settable.size() == 3) {
+        long long lo = settable[0], hi = settable[1], step = settable[2];
+        return raw >= lo && raw <= hi && (step <= 0 || (raw - lo) % step == 0);
+    }
+    for (long long v : settable)
+        if (v == raw) return true;
+    return false;
 }
 
 std::string refuse(const std::string& name, long long raw, const std::string& reason) {
@@ -167,6 +198,8 @@ std::string guarded_set(const std::string& name, long long raw) {
     for (const auto& r : kAllowList)
         if (name == r.name) rule = &r;
     if (!rule) return refuse(name, raw, "not on the allow-list");
+    if (rule->needs_exposure_switch && !g_allow_exposure)
+        return refuse(name, raw, "only ISO may change (bridge started without --allow-exposure)");
     if (!rule_allows(*rule, raw)) return refuse(name, raw, "outside the approved range");
 
     const CrInt32u rec_code = SDK::CrDeviceProperty_RecordingState;
@@ -178,9 +211,7 @@ std::string guarded_set(const std::string& name, long long raw) {
     const PropInfo& target = props[rule->code];
     if (!target.found) return refuse(name, raw, "could not read current value");
     if (!target.can_set_now) return refuse(name, raw, "camera says this setting can't be changed right now");
-    bool offered = false;
-    for (long long v : target.settable) offered = offered || (v == raw);
-    if (!offered) return refuse(name, raw, "camera doesn't offer this value right now");
+    if (!camera_offers(target.type, target.settable, raw)) return refuse(name, raw, "camera doesn't offer this value right now");
 
     const unsigned long long old_value = target.current;
     if (old_value == (unsigned long long)raw)
@@ -371,9 +402,11 @@ std::string cmd_status() {
     o << "{\"ok\": true, \"model\": \"" << kExpectedModel << "\", \"connected\": " << (g_connected ? "true" : "false")
       << ", \"locked\": " << (g_locked ? "true" : "false")
       << ", \"read_only\": " << (g_read_only ? "true" : "false")
-      << ", \"iso_while_recording\": " << (g_iso_while_recording ? "true" : "false") << ", \"allow_list\": [";
+      << ", \"iso_while_recording\": " << (g_iso_while_recording ? "true" : "false")
+      << ", \"allow_exposure\": " << (g_allow_exposure ? "true" : "false") << ", \"allow_list\": [";
     bool first = true;
     for (const auto& r : kAllowList) {
+        if (r.needs_exposure_switch && !g_allow_exposure) continue;
         o << (first ? "" : ", ") << "{\"name\": \"" << r.name << "\", \"min\": " << r.min << ", \"max\": " << r.max << "}";
         first = false;
     }
@@ -573,16 +606,35 @@ void client_loop(int fd) {
 
 void on_signal(int) { g_running = false; }
 
+// --check-rules: reads "<Name> <raw>" lines on stdin and prints whether the allow-list would accept
+// each value (the exposure switch counted as on). Never connects to a camera; used by the tests to
+// check the compiled-in rules against the Python ones.
+int check_rules() {
+    std::string name;
+    long long raw;
+    while (std::cin >> name >> raw) {
+        const AllowRule* rule = nullptr;
+        for (const auto& r : kAllowList)
+            if (name == r.name) rule = &r;
+        std::cout << name << " " << raw << " " << (rule && rule_allows(*rule, raw) ? 1 : 0) << "\n";
+    }
+    return 0;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
+    if (argc == 2 && std::string(argv[1]) == "--check-rules") return check_rules();
     const std::string flag = argc == 4 ? argv[3] : "";
-    if (argc < 3 || argc > 4 || (argc == 4 && flag != "--read-only" && flag != "--allow-iso-while-recording")) {
-        std::cerr << "usage: camera_bridge <socket_path> <log_dir> [--read-only | --allow-iso-while-recording]\n";
+    if (argc < 3 || argc > 4 ||
+        (argc == 4 && flag != "--read-only" && flag != "--allow-iso-while-recording" && flag != "--allow-exposure")) {
+        std::cerr << "usage: camera_bridge <socket_path> <log_dir> [--read-only | --allow-iso-while-recording | "
+                     "--allow-exposure]\n";
         return 2;
     }
     g_read_only = (flag == "--read-only");
     g_iso_while_recording = (flag == "--allow-iso-while-recording");
+    g_allow_exposure = (flag == "--allow-exposure");
     const std::string socket_path = argv[1];
     g_log.open(std::string(argv[2]) + "/bridge_log.jsonl", std::ios::app);
     ::signal(SIGPIPE, SIG_IGN);
@@ -626,8 +678,11 @@ int main(int argc, char** argv) {
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));  // let the settings list populate
     log_event("\"event\": \"connected\", \"model\": \"" + std::string(kExpectedModel) + "\", \"iso_while_recording\": " +
-              (g_iso_while_recording ? "true" : "false"));
-    std::cout << "Connected to " << kExpectedModel << (g_read_only ? ". READ-ONLY: all changes refused.\n" : ". Allow-list: IsoSensitivity 800-12800 only.\n");
+              (g_iso_while_recording ? "true" : "false") + ", \"allow_exposure\": " + (g_allow_exposure ? "true" : "false"));
+    std::cout << "Connected to " << kExpectedModel
+              << (g_read_only        ? ". READ-ONLY: all changes refused.\n"
+                  : g_allow_exposure ? ". Allow-list: ISO 800-12800, f/2.8-f/11, 1/48-1/100, WB Auto or 2800-7500K.\n"
+                                     : ". Allow-list: IsoSensitivity 800-12800 only.\n");
     if (g_iso_while_recording)
         std::cout << "STEP 7 SWITCH ON: ISO (only) may change while the camera records. Restart without it after the take.\n";
 

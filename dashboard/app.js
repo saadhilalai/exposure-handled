@@ -9,6 +9,7 @@ const WINDOW_S = 60;                  // chart time window
 const KIND = {
   change: "Changed", would_change: "Would change", advice: "Advice", kill: "Kill switch", pause: "Auto",
   lock: "Lock", look: "Look", face: "Face", mark: "Mark", start: "Start", end: "End", refused: "Refused", error: "Error", restore: "Restore",
+  test: "Test",
 };
 const ICONS = {
   AUTO: '<svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="4.5" fill="currentColor"/></svg>',

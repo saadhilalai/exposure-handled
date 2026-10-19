@@ -29,7 +29,7 @@ The dashboard shows a red **REC** chip, plus an amber **"Rec switch on · S1_R3_
 
 It prints one line to copy into the plan, e.g. *"Base Look: … (User, value 0x0101), Display LUT: ON, read on …"*. Then you find that LUT's `.cube` file and its exact file name goes into the plan **before any clip is graded**.
 
-For reference, Step 2's snapshot (2026-10-17) had the Display LUT **off** and Base Look value 1 (Preset #1). The name wasn't read then, and the camera may have changed since, so it gets re-read.
+**Read on 2026-10-19:** Display LUT **OFF**, Base Look **"S-Log3"** (Preset, value 0x0001), which applies no conversion. The camera's other Base Looks are s709, 709(800%) and User1–16, all empty ("No Import"). So there's no LUT file to name yet: the director picks one before any grading, and the plan's LUT line records what was read.
 
 ## 3. The printable run sheet
 

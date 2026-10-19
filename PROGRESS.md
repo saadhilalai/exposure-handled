@@ -2,7 +2,60 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
-## 📍 Where things stand (overnight 2026-10-17 → morning 2026-10-18)
+## 📍 Where things stand (2026-10-19, evening)
+
+**The live test is done.** It ran unattended on the director's go ("Camera ready, and I'm leaving it to you"), with the FX2 on a tripod at a white wall and one lamp, card out. Details: [docs/step5-live-test.md](docs/step5-live-test.md).
+- **Test 1, live ISO: PASS.**
+  - Started 2 stops too bright, it came back in 5 one-third-stop steps in 8.4 s.
+  - 0 changes in the 60 s with nothing to fix.
+  - Dashboard kill switch: stopped in 33 ms, bridge locked.
+- **Test 2, self-test of all four settings: PASS, one note.**
+  - Every change was confirmed: ISO 118–208 ms, aperture 250–399 ms, shutter 150–250 ms, Kelvin 108–193 ms.
+  - WB calibrated on the wall: gain 0.92, lamp ≈ 2620K.
+  - Note: shutter 1/50 ↔ 1/60 measures 0.43 stop, not 0.26. Not explained yet; repeat in daylight.
+- **Test 3, automatic run with all four settings (interview look): PASS.**
+  - From a deliberately wrong ISO 3200, f/8 and 3700K: 6 changes in 12.5 s (1/48, f/4, ISO back to 1600, WB 2800K).
+  - Then 30 s with 0 changes.
+- **Safety:**
+  - 44 changes, 0 refused, 0 unconfirmed.
+  - The camera was back exactly as found after every test, and no other setting changed.
+  - Disconnected at the end; nothing is running.
+- **Display LUT read (read-only):** OFF, Base Look "S-Log3", which applies no conversion.
+- 89 tests pass.
+
+**Decisions (2026-10-19):**
+8. ✅ Director: run the live tests unattended this time, without typing LIVE or watching. Card out; static wall and lamp.
+9. ✅ Director: after the ISO test passed, unlock aperture f/2.8–f/11, shutter 1/48–1/100 and WB 2800–7500K.
+   - Built as a startup switch (`--allow-exposure`), off by default in all three layers, so ISO only stays the default (Step 7 uses ISO only).
+10. ⚠ My call, please confirm: WB mode may switch only between **Auto and Color Temp**.
+    - Color Temp is needed to set Kelvin; Auto is how the camera was found.
+    - Presets and Custom WB stay blocked.
+
+**Needs Saad (later):**
+1. **Lighting changes, live:** a light switched on and off, a walk-by, a window. Only tested on a static scene so far.
+2. **Face tests, live:** "this face looks right" on the real camera, and skin tones (Step 7).
+3. **Pick the blind-test LUT** before any grading.
+   - The camera's Display LUT is off and its Base Look is plain S-Log3, so there's no file to name.
+   - Options: the camera's s709, 709(800%), or a LUT you load and select.
+4. Two rater-page questions: partial raters, and remote raters.
+5. Optional checks:
+   - shutter 1/50 ↔ 1/60 in daylight
+   - the wall at f/8 and f/11
+   - whether the lamp really is ≈ 2620K (below your 2800K floor)
+6. The Step 7 shoot.
+
+**How to start things again:**
+- Build: `cmake --build build/bridge -j2`
+- Bridge: `cd build/bridge && ./camera_bridge ~/camera-agent/run/bridge.sock ~/camera-agent/sessions/<new folder> [flag]`. Use at most one flag:
+  - `--read-only`
+  - none (ISO only)
+  - `--allow-exposure` (aperture, shutter, WB too)
+  - `--allow-iso-while-recording` (Step 7 agent takes)
+- Agent: `~/camera-agent/.venv/bin/python tools/run_agent.py [--live] [--dashboard --port 8770] [--allow-exposure] [--fake]`
+  - Port 8765 is taken by robot-walker's web server, so use 8770.
+- The unattended live test: `tools/live_selftest.py` (`--fake --quick` to rehearse).
+
+<details><summary>Earlier: overnight 2026-10-17 → morning 2026-10-18 (resolved)</summary>
 
 The director went to sleep and asked for everything that doesn't need him or the camera. **The camera was not connected at any point overnight.** Only the fake camera and saved frames were used.
 
@@ -39,6 +92,8 @@ The director went to sleep and asked for everything that doesn't need him or the
 - Bridge, read-only: `cd build/bridge && ./camera_bridge ~/camera-agent/run/bridge.sock ~/camera-agent/sessions/<new folder> --read-only`
 - Bridge, for the live ISO test: same command without `--read-only`.
 - Agent: `~/camera-agent/.venv/bin/python tools/run_agent.py [--live] [--dashboard] [--fake]`
+
+</details>
 
 <details><summary>Earlier park notes (19:40, resolved)</summary>
 
@@ -90,13 +145,13 @@ Parked 2026-10-17, 19:40 (director stepped away)
     - Optional later: wall at f/8 and f/11 to check the deep-shadow range.
   - ✅ **Overlay screenshots done (22:14):** face found (94%), lamp flagged as a practical and zebra-striped, 24 fps. Saved in sessions/ (not committed: they show the director's face).
   - ✅ **Decided (22:20):** default face target lowered to **+0.5 st** for every look; the per-person "this face looks right" button goes in Step 6. README notes the agent is designed to expose correctly across skin tones.
-- [~] **Step 5: The brain + the runner.** Notes: [docs/step5-brain.md](docs/step5-brain.md). Rules + 5 looks tested with no camera: simulator (14 scenes, 0 back-and-forth) and recorded frames.
+- [x] **Step 5: The brain + the runner.** Notes: [docs/step5-brain.md](docs/step5-brain.md). Rules + 5 looks tested with no camera: simulator (14 scenes, 0 back-and-forth) and recorded frames.
   - ✅ Decided: ISO/aperture starting outside the approved range → warn and pause.
   - ✅ **Brain, ISO-only mode:** only approved settings change; shutter/aperture/WB show as "Would change, not approved yet: …".
   - ✅ **Runner built (no camera):** `tools/run_agent.py` (eyes → brain → safety gate → bridge). Dry run by default; `--live` needs typing LIVE on the real camera. Kill switch: SPACE / Ctrl-C / `tools/kill_switch.py` / USB. Runaway guard (20 changes/min). Session snapshot + offer to restore ISO.
   - ✅ **Tried on a fake camera** (`tools/fake_bridge.py`, same protocol as the bridge) with your real Step 4 frame. It caught a 6400 ↔ 5000 pumping bug, fixed with a "clipping memory" rule + regression test. Keys checked in a real terminal.
   - ✅ 49 tests pass (7 eyes, 33 brain, 9 runner).
-  - ⏸ **Waiting on Saad:** decide when to run the **live ISO test** (tonight or tomorrow). Needs the camera, the bridge started *without* `--read-only`, and you at the keyboard (SPACE).
+  - ✅ **Live on the FX2 (2026-10-19), unattended on the director's go: all 3 tests PASS.** [docs/step5-live-test.md](docs/step5-live-test.md). Live ISO test, then a self-test of aperture, shutter and WB with WB calibration, then an automatic run with all four. Camera put back exactly as found each time. Static scene only: **lighting changes and faces still need Saad.**
 - [x] **Step 6: The dashboard** (built overnight 2026-10-17, fake camera only). [docs/step6-dashboard.md](docs/step6-dashboard.md). *Waiting for director review.*
   - Live view (clean / zebras / false color, face brackets, light sources), setting tiles, status + last change, Auto (starts Off in live, two presses to turn on), Lock, look picker, **"this face looks right"** (per person, stored only on this computer), highlight meters, 60 s exposure chart with tooltip + table, decisions feed, big kill switch (also Space). S4D style from LANDFALL. Phone layout with the kill switch pinned.
   - Checked with screenshots driven like a person; 5 bugs found and fixed. 58 tests pass.
@@ -107,7 +162,7 @@ Parked 2026-10-17, 19:40 (director stepped away)
   - ✅ **Approved as FINAL 2026-10-18; frozen at commit 22d1165 (tag `step7-plan-final`).**
   - ✅ Tools built (no camera): recording switch (all 3 layers, off by default, agent takes only), read-only Display LUT reader, printable run sheet (87 rows), private anonymous rating page + counting. [docs/step7-tools.md](docs/step7-tools.md).
   - ❓ Not in the frozen plan, needed before ratings: count partial raters' answered scenes or completers only; how remote raters reach the page.
-  - ⏳ Needs the camera: read the Display LUT (read-only) and name the LUT file in the plan.
+  - ✅ Display LUT read 2026-10-19 (read-only): **OFF, Base Look "S-Log3"** (no conversion), recorded on the plan's LUT line. ❓ The director picks the LUT before any grading.
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
 - [~] **Step 9: Package it.** Started overnight: README rewritten (what it does, how it thinks, safety, skin tones, results so far with sources, setup, honest limits, "How this was built"); [INTERVIEW.md](INTERVIEW.md) drafted with 10 Q&As + 3 draft resume bullets (real numbers only). Waiting on Step 7 results and a demo video.
 
@@ -140,6 +195,8 @@ These go into the C++ allow-list. Anything not listed is blocked.
 | White balance | 2800K to 7500K | Never touch | camera range 2500K-9900K in 100K steps |
 | Focus | No changes yet | Never touch | |
 | Everything else | Blocked | Blocked | |
+
+**2026-10-19:** the director unlocked aperture, shutter and WB after the live ISO test passed. They sit behind a startup switch (`--allow-exposure`) that is off by default, in the bridge, the safety gate and the runner. WB mode may switch only between Auto and Color Temp. ISO alone remains the default.
 
 Before any ISO change in Step 3:
 

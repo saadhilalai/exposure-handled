@@ -71,10 +71,9 @@ def test_gate_allows_only_iso_while_recording(tmp_path, monkeypatch):
     import agent.safety as safety
     monkeypatch.setattr(safety, "within_range", lambda name, raw, rule: True)   # isolate the recording rule
     ranges = load_ranges()
-    ranges["FNumber"] = dict(ranges["FNumber"], change_allowed=True)           # pretend aperture was approved
     cam = StubCamera()
     off = SafetyGate(cam, tmp_path / "a.jsonl", ranges)
-    on = SafetyGate(cam, tmp_path / "b.jsonl", ranges, iso_while_recording=True)
+    on = SafetyGate(cam, tmp_path / "b.jsonl", ranges, iso_while_recording=True, exposure=True)  # aperture approved too
     assert off.change_setting("IsoSensitivity", 1000, "t")["error"] == "camera is recording"
     assert on.change_setting("FNumber", 400, "t")["error"] == "camera is recording"
     assert on.change_setting("IsoSensitivity", 1000, "t")["ok"]

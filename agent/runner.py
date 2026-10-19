@@ -58,16 +58,19 @@ class RunnerError(Exception):
     pass
 
 
-def approved_settings(ranges):
-    """Settings the director approved for live changes."""
-    return {name for name, rule in ranges.items() if rule.get("change_allowed")}
+def approved_settings(ranges, exposure=False):
+    """Settings the director approved for live changes. Without the exposure switch: ISO only."""
+    return {name for name, rule in ranges.items()
+            if rule.get("change_allowed") and (exposure or rule.get("switch") != "allow_exposure")}
 
 
 class AgentRunner:
     def __init__(self, socket_path, session_dir, look="cinematic", live=False, eyes=None, ranges=None,
-                 clock=time.monotonic, on_event=None, auto=True, faces=None, iso_while_recording=False, take=None):
+                 clock=time.monotonic, on_event=None, auto=True, faces=None, iso_while_recording=False, take=None,
+                 exposure=False):
         """auto=False starts a live session with Auto off: it suggests until the operator turns Auto on.
-        iso_while_recording: the Step 7 switch (see above). take: the run-sheet name of this take."""
+        iso_while_recording: the Step 7 switch (see above). take: the run-sheet name of this take.
+        exposure: aperture, shutter and WB may change too (needs a bridge started with --allow-exposure)."""
         self.socket_path = socket_path
         self.client = BridgeClient(socket_path)
         self.kill_client = BridgeClient(socket_path)          # its own connection, for the kill switch
@@ -77,11 +80,12 @@ class AgentRunner:
         self.live = live
         self.eyes = eyes or Eyes()
         self.ranges = ranges if ranges is not None else load_ranges()
-        self.allowed = approved_settings(self.ranges)
+        self.exposure = exposure
+        self.allowed = approved_settings(self.ranges, exposure)
         self.iso_while_recording = iso_while_recording
         self.take = take
         self.gate = SafetyGate(self.client, self.session / "changes.jsonl", self.ranges,
-                               iso_while_recording=iso_while_recording)
+                               iso_while_recording=iso_while_recording, exposure=exposure)
         self.enums = load_enums()
         self.clock = clock
         self.on_event = on_event or (lambda kind, text: None)
@@ -89,6 +93,7 @@ class AgentRunner:
         self.kill_reason = None
         self.paused = not auto                  # Auto off: proposals are only shown
         self.held = False                       # Lock: hold every setting (operator)
+        self.hold_status = "Locked by you: holding every setting"     # what the status line says while held
         self.stop_requested = False
         self.book = faces if faces is not None else FaceBook()
         self.lock = threading.RLock()           # the dashboard reads state from other threads
@@ -145,6 +150,9 @@ class AgentRunner:
             if not status.get("iso_while_recording"):
                 raise RunnerError("the bridge wasn't started with --allow-iso-while-recording, so it would refuse "
                                   "anyway (both switches must be on)")
+        if self.exposure and self.live and not status.get("allow_exposure"):
+            raise RunnerError("the bridge wasn't started with --allow-exposure, so it would refuse aperture, shutter "
+                              "and WB (both switches must be on)")
         self.t0 = self.clock()
         self.start_props = self.client.settings()
         (self.session / "settings_start.json").write_text(json.dumps(self.start_props, indent=1))
@@ -156,7 +164,7 @@ class AgentRunner:
         self._event("start", "%s on %s · look: %s · may change: %s · camera: %s" % (
             mode, status.get("model", "?"), self.brain.look.name, ", ".join(sorted(self.allowed)) or "nothing",
             self.summary()), mode=mode, look=self.brain.look.key, allowed=sorted(self.allowed), bridge=status,
-            take=self.take, iso_while_recording=self.iso_while_recording,
+            take=self.take, iso_while_recording=self.iso_while_recording, exposure=self.exposure,
             settings={n: self._text(n) for n in SUMMARY})
 
     def _new_brain(self, look):
@@ -215,7 +223,7 @@ class AgentRunner:
         self.shift += (report.change or {}).get("exposure_shift_stops", 0.0)
         self.eyes_ms.append(report.ms)
         if self.held:                                    # Lock: the brain is paused, nothing is proposed
-            out = Output(None, [], "Locked by you: holding every setting")
+            out = Output(None, [], self.hold_status)
         else:
             out = self.brain.update(observation_from_report(report, t), self.cam)
         self.output = out

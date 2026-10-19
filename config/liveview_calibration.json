@@ -18,7 +18,48 @@
       "min": -7000,
       "status": "MEASURED 2026-10-17: +1000 per stop; reads 0 within about 1/3 stop of its target; tops out at 4300."
     },
-    "source_session": "sessions/2026-10-17_215409_step4-calibration (not committed)"
+    "source_session": "sessions/2026-10-17_215409_step4-calibration (not committed)",
+    "white_balance": {
+      "mired_gain": 0.923,
+      "light_k_on_wall": 2623,
+      "r2": 0.9934,
+      "points": [
+        {
+          "kelvin": 2800,
+          "picture_mired_shift": 25.7
+        },
+        {
+          "kelvin": 3200,
+          "picture_mired_shift": 63.2
+        },
+        {
+          "kelvin": 3700,
+          "picture_mired_shift": 99.6
+        },
+        {
+          "kelvin": 4300,
+          "picture_mired_shift": 127.0
+        },
+        {
+          "kelvin": 5000,
+          "picture_mired_shift": 176.6
+        },
+        {
+          "kelvin": 5600,
+          "picture_mired_shift": 190.9
+        },
+        {
+          "kelvin": 6500,
+          "picture_mired_shift": 205.6
+        },
+        {
+          "kelvin": 7500,
+          "picture_mired_shift": 230.2
+        }
+      ],
+      "status": "MEASURED 2026-10-19: Color Temp swept 2800-7500K on a white wall lit by one lamp (live view, S-Log3). The live view shows a WB error as gain x the real error, in mireds; the eyes divide by it. Assumes the wall is neutral (off-white paint shifts the light reading, not the gain).",
+      "source_session": "sessions/2026-10-19_184821_live-selftest (not committed)"
+    }
   },
   "rec709": {
     "clip_level": 250,

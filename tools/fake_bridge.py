@@ -2,7 +2,11 @@
 
 Same socket protocol as bridge/src/camera_bridge.cpp (ping, status, settings, get, frame,
 lvstats, set, lock, quit) and the same checks before a change: read-only, kill switch,
-allow-list (ISO 800-12800 only, like the real bridge), recording, value offered.
+allow-list (ISO 800-12800; with --allow-exposure also f/2.8-f/11, 1/48-1/100 and WB Auto /
+Color Temp 2800-7500K, like the real bridge), recording, value offered.
+White balance: the light has a color temperature (--light-k, default 3200K). On Auto WB the
+picture is neutral; on Color Temp it gets the cast a real camera would show (warmer when the
+WB setting is above the light).
 The picture is a recorded frame (or a made-up test scene) made brighter or darker by
 the exposure change, using the measured S-Log3 calibration (20.63 levels/stop, clip 221).
 Like the real FX2 (Step 3), a change is confirmed after ~0.15 s and shows in the picture
@@ -13,7 +17,8 @@ Usage:
   python tools/fake_bridge.py --frame clean.jpg --iso 1600 --shutter 50 --fnumber 5.6
          [--light 20:-1 40:0.7]   from 20 s the room is 1 stop darker, from 40 s 0.7 stop brighter
          [--record 30:40]         the camera records from 30 s to 40 s
-         [--read-only | --allow-iso-while-recording] [--socket run/fake_bridge.sock] [--log-dir DIR]
+         [--read-only | --allow-iso-while-recording | --allow-exposure] [--light-k 3200]
+         [--socket run/fake_bridge.sock] [--log-dir DIR]
 """
 import argparse
 import copy
@@ -35,8 +40,12 @@ from agent.tone import ToneModel, load_calibration  # noqa: E402
 
 SETTINGS_FILE = Path(__file__).resolve().parent / "fake_camera_settings.json"
 DEFAULT_SOCKET = ROOT / "run" / "fake_bridge.sock"
-ALLOW_LIST = {"IsoSensitivity": (800, 12800)}   # same as the real bridge's compiled-in list
+# Same as the real bridge's compiled-in list: (min, max, needs --allow-exposure)
+ALLOW_LIST = {"IsoSensitivity": (800, 12800, False), "FNumber": (280, 1100, True), "ShutterSpeed": (48, 100, True),
+              "Colortemp": (2800, 7500, True), "WhiteBalance": (0x0000, 0x0100, True)}
 EXPOSURE = ("IsoSensitivity", "FNumber", "ShutterSpeed")
+AWB, COLOR_TEMP = 0x0000, 0x0100
+REMEMBERED_K = 5600                              # the Kelvin the fake "remembers" for Color Temp mode
 RECORDING = 1                                    # CrMovie_Recording_State_Recording
 CONFIRM_S, SHOW_S = 0.15, 0.3                    # measured on the FX2: 119-172 ms / 272-325 ms
 CLIPPED_EXTRA_STOPS = 1.0                        # clipped areas of a recorded frame: assumed 1 stop over clip
@@ -49,6 +58,60 @@ def exposure_ev(values):
             + math.log2((shutter >> 16) / (shutter & 0xFFFF)))
 
 
+def rule_allows(name, raw):
+    """The real bridge's rule_allows(), value by value."""
+    lo, hi, _ = ALLOW_LIST[name]
+    if name == "IsoSensitivity":
+        return not raw >> 24 and lo <= (raw & 0xFFFFFF) <= hi
+    if name == "ShutterSpeed":
+        num, den = (raw >> 16) & 0xFFFF, raw & 0xFFFF
+        return not raw >> 32 and num >= 1 and num * lo <= den <= num * hi
+    if name == "WhiteBalance":
+        return raw in (lo, hi)
+    return lo <= raw <= hi
+
+
+def camera_offers(prop, raw):
+    values = prop["set_values"] or prop["values"]
+    if prop["type"].endswith("Range") and len(values) == 3:
+        lo, hi, step = values
+        return lo <= raw <= hi and (step <= 0 or (raw - lo) % step == 0)
+    return raw in values
+
+
+def planckian_xy(k):
+    """Kim et al. (2002) cubic fit of the Planckian locus, 1667-25000K."""
+    t = float(k)
+    if t <= 4000:
+        x = -0.2661239e9 / t ** 3 - 0.2343589e6 / t ** 2 + 0.8776956e3 / t + 0.179910
+    else:
+        x = -3.0258469e9 / t ** 3 + 2.1070379e6 / t ** 2 + 0.2226347e3 / t + 0.240390
+    if t <= 2222:
+        y = -1.1063814 * x ** 3 - 1.34811020 * x ** 2 + 2.18555832 * x - 0.20219683
+    elif t <= 4000:
+        y = -0.9549476 * x ** 3 - 1.37418593 * x ** 2 + 2.09137015 * x - 0.16748867
+    else:
+        y = 3.0817580 * x ** 3 - 5.87338670 * x ** 2 + 3.75112997 * x - 0.37001483
+    return x, y
+
+
+def cast_stops(light_k, wb_k):
+    """Per-channel (B, G, R) brightness offsets, in stops, of a neutral surface lit by `light_k` and shot at
+    WB `wb_k` (None = Auto WB: neutral). The cast is the light's color moved by the WB error, in mireds."""
+    from agent.eyes import D65, PRIMARIES, rgb_to_xyz_matrix
+    if wb_k is None:
+        return np.zeros(3, np.float32)
+    mired = 1e6 / 6504.0 + (1e6 / light_k - 1e6 / wb_k)
+    x, y = planckian_xy(1e6 / max(mired, 1e6 / 25000))
+    xyz = np.array([x / y, 1.0, (1 - x - y) / y])
+    rgb = np.linalg.solve(rgb_to_xyz_matrix(PRIMARIES["slog3"], D65), xyz)
+    x6, y6 = planckian_xy(6504.0)
+    rgb6 = np.linalg.solve(rgb_to_xyz_matrix(PRIMARIES["slog3"], D65), np.array([x6 / y6, 1.0, (1 - x6 - y6) / y6]))
+    gains = np.maximum(rgb / rgb6, 1e-3)                  # relative to how the Planckian 6504K renders
+    gains /= gains[1]
+    return np.log2(gains[::-1]).astype(np.float32)        # RGB -> BGR
+
+
 def made_up_scene(w, h, tm):
     """A neutral test scene in stops vs grey: a gradient from -1.5 to +0.5 st and one small clipped lamp."""
     stops = np.linspace(-1.5, 0.5, w, dtype=np.float32)[None, :] + np.linspace(-0.3, 0.3, h, dtype=np.float32)[:, None]
@@ -58,7 +121,8 @@ def made_up_scene(w, h, tm):
 
 class FakeCamera:
     def __init__(self, frame=None, size=(1024, 576), iso=None, shutter=None, fnumber=None, light=(), record=(),
-                 read_only=False, realtime=True, fps=24.0, log_dir=None, scene_offset=0.0, iso_while_recording=False):
+                 read_only=False, realtime=True, fps=24.0, log_dir=None, scene_offset=0.0, iso_while_recording=False,
+                 allow_exposure=False, light_k=3200):
         self.props = copy.deepcopy(json.loads(SETTINGS_FILE.read_text())["properties"])
         for name, raw in (("IsoSensitivity", iso), ("FNumber", fnumber and int(round(fnumber * 100))),
                           ("ShutterSpeed", shutter and (1 << 16) | int(shutter))):
@@ -75,7 +139,10 @@ class FakeCamera:
         else:
             scene = made_up_scene(size[0], size[1], self.tm)
         self.scene = scene.astype(np.float32) + scene_offset
+        self.light_k = light_k
+        self.remembered_k = REMEMBERED_K
         self.start = {n: self.props[n]["current"] for n in EXPOSURE}   # the frame was recorded at these
+        self.start.update(WhiteBalance=self.props["WhiteBalance"]["current"], Colortemp=self.props["Colortemp"]["current"])
         self.visible = dict(self.start)                                 # what the picture shows right now
         self.pending = []                                               # [(t_visible, name, raw)]
         self.light = sorted(light)
@@ -83,6 +150,7 @@ class FakeCamera:
         self.recording = False                                          # tests can flip this directly
         self.read_only, self.realtime, self.fps = read_only, realtime, fps
         self.iso_while_recording = iso_while_recording and not read_only
+        self.allow_exposure = allow_exposure and not read_only and not iso_while_recording
         self.locked = False
         self.sets = []                                                  # every set command received
         self.frame_no = 0
@@ -101,10 +169,10 @@ class FakeCamera:
     def is_recording(self, t):
         return self.recording or any(a <= t < b for a, b in self.record)
 
-    def render(self, ev):
-        key = round(ev, 3)
+    def render(self, ev, wb_k=None):
+        key = (round(ev, 3), wb_k)
         if key not in self.cache:
-            levels = np.searchsorted(self.tm.stops_lut, self.scene + ev)
+            levels = np.searchsorted(self.tm.stops_lut, self.scene + ev + cast_stops(self.light_k, wb_k))
             img = np.clip(levels, self.tm.floor_level, self.tm.clip_level).astype(np.uint8)
             self.cache[key] = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 90])[1].tobytes()
         return self.cache[key]
@@ -126,7 +194,8 @@ class FakeCamera:
                 self.visible[item[1]] = item[2]
                 self.pending.remove(item)
             ev = exposure_ev(self.visible) - exposure_ev(self.start) + self.light_stops(t)
-        jpeg = self.render(ev)
+            wb_k = self.visible["Colortemp"] if self.visible["WhiteBalance"] == COLOR_TEMP else None
+        jpeg = self.render(ev, wb_k)
         return {"ok": True, "frame_no": self.frame_no, "age_ms": 0.0, "bytes": len(jpeg)}, jpeg
 
     # -------------------------------------------------------------- settings
@@ -141,14 +210,15 @@ class FakeCamera:
             return "kill switch is on (bridge locked)"
         if name not in ALLOW_LIST:
             return "not on the allow-list"
-        lo, hi = ALLOW_LIST[name]
-        if raw >> 24 or not lo <= (raw & 0xFFFFFF) <= hi:
+        if ALLOW_LIST[name][2] and not self.allow_exposure:
+            return "only ISO may change (bridge started without --allow-exposure)"
+        if not rule_allows(name, raw):
             return "outside the approved range"
         if self.is_recording(self.clock()) and not (self.iso_while_recording and name == "IsoSensitivity"):
             return "camera is recording"
         if not self.props[name]["can_set_now"]:
             return "camera says this setting can't be changed right now"
-        if raw not in self.props[name]["set_values"]:
+        if not camera_offers(self.props[name], raw):
             return "camera doesn't offer this value right now"
         return None
 
@@ -168,6 +238,14 @@ class FakeCamera:
         with self.mutex:
             self.props[name]["current"] = raw
             self.pending.append((t_call + SHOW_S, name, raw))
+            if name == "Colortemp":
+                self.remembered_k = raw
+            if name == "WhiteBalance":                    # like the FX2: Kelvin only exists in Color Temp mode
+                kt = self.props["Colortemp"]
+                kt["current"] = self.remembered_k if raw == COLOR_TEMP else 0
+                kt["can_set_now"] = raw == COLOR_TEMP
+                kt["enable"] = "True" if raw == COLOR_TEMP else "False"
+                self.pending.append((t_call + SHOW_S, "Colortemp", kt["current"]))
         fields = {"name": name, "old": old, "new": raw, "confirmed": True, "camera_reports": raw,
                   "ms_sdk_return": 2.0, "ms_first_callback": CONFIRM_S * 1000 - 20, "ms_confirmed": CONFIRM_S * 1000,
                   "while_recording": self.is_recording(t_call)}
@@ -188,7 +266,9 @@ class FakeCamera:
         if cmd == "status":
             return {"ok": True, "model": "FAKE camera (no real camera)", "fake": True, "connected": True,
                     "locked": self.locked, "read_only": self.read_only, "iso_while_recording": self.iso_while_recording,
-                    "allow_list": [{"name": n, "min": lo, "max": hi} for n, (lo, hi) in ALLOW_LIST.items()]}, None
+                    "allow_exposure": self.allow_exposure,
+                    "allow_list": [{"name": n, "min": lo, "max": hi} for n, (lo, hi, sw) in ALLOW_LIST.items()
+                                   if self.allow_exposure or not sw]}, None
         if cmd == "settings":
             return {"ok": True, "time": datetime.now().isoformat(), "properties": self.properties()}, None
         if cmd == "get" and len(args) > 1:
@@ -255,15 +335,18 @@ def main():
     ap.add_argument("--record", nargs="*", metavar="T0:T1", help="the camera records from T0 to T1 seconds")
     ap.add_argument("--read-only", action="store_true")
     ap.add_argument("--allow-iso-while-recording", action="store_true", help="Step 7 agent takes only")
+    ap.add_argument("--allow-exposure", action="store_true", help="aperture, shutter and WB may change too")
+    ap.add_argument("--light-k", type=int, default=3200, help="the light's color temperature")
     ap.add_argument("--log-dir")
     args = ap.parse_args()
-    if args.read_only and args.allow_iso_while_recording:
-        sys.exit("--read-only and --allow-iso-while-recording can't be combined (same as the real bridge)")
+    if sum((args.read_only, args.allow_iso_while_recording, args.allow_exposure)) > 1:
+        sys.exit("--read-only, --allow-iso-while-recording and --allow-exposure can't be combined (same as the real bridge)")
 
     camera = FakeCamera(frame=args.frame, iso=args.iso, shutter=args.shutter, fnumber=args.fnumber,
                         light=parse_pairs(args.light), record=parse_pairs(args.record),
                         read_only=args.read_only, log_dir=args.log_dir,
-                        iso_while_recording=args.allow_iso_while_recording)
+                        iso_while_recording=args.allow_iso_while_recording, allow_exposure=args.allow_exposure,
+                        light_k=args.light_k)
     server = serve(camera, args.socket)
     print("Fake camera ready on %s (no real camera). Ctrl-C or 'quit' stops it." % args.socket, flush=True)
     try:

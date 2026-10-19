@@ -1,6 +1,6 @@
 # Step 5: The brain (the cinematographer) and the runner
 
-The brain was built and tested with **no camera**, in a camera simulator and on recorded frames. The runner (eyes → brain → safety gate → bridge, with a kill switch) is built and tested against a **fake camera**. Nothing in this step has talked to the FX2 yet: the live ISO test waits for the director.
+The brain was built and tested with **no camera**, in a camera simulator and on recorded frames. The runner (eyes → brain → safety gate → bridge, with a kill switch) is built and tested against a **fake camera**. That was the state when this was written. **The live test has since run on the FX2 (2026-10-19): [step5-live-test.md](step5-live-test.md).**
 
 ## How it decides (`agent/brain.py`)
 

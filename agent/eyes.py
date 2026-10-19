@@ -311,7 +311,9 @@ class Eyes:
             "neutral_pixel_share": round(share_neutral, 2),
         }
         if ctx.wb_kelvin:
-            out["light_estimate_k"] = int(round(1e6 / (1e6 / ctx.wb_kelvin + mired_shift)))
+            # The live view shows a WB error smaller or bigger than it is; the wall test measured by how much.
+            gain = self.calibration.get(tm.tone, {}).get("white_balance", {}).get("mired_gain", 1.0)
+            out["light_estimate_k"] = int(round(1e6 / (1e6 / ctx.wb_kelvin + mired_shift / gain)))
         else:
             out["light_estimate_k"] = None
             out["why_no_kelvin"] = "camera WB is %s, not a Kelvin value, so only the leftover cast is known" % ctx.wb
