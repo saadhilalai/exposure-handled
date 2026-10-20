@@ -23,21 +23,33 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 - **Display LUT read (read-only):** OFF, Base Look "S-Log3", which applies no conversion.
 - 89 tests pass.
 
+**Later the same evening (no camera): the director's four answers, built and committed.**
+- **Blind-test LUT: s709.**
+  - Sony's official s709 cube for S-Gamut3.Cine/S-Log3 (the FX2 records movies in S-Gamut3.Cine).
+  - The plan's LUT line says so. It's still the only line changed since the freeze.
+- **Rating page:**
+  - **Only raters who finish every clip count.**
+  - **It goes online** with `rater_server.py share`: a temporary HTTPS Cloudflare tunnel, anonymous codes only.
+  - Tested for real over the internet with test-pattern clips, then taken offline.
+- **Limits on the dashboard:** "Light is warmer than your 2800K limit." The same goes for ISO, aperture and shutter limits. Built and tried on the fake camera with a 2600K lamp.
+- **README wording kept** as changed.
+- 105 tests pass.
+
 **Decisions (2026-10-19):**
 8. ✅ Director: run the live tests unattended this time, without typing LIVE or watching. Card out; static wall and lamp.
 9. ✅ Director: after the ISO test passed, unlock aperture f/2.8–f/11, shutter 1/48–1/100 and WB 2800–7500K.
    - Built as a startup switch (`--allow-exposure`), off by default in all three layers, so ISO only stays the default (Step 7 uses ISO only).
-10. ⚠ My call, please confirm: WB mode may switch only between **Auto and Color Temp**.
+10. ⚠ My call, still to confirm: WB mode may switch only between **Auto and Color Temp**.
     - Color Temp is needed to set Kelvin; Auto is how the camera was found.
     - Presets and Custom WB stay blocked.
 
 **Needs Saad (later):**
 1. **Lighting changes, live:** a light switched on and off, a walk-by, a window. Only tested on a static scene so far.
 2. **Face tests, live:** "this face looks right" on the real camera, and skin tones (Step 7).
-3. **Pick the blind-test LUT** before any grading.
-   - The camera's Display LUT is off and its Base Look is plain S-Log3, so there's no file to name.
-   - Options: the camera's s709, 709(800%), or a LUT you load and select.
-4. Two rater-page questions: partial raters, and remote raters.
+3. **Download Sony's s709 cubes** (`s709Cubes.zip` from the [s709 Monitor Look page](https://pro.sony/ue_US/product-resources/knowledge-panel/s709-monitor-look-white-paper)).
+   - This accepts Sony's terms, so it's your click.
+   - Then write the S-Gamut3.Cine/S-Log3 `.cube` file's exact name on the plan's LUT line, before any grading.
+4. **When the ratings start:** run `rater_server.py share`, and keep the Mac on, on power and awake until they're in.
 5. Optional checks:
    - shutter 1/50 ↔ 1/60 in daylight
    - the wall at f/8 and f/11
@@ -155,14 +167,17 @@ Parked 2026-10-17, 19:40 (director stepped away)
 - [x] **Step 6: The dashboard** (built overnight 2026-10-17, fake camera only). [docs/step6-dashboard.md](docs/step6-dashboard.md). *Waiting for director review.*
   - Live view (clean / zebras / false color, face brackets, light sources), setting tiles, status + last change, Auto (starts Off in live, two presses to turn on), Lock, look picker, **"this face looks right"** (per person, stored only on this computer), highlight meters, 60 s exposure chart with tooltip + table, decisions feed, big kill switch (also Space). S4D style from LANDFALL. Phone layout with the kill switch pinned.
   - Checked with screenshots driven like a person; 5 bugs found and fixed. 58 tests pass.
+  - ✅ **Limits (2026-10-19, director's request):** when one of the director's limits stops a fix, an amber box says which, e.g. "Light is warmer than your 2800K limit.", and the setting's tile says "At your 2800K limit". Covers WB, ISO, aperture and shutter. Tried on the fake camera with a 2600K lamp; 13 tests.
   - ❓ For the director: (1) Lock = "hold everything now" (my reading of your Step 5 rule); (2) face signatures are stored locally (biometric data); (3) screenshots with your face are not committed.
 - [~] **Step 7: Prove it works.** [docs/step7-test-plan.md](docs/step7-test-plan.md): **FINAL** (approved 2026-10-18, frozen). Shooting not started.
   - Ready, no camera needed: `metrics.csv` logging + `m` mark key, `tools/score_take.py` (measurement definitions fixed in code, 4 tests), balanced take order from a fixed seed (`tools/make_test_order.py`).
   - ✅ All 8 questions answered 2026-10-18 and written into the plan (63 scored takes + 6 bonus + sunset, ~3.5–4 h, two sessions).
   - ✅ **Approved as FINAL 2026-10-18; frozen at commit 22d1165 (tag `step7-plan-final`).**
   - ✅ Tools built (no camera): recording switch (all 3 layers, off by default, agent takes only), read-only Display LUT reader, printable run sheet (87 rows), private anonymous rating page + counting. [docs/step7-tools.md](docs/step7-tools.md).
-  - ❓ Not in the frozen plan, needed before ratings: count partial raters' answered scenes or completers only; how remote raters reach the page.
-  - ✅ Display LUT read 2026-10-19 (read-only): **OFF, Base Look "S-Log3"** (no conversion), recorded on the plan's LUT line. ❓ The director picks the LUT before any grading.
+  - ✅ Decided 2026-10-19, before any ratings (not in the frozen plan): **only raters who finish every clip count**; the page goes **online** (`rater_server.py share`, a temporary Cloudflare tunnel, anonymous codes only). Tested over the internet with test patterns. [docs/step7-tools.md](docs/step7-tools.md).
+  - ✅ Display LUT read 2026-10-19 (read-only): **OFF, Base Look "S-Log3"** (no conversion).
+    - **The director picked s709** (Sony's official cube for S-Gamut3.Cine/S-Log3), now on the plan's LUT line.
+    - ❓ The exact `.cube` name gets filled in once the director downloads Sony's zip.
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
 - [~] **Step 9: Package it.** Started overnight: README rewritten (what it does, how it thinks, safety, skin tones, results so far with sources, setup, honest limits, "How this was built"); [INTERVIEW.md](INTERVIEW.md) drafted with 10 Q&As + 3 draft resume bullets (real numbers only). Waiting on Step 7 results and a demo video.
 

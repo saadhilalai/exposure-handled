@@ -13,6 +13,7 @@ Rules, in order:
      ISO fills the gap (staying on base ISOs 800/4000 when possible), then aperture
      inside the look's range, then ND advice (the agent can't turn the ND).
   4. White balance: only between takes, only when the color estimate is trustworthy.
+When a director's limit (or the look's aperture) stops a fix, Output.limits says which one and why.
 Smoothness: 1/3-stop dead band, wait before reacting (walk-bys), wait for each change
 to settle, no back-and-forth, small steps.
 """
@@ -155,6 +156,7 @@ class Output:
     proposal: Optional[Proposal]
     advice: list
     status: str
+    limits: list = field(default_factory=list)   # [{"text", "detail", "tiles": {setting: short note}}]
 
 
 def would(p):
@@ -201,15 +203,23 @@ class Brain:
         self.highlight_guard_until = -1e9
         self.ceiling = None                  # (camera EV that clipped, scene level then, time)
         self.cap = None                      # brightening allowed by the ceiling this frame (stops)
+        self.limits = {}                     # "wb" / "shutter" / "exposure" -> the limit that stopped a fix
 
     # ------------------------------------------------------------------ main
     def update(self, obs, cam):
+        out = self._decide(obs, cam)
+        out.limits = list(self.limits.values())
+        return out
+
+    def _decide(self, obs, cam):
         self.history.append(obs)
         while self.history and obs.t - self.history[0].t > 3.0:
             self.history.popleft()
         if cam.recording and not self.allow_while_recording:
             self.pending = None
+            self.limits.clear()
             return Output(None, [], "Locked: recording. No changes until you cut.")
+        self._wb_limit(cam)
         settling = obs.t - self.last_change_t < max(SETTLE_S, self.look.min_gap_s)
 
         self._pending_advice = None
@@ -225,6 +235,7 @@ class Brain:
         shutter_advice = [self._pending_advice] if self._pending_advice else []
         outside = self._outside_ranges(cam)
         if outside:
+            self.limits.pop("exposure", None)
             if self.out_of_range != "bring_in" or not self.may(outside[0][2].setting):
                 return Output(None, not_approved + shutter_advice + [o[0] for o in outside],
                               "Paused: %s outside your approved range" % " and ".join(o[1] for o in outside))
@@ -283,8 +294,10 @@ class Brain:
 
     def _shutter_rule(self, cam, obs):
         if not self.look.shutter_180:
+            self.limits.pop("shutter", None)
             return None
         target = self._shutter_target(cam)
+        self._shutter_limit(cam, target)
         if abs(math.log2(cam.shutter_s / target)) < 0.05:
             return None
         stops = math.log2(target / cam.shutter_s)
@@ -306,6 +319,19 @@ class Brain:
         return Proposal("ShutterSpeed", shutter_raw(target), fmt_shutter_s(cam.shutter_s), fmt_shutter_s(target),
                         "180° shutter for %gp: %s → %s%s; exposure follows next" % (
                             round(cam.fps, 2), fmt_shutter_s(cam.shutter_s), fmt_shutter_s(target), note), stops)
+
+    def _shutter_limit(self, cam, target):
+        """180 degrees is outside the approved shutter range and the shutter sits at the range's end."""
+        want = 1 / (2 * cam.fps)
+        if self.may("ShutterSpeed") and abs(math.log2(cam.shutter_s / target)) < 0.05 \
+                and abs(math.log2(target / want)) > 0.05:
+            self.limits["shutter"] = {
+                "text": "180° needs %s, %s than your %s limit." % (
+                    fmt_shutter_s(want), "faster" if want < target else "slower", fmt_shutter_s(target)),
+                "detail": "Shutter held at %s (%d°)" % (fmt_shutter_s(target), round(360 * cam.fps * target)),
+                "tiles": {"ShutterSpeed": "At your %s limit" % fmt_shutter_s(target)}}
+        else:
+            self.limits.pop("shutter", None)
 
     # ----------------------------------------------------------- 2. aperture
     def _f_options(self, cam):
@@ -393,6 +419,7 @@ class Brain:
         if abs(D) < DEAD_BAND:
             self.pending = None
             self.nd_advice_since = None
+            self.limits.pop("exposure", None)
             wb = self._white_balance(cam, obs, settling)
             if wb and not self.may(wb.setting):
                 advice.append(would(wb))
@@ -422,6 +449,7 @@ class Brain:
         advice += more
         if proposal is None:
             return Output(None, advice, advice[-1] if advice else what + ": nothing left to adjust on the camera")
+        self.limits.pop("exposure", None)
         if kind == "highlights":
             self.highlight_guard_until = obs.t + 15.0
             self.ceiling = (cam_ev(cam), key - cam_ev(cam), obs.t)
@@ -459,11 +487,13 @@ class Brain:
                 return self._f_proposal(cam.fnumber, new_f, what), advice
             advice.append("Too dark by about %s stops at ISO %d, f/%g: add light, or take ND off if any is fitted"
                           % (frac_stops(D), cam.iso, cam.fnumber))
+            self._exposure_limit(cam, D, isos if iso_ok else [], fs)
             return None, advice
 
         # Darker.
         if iso_ok and isos and cam.iso > isos[0]:
             if look.iso_policy == "base_first" and cam.iso in BASE_ISOS and abs(D) <= 2 / 3 and kind != "highlights":
+                self.limits.pop("exposure", None)
                 return None, ["Holding base ISO %d: %s stop brighter than target, highlights safe" % (cam.iso, frac_stops(D))]
             new = self._choose_iso(cam.iso, step, D, isos, headroom)
             if new != cam.iso:
@@ -477,6 +507,7 @@ class Brain:
         advice.append("Too bright at ISO %d and f/%g%s: add %s %s stops of ND" % (
             cam.iso, cam.fnumber, " (the look's aperture)" if at_look else "",
             "at least" if kind == "highlights" else "about", frac_stops(D)))
+        self._exposure_limit(cam, D, isos if iso_ok else [], fs)
         if kind == "highlights":
             now = self.history[-1].t
             self.nd_advice_since = self.nd_advice_since or now
@@ -489,6 +520,31 @@ class Brain:
         else:
             self.nd_advice_since = None
         return None, advice
+
+    def _exposure_limit(self, cam, D, isos, fs):
+        """Exposure can't be fixed: say which of the director's limits stopped it (ISO, aperture).
+        isos/fs: the values the brain may use (empty if that setting isn't approved or ISO is locked)."""
+        darker = D < 0
+        parts, tiles = [], {}
+        if isos and cam.iso == (isos[0] if darker else isos[-1]):
+            parts.append("ISO %d" % cam.iso)
+            tiles["IsoSensitivity"] = "At your %d limit" % cam.iso
+        look_note = ""
+        if fs:
+            edge = self.ranges.fnumber[1] if darker else self.ranges.fnumber[0]
+            if abs(cam.fnumber - edge) < 0.05:
+                parts.append("f/%g" % edge)
+                tiles["FNumber"] = "At your f/%g limit" % edge
+            else:
+                look_note = "; f/%g is as far as the %s look goes" % (cam.fnumber, self.look.name.split(" (")[0])
+        if not parts:
+            self.limits.pop("exposure", None)
+            return
+        self.limits["exposure"] = {
+            "text": "Scene is too %s for your %s %s." % ("bright" if darker else "dark", " and ".join(parts),
+                                                        "limits" if len(parts) > 1 else "limit"),
+            "detail": "Needs about %s stops %s light%s" % (frac_stops(D), "less" if darker else "more", look_note),
+            "tiles": tiles}
 
     def _choose_iso(self, iso, step, D, isos, headroom):
         want = iso * 2 ** step
@@ -524,13 +580,19 @@ class Brain:
             return ["WB is on Auto and can drift mid-shot: set a Kelvin value before rolling"]
         return []
 
-    def _white_balance(self, cam, obs, settling):
-        if cam.wb_mode != "ColorTemp" or not cam.wb_kelvin or settling:
-            return None
+    def _trusted_light(self):
+        """The light's color (K) if the color reading has been trustworthy for the last few seconds, else None."""
         trusted = [o.light_k for o in self.history if o.light_k and o.color_confidence in ("medium", "high")]
         if len(trusted) < max(3, 0.8 * len(self.history)) or self.history[-1].t - self.history[0].t < 2.5:
             return None
-        light = median(trusted)
+        return median(trusted)
+
+    def _white_balance(self, cam, obs, settling):
+        if cam.wb_mode != "ColorTemp" or not cam.wb_kelvin or settling:
+            return None
+        light = self._trusted_light()
+        if light is None:
+            return None
         if abs(1e6 / light - 1e6 / cam.wb_kelvin) < 20:        # within ~20 mired: leave it
             return None
         lo, hi = self.ranges.kelvin
@@ -538,4 +600,24 @@ class Brain:
         if target == cam.wb_kelvin:
             return None
         return Proposal("Colortemp", target, "%dK" % cam.wb_kelvin, "%dK" % target,
-                        "Light measures about %dK, WB is %dK: setting %dK" % (light, cam.wb_kelvin, target))
+                        "Light measures about %dK, WB is %dK: setting %dK%s" % (
+                            light, cam.wb_kelvin, target, "" if lo <= light <= hi else ", your limit"))
+
+    def _wb_limit(self, cam):
+        """WB sits at the end of the director's range because the light is beyond it (by more than ~20 mired)."""
+        if not self.may("Colortemp") or cam.wb_mode != "ColorTemp" or not cam.wb_kelvin:
+            self.limits.pop("wb", None)
+            return
+        light = self._trusted_light()
+        if light is None:
+            return                                   # no trustworthy reading right now: keep what's shown
+        lo, hi = self.ranges.kelvin
+        warm = light < lo and cam.wb_kelvin <= lo and 1e6 / light - 1e6 / lo >= 20
+        cool = light > hi and cam.wb_kelvin >= hi and 1e6 / hi - 1e6 / light >= 20
+        if not (warm or cool):
+            self.limits.pop("wb", None)
+            return
+        edge = lo if warm else hi
+        self.limits["wb"] = {"text": "Light is %s than your %dK limit." % ("warmer" if warm else "cooler", edge),
+                             "detail": "Measures about %dK; WB held at %dK" % (round(light, -1), cam.wb_kelvin),
+                             "tiles": {"Colortemp": "At your %dK limit" % edge}}

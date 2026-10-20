@@ -9,8 +9,10 @@ const WINDOW_S = 60;                  // chart time window
 const KIND = {
   change: "Changed", would_change: "Would change", advice: "Advice", kill: "Kill switch", pause: "Auto",
   lock: "Lock", look: "Look", face: "Face", mark: "Mark", start: "Start", end: "End", refused: "Refused", error: "Error", restore: "Restore",
-  test: "Test",
+  test: "Test", limit: "Limit",
 };
+const LIMIT_ICON = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M10.25 1.5v9" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 6h6M5.2 3.6 7.6 6 5.2 8.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
+const LIMIT_TILE = { IsoSensitivity: "iso", ShutterSpeed: "shutter", FNumber: "fnumber", Colortemp: "wb" };
 const ICONS = {
   AUTO: '<svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="4.5" fill="currentColor"/></svg>',
   SUGGESTING: '<svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 2a9 9 0 0 1 0 18z" fill="currentColor"/></svg>',
@@ -107,6 +109,14 @@ function render() {
   $("status").textContent = s.killed ? "The agent has stopped and the bridge is locked. The camera is yours." : s.status;
   const adv = $("advice");
   adv.replaceChildren(...(s.killed ? [] : s.advice.slice(0, 4).map((a) => el("li", "", a))));
+  $("limits").replaceChildren(...(s.killed ? [] : s.limits || []).map((x) => {
+    const k = el("span", "lim-k");
+    k.innerHTML = LIMIT_ICON;
+    k.append("Limit");
+    const li = el("li");
+    li.append(k, el("span", "lim-text", x.text), el("span", "lim-detail", x.detail));
+    return li;
+  }));
   const last = s.events.filter((e) => e.kind === "change").pop();
   $("last-change").hidden = !last;
   if (last) { $("last-change-t").textContent = clock(last.t); $("last-change-text").textContent = last.text; }
@@ -171,13 +181,18 @@ function renderControls(s) {
 function wouldNote(advice, test) {
   const a = advice.find((x) => x.startsWith("Would change, not approved yet:") && test(x));
   if (!a) return null;
-  const m = a.match(/→ ([^;,]+)/) || a.match(/setting (\S+)$/);
+  const m = a.match(/→ ([^;,]+)/) || a.match(/setting (\d+K)/);
   return m ? m[1].trim() : null;
 }
 
 function renderTiles(s) {
   const c = s.camera, adv = s.advice || [];
+  const atLimit = {};                        // tile -> "At your 2800K limit" while a limit holds the agent back
+  for (const x of s.killed ? [] : s.limits || []) {
+    for (const [setting, note] of Object.entries(x.tiles)) atLimit[LIMIT_TILE[setting]] = note;
+  }
   const set = (id, value, note, cls) => {
+    if (atLimit[id]) { note = atLimit[id]; cls = "limit"; }
     const v = $("v-" + id);
     if (shownCamera[id] !== undefined && shownCamera[id] !== value) {
       const tile = v.closest(".tile");

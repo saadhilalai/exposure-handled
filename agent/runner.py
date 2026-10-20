@@ -104,6 +104,7 @@ class AgentRunner:
         self.changes = []                       # changes the agent made (and the camera confirmed)
         self.change_times = deque()
         self.shown_advice = {}
+        self.active_limits, self.logged_limits = set(), {}
         self.last_would = (None, -1e9)
         self.last_status = None
         self.frame_no = -1
@@ -228,6 +229,7 @@ class AgentRunner:
             out = self.brain.update(observation_from_report(report, t), self.cam)
         self.output = out
         self._advice(out.advice, t)
+        self._limits(out.limits, t)
         if t - self.t_history >= HISTORY_EVERY_S:
             self._sample(t)
         if out.proposal is not None:
@@ -284,6 +286,14 @@ class AgentRunner:
             if t - self.shown_advice.get(same, -1e9) >= ADVICE_REPEAT_S:
                 self._event("advice", a)
             self.shown_advice[same] = t
+
+    def _limits(self, limits, t):
+        """A limit goes in the decisions feed when it starts; the dashboard shows it for as long as it lasts."""
+        for x in limits:
+            if x["text"] not in self.active_limits and t - self.logged_limits.get(x["text"], -1e9) >= ADVICE_REPEAT_S:
+                self.logged_limits[x["text"]] = t
+                self._event("limit", "%s %s" % (x["text"], x["detail"]), settings=sorted(x["tiles"]))
+        self.active_limits = {x["text"] for x in limits}
 
     def _status(self, text):
         quiet = re.sub(r"waiting [0-9.]+ s", "waiting", text)
@@ -404,6 +414,7 @@ class AgentRunner:
                            "frame_rate": self.ctx.frame_rate, "recording": self.cam.recording,
                            "tone": self.ctx.tone_source},
                 "status": out.status if out else "Starting", "advice": list(dict.fromkeys(out.advice)) if out else [],
+                "limits": out.limits if out and not self.killed else [],
                 "events": list(self.events)[-80:], "history": list(self.history),
                 "people": self.book.summary(), "faces_available": self.book.available,
             }

@@ -90,7 +90,7 @@ It used all four settings, made 6 changes and stayed within every range. Afterwa
 
 1. **Shutter 1/50 ↔ 1/60 measured 0.43 stop instead of 0.26**, in both directions and steady from frame to frame. Not explained yet. One possibility is that the lamp flickers with the mains power and 1/50 doesn't line up with it. **To check:** repeat in daylight. It matters little in practice, because the agent only uses shutter to hold 180°.
 2. **The agent only trusts its WB reading when WB is within about 100 mired of the light.** Further off, the picture is so tinted that the "is this pixel neutral?" test rejects everything ("confidence low"). Then the agent leaves WB alone; it doesn't guess. So it can fix a WB that's somewhat off, but not a daylight setting under tungsten. Likely fix: judge "neutral" relative to the picture's overall tint. That's why Test 3 started at 3700K, the farthest point it still trusted.
-3. **The lamp is warmer than your WB range allows** (≈2620K vs the 2800K floor). The agent correctly stopped at 2800K, but it doesn't say why. It should add advice like "Light is about 2600K, below your 2800K limit."
+3. **The lamp is warmer than your WB range allows** (≈2620K vs the 2800K floor). The agent correctly stopped at 2800K, but it didn't say why. **Fixed the same evening** (your request): the dashboard now says "Light is warmer than your 2800K limit." See [step6-dashboard.md](step6-dashboard.md#limits-added-2026-10-19).
 4. Aperture steps measured 0.22–0.38 stop for nominal ⅓ stops: the lens's marked steps aren't exact. That's fine for control.
 5. The calibration assumes the wall is neutral white. Off-white paint would shift the light reading, not the gain.
 

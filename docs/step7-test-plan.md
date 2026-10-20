@@ -108,7 +108,7 @@ Each one is reported as **supported / not supported / unclear**, with the number
   - That's 7 sets of 3 clips. If a take is unusable for a reason that **isn't** exposure (focus miss, someone walks in, recording failed), use that person's next round, and write down why *before* anyone rates.
 - **Same treatment:**
   - **The same LUT your FX2's Display LUT is set to** (its selected Base Look), identical for every clip, no other grading. It's read from the camera, read-only, the next time it's connected (`tools/read_display_lut.py`), and the exact file is named here **before any clip is graded**:
-    - **LUT file: _none yet: the camera's Base Look is "S-Log3", which applies no conversion; the director picks before grading_** (Base Look: S-Log3 (Preset, value 0x0001), Display LUT: OFF, read on 2026-10-19)
+    - **LUT file: Sony's official s709 LUT for S-Gamut3.Cine/S-Log3, from Sony's "s709 cubes" download (s709Cubes.zip, pro.sony LUT library), the director's pick on 2026-10-19; exact .cube name: ___ (written here when downloaded, before any grading)** (camera read on 2026-10-19: Base Look S-Log3 (Preset, value 0x0001), Display LUT OFF, so no LUT was selected on the camera; s709 is also one of the FX2's built-in Base Looks; movies record in S-Gamut3.Cine)
   - the same 12-second window, starting 3 s before the mark (S5: the middle 12 s of the block)
   - no audio, same export settings
   - file names are random codes

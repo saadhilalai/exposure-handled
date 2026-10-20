@@ -8,20 +8,33 @@ in sessions/step7-blind/ (never in the repo).
 
   python tools/rater_server.py prepare clips.json      copy the 21 exported clips in under random names
   python tools/rater_server.py links 15                 make 15 anonymous links
-  python tools/rater_server.py serve [--host 0.0.0.0]   run the page (default: this Mac only)
-  python tools/rater_server.py results                  count it the way the plan says
+  python tools/rater_server.py share                    put it online (HTTPS) and print the links to send
+  python tools/rater_server.py serve [--host 0.0.0.0]   or: this Mac only / the same Wi-Fi only
+  python tools/rater_server.py results                  count it: only raters who finished every scene
+
+Online (director, 2026-10-19: "host it online so friends can rate from anywhere"): `share` runs
+the page on this Mac and opens a temporary Cloudflare tunnel (cloudflared, no account) to it.
+The address is a random https://....trycloudflare.com and lasts as long as `share` runs, so
+keep it running, and the Mac awake, until the ratings are in. The page stays the only way in:
+no file list, unknown codes get "not found", nothing is cached on the way.
 
 clips.json: {"sets": [{"id": "S1_A", "clips": {"agent": "path.mp4", "fx2auto": "...", "manual": "..."}}, ...]}
 """
 import argparse
 import json
+import os
 import random
 import re
 import secrets
 import shutil
+import signal
 import statistics
+import subprocess
 import sys
 import threading
+import time
+import urllib.request
+from collections import Counter
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -36,6 +49,13 @@ METHODS = ["agent", "fx2auto", "manual"]
 TOKEN = re.compile(r"[a-z0-9]{10}")
 TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
          ".png": "image/png", ".woff2": "font/woff2"}
+MAX_ANSWERS_PER_RATER = 60               # 7 scenes, changed a few times at most; more is someone playing with it
+CHUNK = 256 * 1024                       # clips are streamed, never read into memory whole
+CSP = ("default-src 'self'; media-src 'self'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; "
+       "form-action 'none'")
+TUNNEL_URL = re.compile(r"https://[a-z0-9-]+\.trycloudflare\.com")
+DNS_HEAD_START_S = 20     # a new address needs ~10 s to reach public DNS; asking sooner gets "not found" cached here
+COUNT_RULE = "only raters who finished every scene count (director, 2026-10-19, decided before any ratings)"
 
 
 class Study:
@@ -47,6 +67,9 @@ class Study:
         raters = self.data / "raters.json"
         self.tokens = set(json.loads(raters.read_text())["tokens"]) if raters.exists() else set()
         self.lock = threading.Lock()
+        answers = self.data / "answers.jsonl"
+        self.per_rater = Counter(json.loads(a)["rater"] for a in answers.read_text().splitlines()) \
+            if answers.exists() else Counter()
 
     def plan(self, token):
         """This rater's scene order and A/B/C labels (the same every time they open the link)."""
@@ -75,8 +98,12 @@ class Study:
         labels = plan[set_id]
         entry = {"time": datetime.now().isoformat(timespec="seconds"), "rater": token, "set": set_id,
                  "best": labels[best], "ratings": {labels[k]: v for k, v in ratings.items()}, "shown_as": labels}
-        with self.lock, (self.data / "answers.jsonl").open("a") as f:
-            f.write(json.dumps(entry) + "\n")
+        with self.lock:
+            if self.per_rater[token] >= MAX_ANSWERS_PER_RATER:
+                raise ValueError("too many answers from this link")
+            self.per_rater[token] += 1
+            with (self.data / "answers.jsonl").open("a") as f:
+                f.write(json.dumps(entry) + "\n")
 
 
 def prepare(clips_json, data=DATA):
@@ -105,6 +132,7 @@ def make_links(n, base, data=DATA):
                                 "tokens": tokens + new}, indent=1))
     for t in new:
         print("%s/r/%s" % (base.rstrip("/"), t))
+    return new
 
 
 # ------------------------------------------------------------------- counting
@@ -131,14 +159,24 @@ def interval(values, boot=10000, seed=7):
 
 
 def count(data=DATA, boot=10000):
-    answers = last_answers(data)
-    raters = sorted({a["rater"] for a in answers})
+    """The plan's counting, over the raters who answered every scene. A rater who stopped partway
+    isn't counted at all (director's rule, set 2026-10-19 before any ratings came in)."""
+    scenes = {s["id"] for s in json.loads((data / "manifest.json").read_text())["sets"]}
+    every = last_answers(data)
+    answered = {}
+    for a in every:
+        answered.setdefault(a["rater"], set()).add(a["set"])
+    finished = {r for r, done in answered.items() if done >= scenes}
+    answers = [a for a in every if a["rater"] in finished]
+    raters = sorted(finished)
     picks = {m: sum(a["best"] == m for a in answers) for m in METHODS}
     per_set = {}
     for a in answers:
         per_set.setdefault(a["set"], {m: 0 for m in METHODS})[a["best"]] += 1
     means = {m: rater_means(answers, m) for m in METHODS}
-    out = {"raters": len(raters), "answers": len(answers), "picks": picks, "picks_per_set": per_set,
+    out = {"rule": COUNT_RULE, "raters": len(raters), "answers": len(answers),
+           "not_counted": {"raters": len(answered) - len(finished), "answers": len(every) - len(answers)},
+           "picks": picks, "picks_per_set": per_set,
            "mean_rating": {m: round(statistics.fmean(means[m].values()), 2) if means[m] else None for m in METHODS},
            "interval": {m: interval(list(means[m].values()), boot) if len(means[m]) > 1 else None for m in METHODS}}
     for other in ("fx2auto", "manual"):
@@ -158,17 +196,22 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, *args):          # no request log: no IP addresses kept
         pass
 
-    def send(self, code, body, ctype="application/json", extra=()):
-        data = body if isinstance(body, bytes) else json.dumps(body).encode()
+    def headers_out(self, code, ctype, length, extra=()):
         self.send_response(code)
         self.send_header("Content-Type", ctype)
-        self.send_header("Content-Length", str(len(data)))
-        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(length))
+        self.send_header("Cache-Control", "no-store")            # also keeps clips out of the tunnel's cache
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("X-Robots-Tag", "noindex, nofollow")
+        self.send_header("Content-Security-Policy", CSP)
         for k, v in extra:
             self.send_header(k, v)
         self.end_headers()
+
+    def send(self, code, body, ctype="application/json", extra=()):
+        data = body if isinstance(body, bytes) else json.dumps(body).encode()
+        self.headers_out(code, ctype, len(data), extra)
         if self.command != "HEAD":
             self.wfile.write(data)
 
@@ -211,12 +254,25 @@ class Handler(BaseHTTPRequestHandler):
             end = min(size - 1, int(rng.group(2))) if rng.group(1) and rng.group(2) else size - 1
             if start >= size or start > end:
                 return self.send(416, b"", "video/mp4", [("Content-Range", "bytes */%d" % size)])
+            return self.stream(206, path, start, end, [("Content-Range", "bytes %d-%d/%d" % (start, end, size))])
+        return self.stream(200, path, 0, size - 1)
+
+    def stream(self, code, path, start, end, extra=()):
+        self.headers_out(code, "video/mp4", end - start + 1, [("Accept-Ranges", "bytes")] + list(extra))
+        if self.command == "HEAD":
+            return
+        left = end - start + 1
+        try:
             with path.open("rb") as f:
                 f.seek(start)
-                data = f.read(end - start + 1)
-            return self.send(206, data, "video/mp4", [("Content-Range", "bytes %d-%d/%d" % (start, end, size)),
-                                                       ("Accept-Ranges", "bytes")])
-        return self.send(200, path.read_bytes(), "video/mp4", [("Accept-Ranges", "bytes")])
+                while left > 0:
+                    chunk = f.read(min(CHUNK, left))
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+                    left -= len(chunk)
+        except (BrokenPipeError, ConnectionResetError):
+            pass                                  # the viewer skipped ahead or closed the page
 
     def do_POST(self):
         parts = urlparse(self.path).path.strip("/").split("/")
@@ -237,9 +293,79 @@ def serve(study, host="127.0.0.1", port=8766):
     return server
 
 
+def share(study, port=0, data=DATA):
+    """Online: this page on this Mac only, plus a temporary Cloudflare tunnel (HTTPS) as the one way in."""
+    exe = shutil.which("cloudflared")
+    if not exe:
+        sys.exit("cloudflared isn't installed. Install it with: brew install cloudflared")
+    if not study.tokens:
+        sys.exit("no links yet: run `links 15` first")
+    def stop(*_):
+        raise KeyboardInterrupt
+    # Ctrl-C, closing the terminal, or `kill` all take it offline: the tunnel must never outlive this program.
+    for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        signal.signal(sig, stop)
+    server = serve(study, "127.0.0.1", port)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    local = "http://127.0.0.1:%d" % server.server_address[1]
+    tunnel = subprocess.Popen([exe, "tunnel", "--no-autoupdate", "--url", local],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+    awake = subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())]) if shutil.which("caffeinate") else None
+    try:
+        base = None
+        for line in tunnel.stderr:                # cloudflared prints the address it was given
+            m = TUNNEL_URL.search(line)
+            if m:
+                base = m.group(0)
+                break
+        if not base:
+            print("The tunnel didn't start (no internet?). Nothing is online.")
+            return
+        threading.Thread(target=lambda: [None for _ in tunnel.stderr], daemon=True).start()   # keep the pipe drained
+        print("Got %s. Giving it %d s to reach the internet's address books, then checking it..." % (base, DNS_HEAD_START_S),
+              flush=True)
+        time.sleep(DNS_HEAD_START_S)
+        works = reachable(base + "/static/rater.css")
+        print("Checked over the internet: it works." if works else
+              "Couldn't confirm it from this Mac yet (its DNS can lag a minute or two). Try a link on a phone on "
+              "mobile data before sending them.")
+        links = ["%s/r/%s" % (base, t) for t in sorted(study.tokens)]
+        (data / "links.txt").write_text("\n".join(links) + "\n")
+        print("Online at %s (from this Mac: %s). Ctrl-C takes it offline.\n" % (base, local))
+        print("Send one link per person (also saved in %s; don't note who got which):" % (data / "links.txt"))
+        print("\n".join(links), flush=True)
+        tunnel.wait()
+        print("The tunnel stopped, so the links no longer work. Run share again and send the new links.")
+    except KeyboardInterrupt:
+        print("\nOffline.")
+    finally:
+        tunnel.terminate()
+        try:
+            tunnel.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            tunnel.kill()
+        server.shutdown()
+        server.server_close()
+        if awake:
+            awake.terminate()
+
+
+def reachable(url, tries=24, every=5.0):
+    """Does the public address answer yet? (Up to about 2 minutes.)"""
+    for _ in range(tries):
+        try:
+            with urllib.request.urlopen(url, timeout=8) as r:
+                if r.status == 200:
+                    return True
+        except OSError:
+            pass
+        time.sleep(every)
+    return False
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["prepare", "links", "serve", "results"])
+    ap.add_argument("command", choices=["prepare", "links", "share", "serve", "results"])
     ap.add_argument("arg", nargs="?")
     ap.add_argument("--data", default=str(DATA))
     ap.add_argument("--host", default="127.0.0.1", help="0.0.0.0 lets phones on the same Wi-Fi open it")
@@ -252,6 +378,8 @@ def main():
         prepare(args.arg, data)
     elif args.command == "links":
         make_links(int(args.arg or 10), args.base or "http://%s:%d" % (args.host, args.port), data)
+    elif args.command == "share":
+        share(Study(data), args.port, data)
     elif args.command == "results":
         result = count(data)
         (data / "results.json").write_text(json.dumps(result, indent=1))

@@ -29,7 +29,13 @@ The dashboard shows a red **REC** chip, plus an amber **"Rec switch on · S1_R3_
 
 It prints one line to copy into the plan, e.g. *"Base Look: … (User, value 0x0101), Display LUT: ON, read on …"*. Then you find that LUT's `.cube` file and its exact file name goes into the plan **before any clip is graded**.
 
-**Read on 2026-10-19:** Display LUT **OFF**, Base Look **"S-Log3"** (Preset, value 0x0001), which applies no conversion. The camera's other Base Looks are s709, 709(800%) and User1–16, all empty ("No Import"). So there's no LUT file to name yet: the director picks one before any grading, and the plan's LUT line records what was read.
+**Read on 2026-10-19:** Display LUT **OFF**, Base Look **"S-Log3"** (Preset, value 0x0001), which applies no conversion. The camera's other Base Looks are s709, 709(800%) and User1–16, all empty ("No Import"). So there was no LUT file to name.
+
+**Picked 2026-10-19: s709.** The director chose Sony's official s709 for the blind test. The plan's LUT line now says so.
+- **Where it comes from:** Sony's **"s709 cubes"** download (`s709Cubes.zip`, 483 KB) on the [s709 Monitor Look page](https://pro.sony/ue_US/product-resources/knowledge-panel/s709-monitor-look-white-paper) of Sony's LUT library.
+- **Which version:** the cube for **S-Gamut3.Cine/S-Log3**. The FX2 records movies in S-Gamut3.Cine: `MovieShootingModeColorGamut` = 1, read 2026-10-19. The other gamut setting, `LogShootingModeColorGamut`, is for stills.
+- **Still to do, by the director:** download the zip, which means accepting Sony's terms, so it's your click, not mine. Then write the exact `.cube` file name into the plan's LUT line, before any clip is graded.
+- The file stays out of the repo, like the SDK.
 
 ## 3. The printable run sheet
 
@@ -47,9 +53,10 @@ It prints one line to copy into the plan, e.g. *"Base Look: … (User, value 0x0
 ```
 python tools/rater_server.py prepare clips.json     # copy the 21 exported clips in under random names
 python tools/rater_server.py links 15               # 15 anonymous links (random codes)
-python tools/rater_server.py serve --host 0.0.0.0   # phones on the same Wi-Fi can open it
-python tools/rater_server.py results                # count it the way the plan says
+python tools/rater_server.py share                  # put it online (HTTPS) and print the 15 links to send
+python tools/rater_server.py results                # count it: only raters who finished every scene
 ```
+(`serve` is still there for this Mac only, or `serve --host 0.0.0.0` for the same Wi-Fi.)
 
 - **Anonymous:** a link is a random 10-character code. No name or email is asked for or stored, and nothing records who got which link (don't write it down either). The server keeps no request log, so no IP addresses either.
 - **Blind:**
@@ -64,7 +71,7 @@ python tools/rater_server.py results                # count it the way the plan 
 - **Checked:**
   - two raters went through all 7 scenes on a phone-size screen in Chrome, with no errors
   - clips stream with the byte ranges iPhones need
-  - 5 tests: own stable order per rater; the page never sees methods or scene names; last answer counts; "agent better" only when it clearly is, "no clear difference" when it isn't
+  - 8 tests: own stable order per rater; the page never sees methods or scene names; last answer counts; "agent better" only when it clearly is, "no clear difference" when it isn't; only finishers count; ready for the open internet (streaming, headers, refusals, answer cap); finds the tunnel's address
 
 | | |
 |---|---|
@@ -72,6 +79,38 @@ python tools/rater_server.py results                # count it the way the plan 
 
 (Stand-in clips from the fake camera, no people.)
 
-**Not decided by the plan, so it needs your call before any ratings come in:**
-1. **A rater who stops halfway.** Right now every answered scene counts. The alternative is to count only raters who finished all 7.
-2. **Raters who aren't on your Wi-Fi.** The page runs on this Mac, so friends elsewhere need a way in. Options are a temporary secure tunnel, or meeting in person.
+**Decided by the director on 2026-10-19, before any ratings came in** (the plan left these open):
+1. **Only raters who finish every clip count.**
+   - A rater who stops partway isn't counted at all. `results` says how many were left out, and states the rule.
+   - The page tells raters up front: "Your answers count once you've rated every scene". They can reopen their link to pick up where they left off.
+2. **Online, anonymous IDs only, so friends can rate from anywhere.** See below.
+
+### Online (`share`)
+
+`share` runs the page on this Mac (this computer only) and opens a **temporary Cloudflare tunnel** to it:
+- **The address:** a random `https://….trycloudflare.com`.
+  - Free, no account, HTTPS.
+  - Cloudflare picks it from random words, sometimes odd ones. If you don't like it, stop and run `share` again before sending anything.
+- **Ready before the links print.** It waits about 20 s for the new address to reach the internet's DNS, checks it from outside, and only then prints the links. They're also saved in `sessions/step7-blind/links.txt`.
+- **It's online only while `share` runs.**
+  - Keep the Mac on and the lid open, on power, until the ratings are in. `share` keeps the Mac from idle-sleeping.
+  - Ctrl-C, closing the terminal, or `kill` takes it offline. The tunnel stops with it; all three were tested.
+  - If the tunnel ever stops, the old links stop working: run `share` again and send the new ones. Codes, answers and scene orders all stay.
+- **Anonymous:**
+  - Raters only ever have a random code, and the server still keeps no log and no IP addresses.
+  - **Honest note:** Cloudflare carries the traffic, so like any website host it sees visitors' IP addresses. Clips and answers pass through it encrypted on the way, but it doesn't store them: every response says `no-store`, and Cloudflare reported each clip as not cached (`DYNAMIC`).
+- **Hardened for the open internet:**
+  - Clips stream in pieces, never loaded whole.
+  - A strict content policy: the page only loads its own files, and can't be framed by other sites.
+  - `noindex`, so search engines skip it.
+  - Unknown codes, file lists and `..` paths all get "not found".
+  - A link can save at most 60 answers.
+- **Tested for real (2026-10-19) with 21 test-pattern clips, no people:**
+  - put online, opened over the internet in a phone-size Chrome
+  - a half-finished link resumed at scene 2, the clips played, and all 7 scenes saved; `results` counted that rater
+  - unknown code → not found
+  - taken offline each time; the public address stopped answering
+  - It was online for a few minutes in total, at random addresses that were never shared.
+- **Needs:** `brew install cloudflared` (installed 2026-10-19).
+
+![Online, on a phone](screenshots/step7_rater_online_intro.png)
