@@ -126,7 +126,7 @@ function makeDials(parent, view, onUser, size) {
 
 // luminance histogram of a picture, clipped bins in red
 const histoTmp = document.createElement("canvas"); histoTmp.width = 64; histoTmp.height = 36;
-const histoCtx = histoTmp.getContext("2d", { willReadFrequently: true });
+const histoCtx = histoTmp.getContext("2d");    // GPU-side scale-down, then read back only 64 × 36 pixels
 function histogram(src, ctx, w, h) {
   histoCtx.drawImage(src, 0, 0, 64, 36);
   const d = histoCtx.getImageData(0, 0, 64, 36).data, n = 40, bins = new Array(n).fill(0);
@@ -152,8 +152,10 @@ function hero() {
   const v = (views.hero = sim.view(canvas, { scene: HERO_SCENE }));
   sim.observe(v);
   // a fixed render size, so the picture doesn't reallocate while the frame shrinks into the camera
-  const fit = () => { const d = Math.min(devicePixelRatio || 1, 1.5), cap = low ? 900 : 1680; let w = Math.round(innerWidth * d), h = Math.round(innerHeight * d); if (w > cap) { h = Math.round(h * cap / w); w = cap; } v.size = [w, h]; };
+  let level = 1;
+  const fit = () => { const d = Math.min(devicePixelRatio || 1, 1.5), cap = (low ? 900 : 1440) * level; let w = Math.round(innerWidth * d), h = Math.round(innerHeight * d); if (w > cap) { h = Math.round(h * cap / w); w = cap; } v.size = [w, h]; };
   fit(); addEventListener("resize", fit);
+  v.setLevel = (l) => { if (l !== level) { level = l; fit(); } };
   Object.assign(v.a, { iso: 12800, shutter: 1 / 48, fnum: 2.8, wb: 6500 });
   const feed = Feed($("#hero-feed"), { max: 4 });
   const hud = { iso: $("#h-iso"), shutter: $("#h-sh"), fnum: $("#h-f"), wb: $("#h-wb") };
@@ -177,7 +179,7 @@ function hero() {
     const m = sim.meter(HERO_SCENE, view.a, view.scene);
     needle.style.left = clamp((m.subject + 3) / 6, 0, 1) * 100 + "%";
     const now = performance.now();
-    if (now - lastH > 180 && hc.offsetParent) { lastH = now; histogram(view.canvas, hx, 120, 44); }
+    if (now - lastH > 320 && hc.offsetParent && prog.hero < 0.1) { lastH = now; histogram(view.canvas, hx, 120, 44); }
   };
   // title hidden until the AI is done
   const lines = $$("#hero-title .in");
@@ -251,6 +253,7 @@ function heroPull() {
         vf.style.width = W + (r.width - W) * e + "px"; vf.style.height = H + (r.height - H) * e + "px";
         vf.style.borderRadius = 2 + 8 * e + "px";
         vf.style.opacity = 1 - smooth(0.86, 0.97, p);
+        if (views.hero) { views.hero.setLevel(e < 0.25 ? 1 : e < 0.6 ? 0.5 : 0.3); views.hero.hold = p > 0.975; }
       } else {
         vf.style.opacity = 1 - smooth(0.4, 0.9, p);
       }
@@ -406,7 +409,7 @@ function tryIt() {
     needle.className = "ev-needle" + (off ? " over" : "");
     ro.textContent = (m.subject >= 0 ? "+" : "−") + Math.abs(m.subject).toFixed(1); ro.classList.toggle("off", off);
     const now = performance.now();
-    if (now - lastH > 150) { lastH = now; histogram(view.canvas, hx, 240, 56); }
+    if (now - lastH > 300) { lastH = now; histogram(view.canvas, hx, 240, 56); }
   };
   let greeted = false;
   ScrollTrigger.create({ trigger: "#sim", start: "top 75%", once: true, onEnter: async () => { if (greeted) return; greeted = true; await feed.say("Exposure's good. Your turn: break it.", "done", 500); await feed.say("Turn any dial. Then let me fix it.", "", 400); } });
@@ -668,7 +671,7 @@ function finale() {
     gsap.to(S, { explode: 0, duration: 0.5, ease: "power4.in", onComplete: () => {
       cam3d.flashSweep(); sound.snap();
       gsap.fromTo("#cam3d", { x: -8 }, { x: 0, duration: 0.5, ease: "elastic.out(1.2, 0.3)" });
-      Object.assign(S, { dist: 5.2, pitch: 0.16, tx: 0, ty: 0.06, tz: 0.25, turntable: 1, frameY: mobile() ? -0.12 : -0.1 });
+      Object.assign(S, { dist: mobile() ? 8.2 : 5.2, pitch: 0.16, tx: 0, ty: 0.06, tz: 0.25, turntable: 1, frameY: mobile() ? -0.16 : -0.1 });
       gsap.to(lines, { yPercent: 0, duration: 1.2, ease: "expo.out", stagger: 0.1 });
       gsap.to(cta, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", delay: 0.35 });
     } });

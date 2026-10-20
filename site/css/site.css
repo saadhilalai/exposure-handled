@@ -498,6 +498,8 @@ html:not(.motion) .cam3d { opacity: .5; }
   .dial { --size: 72px; }
   .dial-read b { font-size: 16px; }
   .controls { padding: 16px 12px; gap: 18px; }
+  .actions { flex-direction: column; }
+  .ai-btn { white-space: nowrap; }
   .game-card { margin: 0 12px; padding: 14px; min-height: 480px; }
   .g-play { grid-template-columns: minmax(0, 1fr); grid-template-areas: "screen" "dials"; }
   .g-bar { flex-direction: column; align-items: stretch; }

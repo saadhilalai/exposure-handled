@@ -522,7 +522,7 @@ export function createSim({ low = false } = {}) {
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, T.scene.t);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, T.tile.t);
     gl.uniform1i(P.dof.u.uSrc, 0); gl.uniform1i(P.dof.u.uTile, 1);
-    gl.uniform4fv(P.dof.u.uLens, lensVec(s, w)); gl.uniform2f(P.dof.u.uRes, w, h); gl.uniform1i(P.dof.u.uTaps, low ? 40 : 96);
+    gl.uniform4fv(P.dof.u.uLens, lensVec(s, w)); gl.uniform2f(P.dof.u.uRes, w, h); gl.uniform1i(P.dof.u.uTaps, low ? 36 : 72);
     gl.uniform4f(P.dof.u.uWin, win[0], win[1], win[2], win[3]);
     quad();
     gl.bindTexture(gl.TEXTURE_2D, dst.t); gl.generateMipmap(gl.TEXTURE_2D);
@@ -626,7 +626,7 @@ export function createSim({ low = false } = {}) {
   function render(now = performance.now()) {
     frame++;
     for (const v of views) {
-      if (!v.visible) continue;
+      if (!v.visible || v.hold) continue;
       v.time = now / 1000 - v.t0;
       renderView(v, now);
     }
