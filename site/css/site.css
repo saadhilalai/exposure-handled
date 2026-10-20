@@ -455,6 +455,13 @@ html.fc .big, html.fc .huge, html.fc .hero-title { color: #ff3b30; }
 html.fc .big em, html.fc .huge em, html.fc .hero-title em { color: #ffd23a; }
 html.fc .label, html.fc small, html.fc .foot { color: #2fd35a; }
 
+/* ---------- no 3D (WebGL off or failed): the camera chapter reads as a normal page ---------- */
+.no3d .inside, .no3d .finale { height: auto; }
+.no3d .inside-pin, .no3d .finale-pin { position: relative; height: auto; }
+.no3d .beat { position: relative; left: auto; top: auto; width: auto; max-width: 760px; padding: 14vh var(--gutter) 0; opacity: 1 !important; visibility: visible !important; transform: none !important; filter: none !important; }
+.no3d .inside-progress { display: none; }
+.no3d .finale-pin { padding: 22vh var(--gutter) 14vh; }
+
 /* ---------- no motion: everything readable in place ---------- */
 html:not(.motion) .beat { opacity: 1; visibility: visible; }
 html:not(.motion) .cam3d { opacity: .5; }

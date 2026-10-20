@@ -205,10 +205,13 @@ function hero() {
 const HERO_SCENE = 1;   // tungsten: warm lamp, blue dusk window, string lights
 const HERO_POSE = { yaw: Math.PI, pitch: 0.05, dist: 3.4, tx: -0.13, ty: -0.02, tz: -0.47, explode: 0, agents: 0, frameX: 0, frameY: 0, lift: 0, mode: "idle", focus: "lcd" };
 async function load3D() {
-  try {
-    const m = await import("./camera3d.js");
-    cam3d = m.createCamera3D($("#cam3d"), { low });
-  } catch (e) { console.warn("3D off:", e); cam3d = null; return; }
+  for (let attempt = 0; attempt < 2 && !cam3d; attempt++) {
+    try {
+      const m = await import("./camera3d.js" + (attempt ? "?retry" : ""));
+      cam3d = m.createCamera3D($("#cam3d"), { low: low || attempt > 0 });
+    } catch (e) { console.warn("3D off:", e); window.__3dError = String((e && e.stack) || e); cam3d = null; await wait(600); }
+  }
+  if (!cam3d) { html.classList.add("no3d"); return; }
   Object.assign(cam3d.state, HERO_POSE); cam3d.settle();
   if (sim && views.hero) {
     const lv = (views.lcd = sim.view(cam3d.lcdCanvas, { scene: HERO_SCENE, size: [640, 360] }));

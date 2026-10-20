@@ -61,6 +61,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--port", type=int, default=8780)
     args = ap.parse_args()
+    ThreadingHTTPServer.request_queue_size = 128   # the page asks for many files at once; the default 5 drops some
     server = ThreadingHTTPServer(("127.0.0.1", args.port), functools.partial(Handler, directory=str(SITE)))
     print("Site preview: http://127.0.0.1:%d/  (Ctrl-C to stop)" % args.port)
     try:
