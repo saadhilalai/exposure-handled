@@ -21,8 +21,6 @@ let sim = null, cam3d = null, data = null;
 const views = {};
 const prog = { hero: 0, inside: 0, try: 0, finale: 0 };
 
-main();
-
 async function main() {
   grain();
   if (!window.gsap) await new Promise((r) => addEventListener("load", r, { once: true }));
@@ -36,7 +34,7 @@ async function main() {
   heroPull();
   inside();
   if (sim) { tryIt(); game(); compare(); }
-  real(); safety(); dash(); finale();
+  real(); safety(); dash(); finale(); heads();
   await document.fonts.ready;
   ScrollTrigger.refresh();
 }
@@ -126,6 +124,18 @@ function makeDials(parent, view, onUser, size) {
   return out;
 }
 
+// luminance histogram of a picture, clipped bins in red
+const histoTmp = document.createElement("canvas"); histoTmp.width = 64; histoTmp.height = 36;
+const histoCtx = histoTmp.getContext("2d", { willReadFrequently: true });
+function histogram(src, ctx, w, h) {
+  histoCtx.drawImage(src, 0, 0, 64, 36);
+  const d = histoCtx.getImageData(0, 0, 64, 36).data, n = 40, bins = new Array(n).fill(0);
+  for (let i = 0; i < d.length; i += 4) bins[Math.min(n - 1, Math.floor(((d[i] * 0.2126 + d[i + 1] * 0.7152 + d[i + 2] * 0.0722) / 256) * n))]++;
+  const mx = Math.max(...bins.slice(1, n - 1), 1), bw = w / n;
+  ctx.clearRect(0, 0, w, h);
+  bins.forEach((b, i) => { ctx.fillStyle = i >= n - 2 ? "rgba(255,90,60,.95)" : "rgba(255,255,255,.72)"; const hh = Math.min(h - 2, (b / mx) * (h - 2)); ctx.fillRect(i * bw, h - hh, Math.max(1, bw - 1), hh); });
+}
+
 // the focus box sits on the reel, wherever the crop puts it
 function placeAF(box, view) {
   const c = view.canvas, w = c.clientWidth, h = c.clientHeight;
@@ -139,12 +149,12 @@ function placeAF(box, view) {
 // ============ 1 · viewfinder: the AI takes over ============
 function hero() {
   const canvas = $("#hero-canvas");
-  const v = (views.hero = sim.view(canvas, { scene: 0 }));
+  const v = (views.hero = sim.view(canvas, { scene: HERO_SCENE }));
   sim.observe(v);
   // a fixed render size, so the picture doesn't reallocate while the frame shrinks into the camera
   const fit = () => { const d = Math.min(devicePixelRatio || 1, 1.5), cap = low ? 900 : 1680; let w = Math.round(innerWidth * d), h = Math.round(innerHeight * d); if (w > cap) { h = Math.round(h * cap / w); w = cap; } v.size = [w, h]; };
   fit(); addEventListener("resize", fit);
-  Object.assign(v.a, { iso: 6400, shutter: 1 / 48, fnum: 2.8, wb: 3200 });
+  Object.assign(v.a, { iso: 12800, shutter: 1 / 48, fnum: 2.8, wb: 6500 });
   const feed = Feed($("#hero-feed"), { max: 4 });
   const hud = { iso: $("#h-iso"), shutter: $("#h-sh"), fnum: $("#h-f"), wb: $("#h-wb") };
   const hf = { iso: (x) => x, shutter: (x) => "1/" + Math.round(1 / x), fnum: (x) => "F" + x, wb: (x) => Math.round(x) + "K" };
@@ -161,23 +171,13 @@ function hero() {
   }, 42);
   // meter, focus box, histogram
   const af = $("#hero-af"), needle = $("#h-meter .needle"), hc = $("#h-histo"), hx = hc.getContext("2d");
-  const sm = document.createElement("canvas"); sm.width = 64; sm.height = 36;
-  const sx = sm.getContext("2d", { willReadFrequently: true });
   let lastH = 0;
   v.onFrame = (view) => {
     placeAF(af, view);
-    const m = sim.meter(0, view.a, view.scene);
+    const m = sim.meter(HERO_SCENE, view.a, view.scene);
     needle.style.left = clamp((m.subject + 3) / 6, 0, 1) * 100 + "%";
     const now = performance.now();
-    if (now - lastH > 180 && hc.offsetParent) {
-      lastH = now;
-      sx.drawImage(view.canvas, 0, 0, 64, 36);
-      const d = sx.getImageData(0, 0, 64, 36).data, bins = new Array(40).fill(0);
-      for (let i = 0; i < d.length; i += 4) bins[Math.min(39, Math.floor(((d[i] * 0.2126 + d[i + 1] * 0.7152 + d[i + 2] * 0.0722) / 256) * 40))]++;
-      const mx = Math.max(...bins.slice(0, 39), 1);
-      hx.clearRect(0, 0, 120, 44);
-      bins.forEach((b, i) => { hx.fillStyle = i >= 38 ? "rgba(255,90,60,.95)" : "rgba(255,255,255,.75)"; const hh = Math.min(42, (b / mx) * 42); hx.fillRect(i * 3, 44 - hh, 2, hh); });
-    }
+    if (now - lastH > 180 && hc.offsetParent) { lastH = now; histogram(view.canvas, hx, 120, 44); }
   };
   // title hidden until the AI is done
   const lines = $$("#hero-title .in");
@@ -185,19 +185,22 @@ function hero() {
   if (motion) gsap.set(lines, { yPercent: 110 });
   const intro = async () => {
     await wait(1100);
-    await runAI(v, 0, { feed, tally: $("#ai-tally"), onSet: (k, val) => setHud(k, val, true), speed: 0.85 });
+    await runAI(v, HERO_SCENE, { feed, tally: $("#ai-tally"), onSet: (k, val) => setHud(k, val, true), speed: 0.85 });
     af.classList.add("lock");
     reveal();
+    await wait(2600);
+    [...$("#hero-feed").children].slice(0, -1).forEach((li, i) => gsap.to(li, { opacity: 0, y: -8, duration: 0.5, delay: i * 0.06, ease: "power2.in" }));
   };
   if (motion) intro();
   else {
-    const plan = solve(sim, 0, { ...v.a });
+    const plan = solve(sim, HERO_SCENE, { ...v.a });
     Object.assign(v.a, plan.target); Object.keys(hud).forEach((k) => setHud(k, v.a[k]));
     feed.push(plan.final.msg, "done"); af.classList.add("lock");
   }
 }
 
 // ============ the 3D camera ============
+const HERO_SCENE = 1;   // tungsten: warm lamp, blue dusk window, string lights
 const HERO_POSE = { yaw: Math.PI, pitch: 0.05, dist: 3.4, tx: -0.13, ty: -0.02, tz: -0.47, explode: 0, agents: 0, frameX: 0, frameY: 0, lift: 0, mode: "idle", focus: "lcd" };
 async function load3D() {
   try {
@@ -206,7 +209,7 @@ async function load3D() {
   } catch (e) { console.warn("3D off:", e); cam3d = null; return; }
   Object.assign(cam3d.state, HERO_POSE); cam3d.settle();
   if (sim && views.hero) {
-    const lv = (views.lcd = sim.view(cam3d.lcdCanvas, { scene: 0, size: [640, 360] }));
+    const lv = (views.lcd = sim.view(cam3d.lcdCanvas, { scene: HERO_SCENE, size: [640, 360] }));
     lv.a = views.hero.a; lv.t0 = views.hero.t0; lv.visible = false;
   }
   if (!motion) {
@@ -386,19 +389,27 @@ function killSwitch() {
 function tryIt() {
   const v = (views.sim = sim.view($("#sim-canvas"), { scene: 0, maxW: 1440 }));
   sim.observe(v);
-  let sceneIdx = 0, busy = false;
-  Object.assign(v.a, { iso: 3200, shutter: 1 / 48, fnum: 2.8, wb: 3200 });
+  let sceneIdx = 1, busy = false;
+  v.setScene(1);
+  Object.assign(v.a, solve(sim, 1, { iso: 3200, shutter: 1 / 48, fnum: 2.8, wb: 3200 }).target);
   const feed = Feed($("#sim-feed"), { max: 7 });
   const tally = $("#sim-tally"), needle = $("#sim-needle"), af = $("#sim-af");
   const dials = makeDials($("#sim-dials"), v, () => { af.classList.remove("lock"); }, mobile() ? 64 : 92);
+  af.classList.add("lock");
+  const ro = $("#ro-subj"), hx = $("#sim-histo").getContext("2d");
+  let lastH = 0;
   v.onFrame = (view) => {
     placeAF(af, view);
     const m = sim.meter(sceneIdx, view.a, view.scene);
     needle.style.left = clamp((m.subject + 3) / 6, 0, 1) * 100 + "%";
-    needle.className = "ev-needle" + (m.subject > -0.05 ? " over" : m.subject < -0.85 ? " under" : "");
+    const off = m.subject > -0.05 || m.subject < -0.85;
+    needle.className = "ev-needle" + (off ? " over" : "");
+    ro.textContent = (m.subject >= 0 ? "+" : "−") + Math.abs(m.subject).toFixed(1); ro.classList.toggle("off", off);
+    const now = performance.now();
+    if (now - lastH > 150) { lastH = now; histogram(view.canvas, hx, 240, 56); }
   };
   let greeted = false;
-  ScrollTrigger.create({ trigger: "#sim", start: "top 75%", once: true, onEnter: async () => { if (greeted) return; greeted = true; await feed.say("Turn the dials. Break it.", "", 500); await feed.say("Then let me fix it.", "", 400); } });
+  ScrollTrigger.create({ trigger: "#sim", start: "top 75%", once: true, onEnter: async () => { if (greeted) return; greeted = true; await feed.say("Exposure's good. Your turn: break it.", "done", 500); await feed.say("Turn any dial. Then let me fix it.", "", 400); } });
   const go = async () => {
     if (busy) return; busy = true; $("#sim-ai").disabled = true;
     await runAI(v, sceneIdx, { feed, dials, tally });
@@ -430,6 +441,7 @@ function game() {
   const showBest = () => { const el = $("#g-best"); if (best) { el.hidden = false; el.textContent = "Your best · " + best; } };
   showBest();
   const ring = $("#g-timer");
+  gv.setScene(3); Object.assign(gv.a, { iso: 6400, shutter: 1 / 15, fnum: 1.8, wb: 9000 });
   function round() {
     sceneIdx = Math.floor(Math.random() * 4);
     let s, tries = 0;
@@ -513,6 +525,16 @@ function compare() {
       .to(o, { x: 0.84, duration: 1.3, ease: "power2.inOut", onUpdate: () => setSplit(o.x) })
       .to(o, { x: 0.5, duration: 0.9, ease: "power3.out", onUpdate: () => setSplit(o.x) });
   } });
+}
+
+// section headlines rise out of their lines as they arrive
+function heads() {
+  if (!motion) return;
+  $$(".sec-head .big").forEach((h) => {
+    const ins = $$(".in", h);
+    gsap.set(ins, { yPercent: 105 });
+    ScrollTrigger.create({ trigger: h, start: "top 82%", once: true, onEnter: () => gsap.to(ins, { yPercent: 0, duration: 1.1, ease: "expo.out", stagger: 0.09 }) });
+  });
 }
 
 // ============ 6 · the real test: the agent's own log ============
@@ -656,3 +678,5 @@ function finale() {
     gsap.to(lines, { yPercent: 110, duration: 0.4, ease: "power2.in" }); gsap.to(cta, { opacity: 0, y: 20, duration: 0.3 });
   }
 }
+
+main();

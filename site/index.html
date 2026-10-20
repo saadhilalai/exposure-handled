@@ -147,8 +147,8 @@
         <div class="ev"><i class="ev-scale"></i><i class="ev-target"></i><i class="ev-needle" id="sim-needle"></i></div>
       </div>
       <div class="scenes" role="radiogroup" aria-label="Lighting">
-        <button role="radio" aria-checked="true" data-scene="0"><i class="sw" style="--c:#cfe2ff"></i>Window light</button>
-        <button role="radio" aria-checked="false" data-scene="1"><i class="sw" style="--c:#ffb35c"></i>Tungsten</button>
+        <button role="radio" aria-checked="true" data-scene="1"><i class="sw" style="--c:#ffb35c"></i>Tungsten</button>
+        <button role="radio" aria-checked="false" data-scene="0"><i class="sw" style="--c:#cfe2ff"></i>Window light</button>
         <button role="radio" aria-checked="false" data-scene="2"><i class="sw" style="--c:#5a6cff"></i>Low light</button>
         <button role="radio" aria-checked="false" data-scene="3"><i class="sw" style="--c:#ff7a45"></i>Sunset</button>
       </div>
@@ -156,12 +156,13 @@
     </div>
     <div class="side">
       <div class="feed-head"><i class="live"></i>AI</div>
+      <div class="scope" aria-hidden="true"><div class="ro"><small>Subject</small><b id="ro-subj">0.0</b><span>ST</span></div><canvas id="sim-histo" width="240" height="56"></canvas></div>
       <ol class="feed sim-feed" id="sim-feed" aria-live="polite"></ol>
     </div>
     <div class="controls">
       <div class="dials" id="sim-dials"></div>
       <div class="actions">
-        <button class="ai-btn magnetic" id="sim-ai"><i class="spark"></i><span>Let the AI do it</span></button>
+        <button class="ai-btn magnetic" id="sim-ai"><i class="spark"></i><span>Let the AI fix it</span></button>
         <button class="pill ghost" id="sim-fc" aria-pressed="false">False color</button>
       </div>
     </div>
@@ -175,14 +176,14 @@
     <h2 class="big"><span class="line">Beat</span> <span class="line"><em>the AI.</em></span></h2>
   </header>
   <div class="game-card" id="game-card" data-stage="intro">
-    <div class="g-intro">
-      <button class="ai-btn big magnetic" id="g-start"><span>Play · 15 seconds</span></button>
-      <span class="best" id="g-best" hidden></span>
-    </div>
     <div class="g-play">
-      <div class="g-screen"><canvas id="g-canvas" aria-label="Your shot"></canvas><svg class="g-timer" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><circle class="t" id="g-timer" cx="20" cy="20" r="17"/></svg></div>
-      <div class="dials" id="g-dials"></div>
-      <button class="ai-btn magnetic" id="g-lock"><span>Lock it in</span></button>
+      <div class="g-screen"><canvas id="g-canvas" aria-label="Your shot"></canvas><svg class="g-timer" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><circle class="t" id="g-timer" cx="20" cy="20" r="17"/></svg>
+        <div class="g-intro">
+          <button class="ai-btn big magnetic" id="g-start"><span>Play · 15 seconds</span></button>
+          <span class="best" id="g-best" hidden></span>
+        </div>
+      </div>
+      <div class="g-bar"><div class="dials" id="g-dials"></div><button class="ai-btn magnetic" id="g-lock"><span>Lock it in</span></button></div>
     </div>
     <div class="g-result">
       <figure class="g-side"><canvas id="g-you"></canvas><figcaption><span class="who">You</span><span class="score"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19"/><circle class="s" id="g-you-ring" cx="22" cy="22" r="19"/></svg><b id="g-you-score">0</b></span><span class="why" id="g-you-why"></span></figcaption></figure>
