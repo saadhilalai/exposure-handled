@@ -106,7 +106,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   const key = new THREE.DirectionalLight(0xfff1e2, 2.4); key.position.set(-4, 6, 5); scene.add(key);
   const fill = new THREE.DirectionalLight(0xbcd2ff, 0.5); fill.position.set(5, 1, 4); scene.add(fill);
   const rimCool = new THREE.DirectionalLight(0x9fc4ff, 2.2); rimCool.position.set(5, 3, -6); scene.add(rimCool);
-  const rimWarm = new THREE.DirectionalLight(0xff7a2a, 1.6); rimWarm.position.set(-6, -1, -5); scene.add(rimWarm);
+  const rimWarm = new THREE.DirectionalLight(0xff7a2a, 0.45); rimWarm.position.set(-6, -2, -3); scene.add(rimWarm);
   const swarmLight = new THREE.PointLight(0xff6a1a, 0, 3.2, 1.6); scene.add(swarmLight);
   const sweep = new THREE.DirectionalLight(0xffffff, 0); sweep.position.set(-6, 2, 3); scene.add(sweep);
 
@@ -123,7 +123,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     alu: new THREE.MeshStandardMaterial({ color: 0xb4b8bd, metalness: 1, roughness: 0.3 }),
     dark: new THREE.MeshStandardMaterial({ color: 0x101112, metalness: 0.6, roughness: 0.35 }),
     glass: new THREE.MeshPhysicalMaterial({ color: 0x0e141c, metalness: 0, roughness: 0.02, transparent: true, opacity: 0.42, clearcoat: 1,
-      iridescence: 1, iridescenceIOR: 1.75, iridescenceThicknessRange: [180, 560], envMapIntensity: 2.4, side: THREE.DoubleSide, depthWrite: false }),
+      iridescence: 1, iridescenceIOR: 1.75, iridescenceThicknessRange: [180, 560], envMapIntensity: 1.5, side: THREE.DoubleSide, depthWrite: false }),
     olpf: new THREE.MeshPhysicalMaterial({ color: 0x5ec8ff, metalness: 0, roughness: 0.05, transparent: true, opacity: 0.22, iridescence: 0.8,
       iridescenceIOR: 1.5, envMapIntensity: 2, side: THREE.DoubleSide, depthWrite: false }),
     sensor: new THREE.MeshPhysicalMaterial({ map: sensorTex(), metalness: 0.85, roughness: 0.14, iridescence: 1, iridescenceIOR: 2.2,
@@ -273,7 +273,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     add(pcbPart, new THREE.BoxGeometry(0.26, 0.04, 0.03), M.dark, [0.1, -0.29, -0.06]);
     // colour chip: 3 × 3 tiles the crew repaints
     for (let i = 0; i < 9; i++) {
-      const mat = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: new THREE.Color(1, 0.55, 0.2), emissiveIntensity: 1.1, roughness: 0.35 });
+      const mat = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: new THREE.Color(1, 0.55, 0.2), emissiveIntensity: 0.55, roughness: 0.35 });
       const m = add(pcbPart, new RoundedBoxGeometry(0.036, 0.036, 0.012, 1, 0.004), mat, [0.33 + (i % 3) * 0.044, 0.2 - Math.floor(i / 3) * 0.044, -0.064]);
       chipTiles.push({ m, mat, paint: 0 });
       spot(pcbPart, "chip", [0.33 + (i % 3) * 0.044, 0.2 - Math.floor(i / 3) * 0.044, -0.05]).tile = i;
@@ -534,7 +534,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   composer.addPass(new RenderPass(scene, cam));
   const bokeh = low ? null : new BokehPass(scene, cam, { focus: 6, aperture: 0.0016, maxblur: 0.0065 });
   if (bokeh) composer.addPass(bokeh);
-  const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), low ? 0.6 : 0.7, 0.5, 1.05);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), low ? 0.5 : 0.55, 0.45, 1.25);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -604,10 +604,10 @@ export function createCamera3D(canvas, { low = false } = {}) {
       if (!frozen && S.mode !== "wb") t.paint += (S.chipGoal - t.paint) * Math.min(1, dt * 0.8);
       const warm = new THREE.Color(1, 0.5, 0.16), cool = new THREE.Color(0.82, 0.9, 1.0);
       t.mat.emissive.copy(warm).lerp(cool, THREE.MathUtils.clamp(t.paint, 0, 1));
-      t.mat.emissiveIntensity = 1.2 + 0.4 * Math.sin(time * 3 + i);
+      t.mat.emissiveIntensity = 0.62 + 0.12 * Math.sin(time * 3 + i);
     });
     M.sensor.emissiveIntensity = D.sensorGain * (0.35 + 0.15 * Math.sin(time * 6));
-    pcbPart.core.material.emissiveIntensity = 2.2 + Math.sin(time * 4) * 0.6;
+    pcbPart.core.material.emissiveIntensity = 1.5 + Math.sin(time * 4) * 0.35;
     updateAgents(dt, time);
     writeAgents(dt);
     // rack focus

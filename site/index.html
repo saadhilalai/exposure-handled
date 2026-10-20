@@ -105,7 +105,7 @@
     <div class="beat" data-beat="iris">
       <h2 class="big"><span class="line">Sky clipping?</span> <span class="line"><em>It closes the iris.</em></span></h2>
       <div class="gauge iris-gauge" aria-hidden="true">
-        <svg viewBox="0 0 200 200"><circle class="track" cx="100" cy="100" r="88"/><polygon class="iris-hole" id="iris-poly" points=""/></svg>
+        <svg viewBox="0 0 200 200"><defs><radialGradient id="irisLight"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#ffe2c4"/><stop offset="1" stop-color="#ff9a52"/></radialGradient></defs><circle class="track" cx="100" cy="100" r="88"/><polygon class="iris-hole" id="iris-poly" points=""/><g class="blades" id="iris-blades"></g><circle class="rim" cx="100" cy="100" r="88"/></svg>
         <div class="gauge-read"><small>IRIS</small><b id="iris-val">F2.8</b></div>
       </div>
       <aside class="nerd note"><b>Approved range f/2.8 to f/11</b>, off unless you pass <code>--allow-exposure</code>. Each look sets its own aperture: Cinematic holds f/2.8, Run and gun works f/4–f/8. Changes go in third stops and are logged.</aside>

@@ -222,8 +222,10 @@ main, .foot { position: relative; z-index: 1; }
 .iso-gauge .gauge-read { margin-top: -18px; }
 .iris-gauge { display: flex; align-items: center; gap: 30px; }
 .iris-gauge svg { width: 150px; height: 150px; }
-.iris-gauge .track { fill: #0e0e10; stroke: rgba(255,255,255,.2); stroke-width: 2; }
-.iris-gauge .iris-hole { fill: #fff; filter: drop-shadow(0 0 18px rgba(255,255,255,.55)); }
+.iris-gauge .track { fill: #121214; }
+.iris-gauge .iris-hole { fill: url(#irisLight); filter: drop-shadow(0 0 14px rgba(255,190,130,.6)); }
+.iris-gauge .blades line { stroke: rgba(255,255,255,.22); stroke-width: 1.4; }
+.iris-gauge .rim { fill: none; stroke: rgba(255,255,255,.28); stroke-width: 3; }
 .wb-gauge .kelvin { position: relative; width: min(420px, 74vw); height: 14px; border-radius: 99px; background: linear-gradient(90deg, #ff8a2a, #ffc27a 20%, #fff1de 40%, #f4f7ff 58%, #bcd3ff 80%, #7fa8ff); box-shadow: 0 0 40px -10px rgba(255,200,140,.5); margin-bottom: 26px; }
 .wb-gauge .marker { position: absolute; top: -8px; left: 9.3%; width: 4px; height: 30px; margin-left: -2px; border-radius: 3px; background: #fff; box-shadow: 0 0 0 3px rgba(0,0,0,.6), 0 0 18px #fff; }
 .kill-row { display: flex; align-items: center; gap: clamp(24px, 4vw, 56px); margin-top: 36px; }
