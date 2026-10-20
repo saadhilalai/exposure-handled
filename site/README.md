@@ -1,4 +1,4 @@
-# Camera Agent website (draft)
+# Camera Agent website (draft, v2)
 
 The project's public page. **It's a draft and isn't deployed.** `index.html` carries `noindex` until launch.
 
@@ -6,43 +6,76 @@ The project's public page. **It's a draft and isn't deployed.** `index.html` car
 ```
 python tools/serve_site.py          # then open http://127.0.0.1:8780/
 ```
-This needs a server rather than double-clicking the file: the page loads its data with `fetch`, and the clips need byte ranges. Port 8780 is used because 8765 is robot-walker's server and 8770 is the dashboard's.
+It needs a server rather than double-clicking the file: the page loads its data with `fetch` and the 3D files as modules. Port 8780 is used because 8765 is robot-walker's server and 8770 is the dashboard's.
 
-## What's real and what's a placeholder
+## The idea
 
-The page labels every piece. **Amber "Placeholder"** marks stand-in media; **teal "Real"** marks data from the camera's own logs.
+You're holding a cinema camera, and the AI is your assistant inside it. People learn by playing, not reading.
+
+| # | Section | What you do |
+|---|---|---|
+| 1 | Viewfinder | Watch the AI take over: settings tick, the picture corrects, it says why. Scroll, and the view pulls back to the camera's own screen. |
+| 2 | Inside the camera | The camera comes apart in 3D. Orange agents swarm the sensor (ISO), crank the iris (aperture), repaint a color chip (WB), and freeze when you press STOP. |
+| 3 | Your turn | Four camera dials and four lighting setups. Break the picture, then let the AI fix it. Change the light and it reacts. |
+| 4 | Beat the AI | 15 seconds to fix a bad shot. The AI starts from the same shot, and both get scored. |
+| 5 | See what it sees | Drag the slider: AI fix, S-Log3, false color, zebras. |
+| 6 | Tested on a real camera | The agent's own log from the Oct 19 FX2 test, as a chart and four gauges. |
+| 7 | Never touch | Locked buttons you can try to press, and the approved ranges as arcs. |
+| 8 | Every decision, live | The dashboard. |
+| 9 | Finale | The camera snaps back together. |
+
+**Rules for words:**
+- Short headlines.
+- No captions under things.
+- Every number gets a visual.
+- All explanations, measurements and honest footnotes sit behind the **Nerd mode** switch (top right, or press N).
+- Sound is off until you turn it on (or press M).
+- Easter eggs: press **Z** for zebras and **F** for false color.
+
+## What's real, what's a placeholder, what's an illustration
 
 | On the page | Status | Where it comes from |
 |---|---|---|
-| Hero, Log → LUT wipe, "How it thinks" monitor, Proof background | **Placeholder** | `media/placeholder/`: made-up scenes from `tools/make_placeholder_clips.py`. They go through the real S-Log3 curve and the blind test's LUT (Sony's LC-709TypeA). They aren't in git; remake them with that tool. |
-| Look card backgrounds | **Placeholder** | Stills from the same clips |
-| Dashboard screenshots | **Placeholder** | `media/screens/`, copied from `docs/screenshots/` (fake camera) |
-| Hero subtitles, the real-test replay, the exposure chart | **Real** | The Oct 19 unattended test on the FX2: `data/site.json` + `media/real/` (the frame the agent saw at each change) |
-| Safety counts (44 sent, 44 confirmed, 0 refused, 33 ms kill switch) | **Real** | The same test's bridge log and report |
-| Looks, approved ranges | **Real** | `agent/looks.py`, `config/safe_ranges.json` |
-| Pi numbers (≈ 33 ms/frame, ≈ $244) | **Estimates** | [docs/step8-pi-plan.md](../docs/step8-pi-plan.md) |
-| Proof section (63 takes, 6 scenes, 3 ways) | **The plan; results pending** | [docs/step7-test-plan.md](../docs/step7-test-plan.md) |
+| The Oct 19 chart, gauges, ISO sequence, 33 ms kill switch | **Real** (teal tag) | `data/site.json`, exported from the session logs by `tools/export_site_data.py` |
+| Approved ranges and locked settings | **Real** | `config/safe_ranges.json` and the agent's safety rules |
+| Dashboard screenshots | **Placeholder** (amber tag) | `media/screens/`, the real dashboard running on the fake camera; to be replaced by a recording on the FX2 |
+| The camera picture in the viewfinder, simulator, game and slider | **Illustration** (tagged in Nerd mode) | Rendered live in the browser by `js/sim.js`; not footage |
+| The 3D camera and its crew | Illustration | `js/camera3d.js`; an original design inspired by the FX2, with no maker's name |
 
-**Refresh the real data** after a new session: `python tools/export_site_data.py [sessions/<folder>]`. It exports only exposure settings, log lines and timings; nothing else from the camera, such as its serial number.
+The simulator's AI (`js/ai.js`) is a small copy of the agent's rules for the demo:
+- a 180° shutter
+- the iris only when ISO can't go lower
+- ISO to land the subject
+- highlights protected
+- WB set to the light (kept a little warm under tungsten and at sunset)
+
+It stays inside the real approved ranges. Nerd mode says so on the page.
 
 ## Before launch
 
-- Replace the placeholder clips with real FX2 footage from the shoot, and swap the dashboard screenshots for a recording of the live dashboard.
-- Fill in the Proof section with the Step 7 results.
-- Add the GitHub link (the button says "Link at launch").
-- Remove `noindex` and the draft bar.
+- Add real FX2 footage from the shoot (for example as a mode of the before/after slider), and swap the dashboard screenshots for a recording on the FX2.
+- Add the Step 7 results.
+- Point "See the code" at the repo once it's public (it goes to the GitHub profile for now).
+- Remove `noindex` and the Draft chip.
 
 ## How it's built
 
-- **Files:** plain HTML, CSS and JavaScript (ES modules), no build step.
-  - `css/site.css`: the identity.
-  - `js/main.js`: the scenes.
-  - `js/replay.js`: the real-test player and chart.
-- **Motion:** GSAP 3.14.2 with ScrollTrigger and SplitText (`vendor/gsap/`, GreenSock's no-charge standard license). Each scroll scene is a tall section with a sticky stage.
-- **Reduced motion:** with `prefers-reduced-motion`, every scene shows its end state instead.
-- **Type:** Instrument Serif for the film-title headlines and D-DIN (the S4D type) for labels and readouts. Both are SIL OFL, with license files in `fonts/`.
-- **Identity:** the page is a viewfinder.
-  - Neutral UI like a pro monitor; colour comes only from the picture or from status.
-  - Camera readouts and timecode, and a letterbox that closes to 2.39:1.
-  - The agent's real log lines, shown as subtitles.
-  - An AF-frame cursor that locks on (teal) over anything clickable.
+- **Files:** plain HTML, CSS and JavaScript modules, no build step.
+  - `css/site.css`: the look.
+  - `js/main.js`: the sections.
+  - `js/ui.js`: dials, chat feed, sound, cursor.
+  - `js/sim.js`: the camera picture.
+  - `js/ai.js`: the demo AI and scoring.
+  - `js/camera3d.js`: the 3D camera.
+- **The camera picture (`sim.js`):** one WebGL2 renderer draws a made-up scene in linear light, in three passes:
+  1. **The scene:** the reel's motion blur is integrated over the shutter time.
+  2. **Depth of field:** a gather blur, with real bokeh from the lights, shaped by a nine-blade iris.
+  3. **The camera:** exposure (ISO × shutter ÷ f-stop²), black-body white balance, ISO noise, sensor clipping, then a film-style display curve, S-Log3, false color or zebras.
+
+  The same renderer serves every view on the page.
+- **3D:** three.js 0.186.1 (`vendor/three/`, MIT), with depth of field that racks to whatever the story is about, and bloom for the crew. Every part, texture and the crew is made in code; nothing is downloaded.
+- **Motion:** GSAP with ScrollTrigger (`vendor/gsap/`, GreenSock's standard license). The 3D camera follows the scroll, and the other sections are calm.
+- **Speed:** measured on the M2 at 60 fps, at laptop size (1440 × 900, retina) and phone size (390 × 844). It's lighter on phones, with fewer agents, no depth of field and lower resolution. It isn't tested on a real phone yet.
+- **Reduced motion:** with `prefers-reduced-motion`, nothing scrubs or flies. The camera chapter reads as a normal page over a still exploded view.
+- **If 3D can't start:** the page retries once, then shows the camera chapter as a normal page.
+- **Type:** Instrument Serif for headlines, D-DIN (the S4D type) for readouts. Both are SIL OFL, with license files in `fonts/`.

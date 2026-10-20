@@ -6,10 +6,10 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 
 - **Nothing is running and the camera isn't connected.** Everything is committed.
 - **Next session, with the director:** the live face test and the light-change test, then we schedule the Step 7 shoot.
-- **While we wait: the project website is started** (Step 9; a draft, not deployed). See [site/README.md](site/README.md).
-  - **Its own identity:** cinematic, built like a viewfinder, with camera readouts, timecode, a closing letterbox, and subtitles in the agent's own words.
-  - **Real data wherever it exists:** the Oct 19 replay (frames, log lines, exposure trace), the safety counts, the looks and the approved ranges. All of it is exported by `tools/export_site_data.py`.
-  - **Placeholders, labeled on the page:** three made-up clips (`tools/make_placeholder_clips.py`) and the fake-camera dashboard screenshots.
+- **While we wait: the project website, v2** (Step 9; a draft, not deployed). See [site/README.md](site/README.md). Rebuilt on 2026-10-20 at the director's request: "people learn by playing, not reading".
+  - **Backbone:** an original 3D cinema camera (three.js, no maker's name) that comes apart as you scroll. A crew of orange agents swarms the sensor for ISO, cranks the iris, repaints a color chip for WB, and freezes when you press the big STOP. It snaps back together at the end.
+  - **Things to play with:** the viewfinder opening, where the AI takes over and the settings tick. A camera simulator with four dials and four lighting setups, where the AI fixes your picture live. A 15-second "Beat the AI" game. A before/after slider (AI fix, S-Log3, false color, zebras).
+  - **Words:** short headlines only. Every explanation and honest footnote sits behind the Nerd mode switch. Real Oct 19 data is tagged Real and the dashboard screenshots are tagged Placeholder. The simulator's scene is a rendered illustration, tagged in Nerd mode.
   - **Preview:** `python tools/serve_site.py`, then http://127.0.0.1:8780/.
 
 ## 📍 Where things stand (2026-10-19, evening)
@@ -190,6 +190,7 @@ Parked 2026-10-17, 19:40 (director stepped away)
     - Built to the robot site's level, with its own cinematic identity.
     - Real Oct 19 data is used wherever it exists; placeholder clips and screenshots are labeled on the page.
     - A 2-minute screen recording was sent to the director.
+  - ✅ **Website v2 (2026-10-20, director's brief), not deployed:** an exploded 3D camera as the backbone, plus a simulator, a game, a before/after slider and Nerd mode. It runs at 60 fps on the M2, at laptop and phone size. Desktop and phone recordings were sent to the director.
 
 ## Step 1 summary
 
