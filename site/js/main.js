@@ -81,7 +81,7 @@ function lineWrap() { $$(".big .line, .huge .line, .hero-title .line").forEach((
 // ---------- the simulator's render loop: only views on screen are drawn ----------
 function simLoop() {
   if (sim.software) { const view = sim.view; sim.view = (...a) => { const v = view(...a); v.fpsCap = 10; return v; }; }
-  const io = new IntersectionObserver((es) => es.forEach((e) => { const v = e.target.__view; if (v) v.visible = e.isIntersecting; }), { rootMargin: "120px" });
+  const io = new IntersectionObserver((es) => es.forEach((e) => { const v = e.target.__view; if (v) v.visible = e.isIntersecting; }), { rootMargin: "40px" });
   sim.observe = (v) => { v.canvas.__view = v; v.visible = false; io.observe(v.canvas); };
   (function loop(now) { sim.render(now); requestAnimationFrame(loop); })(performance.now());
 }
