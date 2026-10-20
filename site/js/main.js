@@ -446,6 +446,10 @@ function game() {
   try { best = +localStorage.getItem("best") || 0; } catch {}
   const showBest = () => { const el = $("#g-best"); if (best) { el.hidden = false; el.textContent = "Best · " + best; } };
   showBest();
+  // one height for every stage, so nothing below the game moves (and no re-measuring mid-play)
+  makeDials($("#g-dials"), { a: { iso: 800, shutter: 1 / 48, fnum: 2.8, wb: 5600 } }, null, mobile() ? 62 : 84);
+  const lockH = () => { card.style.minHeight = ""; card.style.minHeight = card.offsetHeight + "px"; };
+  document.fonts.ready.then(lockH); addEventListener("resize", () => { if (card.dataset.stage !== "result") lockH(); });
   const ring = $("#g-timer");
   gv.setScene(1); Object.assign(gv.a, { iso: 6400, shutter: 1 / 48, fnum: 2.8, wb: 9000 });
   function round() {
@@ -458,7 +462,6 @@ function game() {
     gv.setScene(sceneIdx); Object.assign(gv.a, start, { falseColor: false });
     card.dataset.stage = "play";
     dials = makeDials($("#g-dials"), gv, null, mobile() ? 62 : 84);
-    ScrollTrigger.refresh();
     const T = 15;
     gsap.killTweensOf(ring);
     gsap.fromTo(ring, { strokeDashoffset: 0 }, { strokeDashoffset: 107, duration: T, ease: "none" });
@@ -476,7 +479,6 @@ function game() {
     ["#g-you-score", "#g-ai-score"].forEach((s) => ($(s).textContent = "0"));
     ["#g-you-ring", "#g-ai-ring"].forEach((s) => ($(s).style.strokeDashoffset = 119.4));
     $("#g-you-why").innerHTML = ""; $("#g-ai-why").innerHTML = ""; $("#g-verdict").textContent = "";
-    ScrollTrigger.refresh();
     const showScore = (who, sc) => {
       $(`#g-${who}-ring`).style.strokeDashoffset = 119.4 * (1 - sc.score / 100);
       countUp($(`#g-${who}-score`), sc.score, { dur: 1.1 });
