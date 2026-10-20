@@ -13,9 +13,10 @@ const ORDER = ["high", "medium", "low"];
 // Testing only: ?gpuload=N renders N times the pixels, to act like a graphics chip N times weaker than this one.
 export const GPU_LOAD = Math.max(1, +(/[?&]gpuload=([\d.]+)/.exec(location.search) || [0, 1])[1]);
 const SLOW_MS = 21;          // a frame longer than this on average = below ~48 fps
+const VERY_SLOW_MS = 40;     // under ~25 fps: skip the small steps, drop a whole level at once
 const FAST_MS = 15.5;        // comfortably at 60
-const WINDOW_MS = 1500;      // judge over this long
-const MIN_SCALE = 0.7, STEP_DOWN = 0.85, STEP_UP = 1.06;
+const WINDOW_MS = 1000;      // judge over this long
+const MIN_SCALE = { high: 0.7, medium: 0.7, low: 0.45 }, STEP_DOWN = 0.85, STEP_UP = 1.06;
 
 function guess() {
   const forced = /[?&]quality=(high|medium|low)\b/.exec(location.search);
@@ -51,10 +52,14 @@ export function createQuality() {
       const avg = acc / n;
       q.frameMs = avg; q.fps = Math.round(1000 / avg);
       if (!fixed && q.busy() && now > grace) {
-        if (avg > SLOW_MS) {
+        const lower = ORDER.indexOf(q.level) < ORDER.length - 1;
+        if (avg > VERY_SLOW_MS && lower) {
+          fastFor = 0; q.set(ORDER[ORDER.indexOf(q.level) + 1]); grace = now + 1000;
+        } else if (avg > SLOW_MS) {
           fastFor = 0;
-          if (q.scale > MIN_SCALE + 1e-3) { q.scale = Math.max(MIN_SCALE, q.scale * STEP_DOWN); q.listeners.forEach((fn) => fn(q)); }
-          else if (ORDER.indexOf(q.level) < ORDER.length - 1) { q.set(ORDER[ORDER.indexOf(q.level) + 1]); grace = now + 2000; }
+          const min = MIN_SCALE[q.level];
+          if (q.scale > min + 1e-3) { q.scale = Math.max(min, q.scale * STEP_DOWN); q.listeners.forEach((fn) => fn(q)); }
+          else if (lower) { q.set(ORDER[ORDER.indexOf(q.level) + 1]); grace = now + 1500; }
         } else if (avg < FAST_MS && q.scale < 1) {
           fastFor += now - t0;
           if (fastFor > 4000) { q.scale = Math.min(1, q.scale * STEP_UP); fastFor = 0; q.listeners.forEach((fn) => fn(q)); }
