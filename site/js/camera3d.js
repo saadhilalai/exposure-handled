@@ -129,11 +129,12 @@ export function createCamera3D(canvas, { low = false } = {}) {
     sensor: new THREE.MeshPhysicalMaterial({ map: sensorTex(), metalness: 0.85, roughness: 0.14, iridescence: 1, iridescenceIOR: 2.2,
       iridescenceThicknessRange: [120, 900], emissive: new THREE.Color(1, 0.4, 0.1), emissiveIntensity: 0 }),
     gold: new THREE.MeshStandardMaterial({ color: 0xe2b462, metalness: 1, roughness: 0.28 }),
-    ceramic: new THREE.MeshStandardMaterial({ color: 0xd9d3c6, roughness: 0.55 }),
+    ceramic: new THREE.MeshStandardMaterial({ color: 0x9d978b, roughness: 0.6 }),
     pcb: new THREE.MeshStandardMaterial({ map: pcbTex(), roughness: 0.5, metalness: 0.25 }),
     chip: new THREE.MeshStandardMaterial({ color: 0x141417, roughness: 0.42, metalness: 0.3 }),
     copper: new THREE.MeshStandardMaterial({ color: 0xc6834e, metalness: 1, roughness: 0.32 }),
     ai: new THREE.MeshStandardMaterial({ color: 0x2a1408, emissive: AI.clone(), emissiveIntensity: 2.4, roughness: 0.4 }),
+    aiLine: new THREE.MeshStandardMaterial({ color: 0x2a1408, emissive: AI.clone(), emissiveIntensity: 1.15, roughness: 0.4 }),
     rec: new THREE.MeshStandardMaterial({ color: 0x5a0d0b, emissive: new THREE.Color(1, 0.18, 0.14), emissiveIntensity: 0.6, roughness: 0.4 }),
     battery: new THREE.MeshPhysicalMaterial({ map: labelTex([["S4D", 70, 110], ["7.2 V · 2280 mAh", 30, 170, "rgba(230,230,226,.55)", 400]]), roughness: 0.45, clearcoat: 0.5 }),
     card: new THREE.MeshStandardMaterial({ map: labelTex([["160 GB", 64, 120], ["MEMORY · TYPE A", 26, 178, "rgba(230,230,226,.55)", 400]], "#202124"), roughness: 0.4 }),
@@ -154,7 +155,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     const m = new THREE.Mesh(geo, mat); m.position.set(...pos); m.rotation.set(...rot); if (scale) m.scale.set(...scale);
     p.g.add(m); return m;
   };
-  const spot = (p, kind, pos) => p.spots.push({ part: p, kind, local: new THREE.Vector3(...pos), world: new THREE.Vector3(), hits: 0 });
+  const spot = (p, kind, pos) => { const s = { part: p, kind, local: new THREE.Vector3(...pos), world: new THREE.Vector3() }; p.spots.push(s); return s; };
 
   const W = 1.3, H = 0.82, R = 0.09;
   const LX = 0.04, LY = -0.02;                       // lens axis
@@ -277,7 +278,6 @@ export function createCamera3D(canvas, { low = false } = {}) {
       chipTiles.push({ m, mat, paint: 0 });
       spot(pcbPart, "chip", [0.33 + (i % 3) * 0.044, 0.2 - Math.floor(i / 3) * 0.044, -0.05]).tile = i;
     }
-    pcbPart.spots[pcbPart.spots.length - 1].tile = 8;
     const chipDial = add(pcbPart, new THREE.CylinderGeometry(0.024, 0.024, 0.02, 24), M.alu, [0.5, 0.2, -0.06], [Math.PI / 2, 0, 0]);
     pcbPart.chipDial = chipDial;
     [[-0.18, 0.02], [-0.1, 0.1], [-0.26, -0.06], [0.07, 0.1], [0.07, 0.05], [-0.42, 0.14], [0.1, -0.28]].forEach(([x, y], i) => spot(pcbPart, i === 3 || i === 4 ? "core" : "pcb", [x, y, -0.04]));
@@ -309,7 +309,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     const p = part("mount", { off: [0, 0, 1.55], delay: 0.24 });
     add(p, new THREE.TorusGeometry(0.265, 0.03, 16, 80), M.steel, [LX, LY, 0.44]);
     for (let i = 0; i < 4; i++) { const a = i / 4 * Math.PI * 2 + 0.4; add(p, new THREE.BoxGeometry(0.09, 0.03, 0.02), M.steel, [LX + Math.cos(a) * 0.23, LY + Math.sin(a) * 0.23, 0.45], [0, 0, a + Math.PI / 2]); }
-    add(p, new THREE.TorusGeometry(0.305, 0.006, 10, 96), M.ai, [LX, LY, 0.462]);
+    add(p, new THREE.TorusGeometry(0.305, 0.006, 10, 96), M.aiLine, [LX, LY, 0.462]);
     for (let i = 0; i < 4; i++) { const a = i / 4 * Math.PI * 2; spot(p, "mount", [LX + Math.cos(a) * 0.27, LY + Math.sin(a) * 0.27, 0.47]); }
   }
   // lens: two barrel halves, glass elements and the iris
@@ -325,7 +325,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     const k1 = mk(ringProfile(0.18, 0.39), M.rubber), k2 = mk(ringProfile(0.52, 0.71), M.rubber);
     for (const k of [k1, k2]) { k.material = M.rubber.clone(); k.material.normalMap = knurl.clone(); k.material.normalMap.repeat.set(26, 1); k.material.normalMap.needsUpdate = true; }
     const ai = new THREE.LatheGeometry([new THREE.Vector2(0.398, 0.955), new THREE.Vector2(0.398, 0.965)], 64, phi0, Math.PI);
-    add(p, ai, M.ai, [LX, LY, lensZ0], [Math.PI / 2, 0, 0]);
+    add(p, ai, M.aiLine, [LX, LY, lensZ0], [Math.PI / 2, 0, 0]);
     spot(p, "lens", [LX + (side ? -0.39 : 0.39), LY, lensZ0 + 0.6]);
   }
   const lensProfile = (rad, t) => { const pts = []; for (let i = 0; i <= 12; i++) { const r = (i / 12) * rad; pts.push(new THREE.Vector2(r, t * (1 - (r / rad) ** 2) + 0.006)); } for (let i = 12; i >= 0; i--) { const r = (i / 12) * rad; pts.push(new THREE.Vector2(r, -t * 0.7 * (1 - (r / rad) ** 2) - 0.006)); } return pts; };
@@ -357,7 +357,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   }
   function setIris(fnum) {
     const a = THREE.MathUtils.clamp(0.165 * (2.8 / fnum), 0.018, 0.2);    // opening apothem
-    blades.forEach(({ b }, i) => { b.position.set(a, 0, 0); b.rotation.z = 0.32 + (0.165 - a) * 1.4; });
+    blades.forEach(({ b }) => { b.position.set(a, 0, 0); b.scale.set((0.25 - a) / 0.3, 0.75, 1); b.rotation.z = 0.18 + (0.165 - a) * 1.2; });
     irisPart.lever.rotation.z = (a - 0.165) * 3;
   }
   // screws: tiny, and they fly further than their panel
@@ -377,7 +377,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   parts.forEach((p) => { if (!p.homePos) p.homePos = new THREE.Vector3(); });
 
   // ---------- the crew ----------
-  const N = low ? 160 : 460;
+  const N = low ? 150 : 380;
   const allSpots = parts.flatMap((p) => p.spots);
   const byKind = {};
   allSpots.forEach((s) => (byKind[s.kind] ||= []).push(s));
@@ -410,7 +410,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   const A = Array.from({ length: N }, (_, i) => ({
     p: new THREE.Vector3(), prev: new THREE.Vector3(), s: new THREE.Vector3(), c: new THREE.Vector3(),
     spot: null, from: null, t: 0, dur: 0.5, work: 0, state: 0, speed: 6 + R0() * 9, courier: R0() < 0.22,
-    phase: R0() * 6.28, orbit: 0.012 + R0() * 0.03, size: 0.022 + R0() * 0.018,
+    phase: R0() * 6.28, orbit: 0.012 + R0() * 0.03, size: 0.034 + R0() * 0.022,
   }));
 
   // ---------- state, driven by the page ----------
@@ -516,13 +516,13 @@ export function createCamera3D(canvas, { low = false } = {}) {
       hot[i] = a.courier ? 1 : 0;
       if (!frozen) {
         const vx = (a.p.x - a.prev.x), vy = (a.p.y - a.prev.y), vz = (a.p.z - a.prev.z);
-        const k = 2.6;   // streak = about 2.6 frames of travel
+        const k = 1.3;   // short streak: about one frame of travel
         spos[i * 6] = a.p.x; spos[i * 6 + 1] = a.p.y; spos[i * 6 + 2] = a.p.z;
         spos[i * 6 + 3] = a.p.x - vx * k; spos[i * 6 + 4] = a.p.y - vy * k; spos[i * 6 + 5] = a.p.z - vz * k;
       }
       const v = a.hidden ? 0 : D.agents;
       const r = 1.0 * (1 - fz) + 0.9 * fz, g = 0.45 * (1 - fz) + 0.25 * fz, b = 0.12 * (1 - fz) + 0.2 * fz;
-      scol[i * 6] = r * 2.2 * v; scol[i * 6 + 1] = g * 2.2 * v; scol[i * 6 + 2] = b * 2.2 * v;
+      scol[i * 6] = r * 1.25 * v; scol[i * 6 + 1] = g * 1.25 * v; scol[i * 6 + 2] = b * 1.25 * v;
       scol[i * 6 + 3] = 0; scol[i * 6 + 4] = 0; scol[i * 6 + 5] = 0;
     });
     agentGeo.attributes.position.needsUpdate = true; agentGeo.attributes.aSize.needsUpdate = true; agentGeo.attributes.aHot.needsUpdate = true;
@@ -534,7 +534,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   composer.addPass(new RenderPass(scene, cam));
   const bokeh = low ? null : new BokehPass(scene, cam, { focus: 6, aperture: 0.0016, maxblur: 0.0065 });
   if (bokeh) composer.addPass(bokeh);
-  const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), low ? 0.7 : 0.85, 0.55, 0.82);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), low ? 0.6 : 0.7, 0.5, 1.05);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -555,12 +555,12 @@ export function createCamera3D(canvas, { low = false } = {}) {
     agentMat.uniforms.uScale.value = h * dpr * 0.5;
   }
 
-  const clock = new THREE.Clock();
+  const clock = new THREE.Timer();
   let time = 0, running = false, raf = 0, focusDist = 6;
   const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
   function frame() {
     raf = requestAnimationFrame(frame);
-    const dt = Math.min(clock.getDelta(), 1 / 20);
+    clock.update(); const dt = Math.min(clock.getDelta(), 1 / 20);
     step(dt);
     composer.render(dt);
   }
@@ -623,7 +623,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
 
   return {
     state: S, lcdCanvas,
-    start() { if (running) return; running = true; clock.getDelta(); frame(); },
+    start() { if (running) return; running = true; clock.update(); frame(); },
     stop() { running = false; cancelAnimationFrame(raf); },
     get running() { return running; },
     renderOnce() { resize(); step(1 / 60); composer.render(); },
