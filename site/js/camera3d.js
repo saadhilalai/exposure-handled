@@ -105,7 +105,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   const cam = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
   const key = new THREE.DirectionalLight(0xfff1e2, 2.4); key.position.set(-4, 6, 5); scene.add(key);
   const fill = new THREE.DirectionalLight(0xbcd2ff, 0.5); fill.position.set(5, 1, 4); scene.add(fill);
-  const rimCool = new THREE.DirectionalLight(0x9fc4ff, 2.2); rimCool.position.set(5, 3, -6); scene.add(rimCool);
+  const rimCool = new THREE.DirectionalLight(0x9fc4ff, 1.3); rimCool.position.set(5, 2, -6); scene.add(rimCool);
   const rimWarm = new THREE.DirectionalLight(0xff7a2a, 0); rimWarm.position.set(-6, -2, -3); scene.add(rimWarm);
   const swarmLight = new THREE.PointLight(0xff6a1a, 0, 3.2, 1.6); scene.add(swarmLight);
   const sweep = new THREE.DirectionalLight(0xffffff, 0); sweep.position.set(-6, 2, 3); scene.add(sweep);
@@ -123,7 +123,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     alu: new THREE.MeshStandardMaterial({ color: 0xb4b8bd, metalness: 1, roughness: 0.3 }),
     dark: new THREE.MeshStandardMaterial({ color: 0x101112, metalness: 0.6, roughness: 0.35 }),
     glass: new THREE.MeshPhysicalMaterial({ color: 0x0e141c, metalness: 0, roughness: 0.02, transparent: true, opacity: 0.42, clearcoat: 1,
-      iridescence: 1, iridescenceIOR: 1.75, iridescenceThicknessRange: [180, 560], envMapIntensity: 1.5, side: THREE.DoubleSide, depthWrite: false }),
+      iridescence: 1, iridescenceIOR: 1.75, iridescenceThicknessRange: [180, 560], envMapIntensity: 1.0, side: THREE.DoubleSide, depthWrite: false }),
     olpf: new THREE.MeshPhysicalMaterial({ color: 0x5ec8ff, metalness: 0, roughness: 0.05, transparent: true, opacity: 0.22, iridescence: 0.8,
       iridescenceIOR: 1.5, envMapIntensity: 2, side: THREE.DoubleSide, depthWrite: false }),
     sensor: new THREE.MeshPhysicalMaterial({ map: sensorTex(), metalness: 0.85, roughness: 0.14, iridescence: 1, iridescenceIOR: 2.2,
@@ -333,7 +333,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   elements.forEach(([z, rad, t, ex], i) => {
     const p = part("element" + i, { off: [0, 0, ex], delay: 0.3 + i * 0.02 });
     add(p, new THREE.LatheGeometry(lensProfile(rad, t), 48), M.glass, [LX, LY, z], [Math.PI / 2, 0, 0]);
-    add(p, new THREE.TorusGeometry(rad, 0.008, 8, 64), M.dark, [LX, LY, z]);
+    add(p, new THREE.TorusGeometry(rad, 0.008, 8, 64), M.rubberPlain, [LX, LY, z]);
     spot(p, "glass", [LX + rad, LY, z]); spot(p, "glass", [LX - rad * 0.7, LY + rad * 0.7, z]);
   });
   // iris: 9 blades; their inner edges make the opening
@@ -641,6 +641,15 @@ export function createCamera3D(canvas, { low = false } = {}) {
     stop() { running = false; cancelAnimationFrame(raf); },
     get running() { return running; },
     renderOnce() { resize(); step(1 / 60); composer.render(); },
+    // Draw one hidden frame with everything in view, so shaders compile and textures upload before anyone scrolls.
+    warmup() {
+      const keep = { ...S }, keepD = { ...D };
+      Object.assign(S, { explode: 1, agents: 1, yaw: 0.9, pitch: 0.25, dist: 12, tx: 0, ty: 0.15, tz: 0.9, frameX: 0, frameY: 0 });
+      Object.assign(D, S);
+      resize(); step(1 / 60); composer.render();
+      Object.assign(S, keep); Object.assign(D, keepD);
+      A.forEach((a) => (a.spot = null));
+    },
     freeze(on) { frozen = on; freezeT = time; },
     get frozen() { return frozen; },
     flashSweep() { sweep.intensity = 6; },

@@ -190,6 +190,8 @@ function hero() {
     await runAI(v, HERO_SCENE, { feed, tally: $("#ai-tally"), onSet: (k, val) => setHud(k, val, true), speed: 0.85 });
     af.classList.add("lock");
     reveal();
+    // while the title settles, quietly prepare the 3D camera (an invisible frame)
+    setTimeout(() => { if (cam3d && prog.hero < 0.05 && !cam3d.running) cam3d.warmup(); }, 1600);
     await wait(2600);
     [...$("#hero-feed").children].slice(0, -1).forEach((li, i) => gsap.to(li, { opacity: 0, y: -8, duration: 0.5, delay: i * 0.06, ease: "power2.in" }));
   };
