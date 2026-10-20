@@ -1,4 +1,4 @@
-// Small UI kit for the site: camera dials, the AI's chat feed, sound (off until you turn it on), the focus-reticle
+// Small UI kit for the site: camera dials, the AI's chat feed, sound (off until you turn it on),
 // cursor, magnetic buttons and toasts.
 
 const html = document.documentElement;
@@ -155,31 +155,6 @@ export function Feed(ol, { max = 5 } = {}) {
     return push(htmlText, cls);
   }
   return { push, say, typing, clear: () => (ol.innerHTML = "") };
-}
-
-// ---------- focus-reticle cursor: it focuses on what you can use ----------
-export function reticle() {
-  if (!html.classList.contains("fine")) return;
-  const r = $("#reticle");
-  const SEL = "a, button, [role=slider], .key, .ba, [data-focus]";
-  let x = innerWidth / 2, y = innerHeight / 2, tx = x, ty = y, w = 30, h = 30, tw = 30, th = 30, target = null;
-  addEventListener("pointermove", (e) => {
-    tx = e.clientX; ty = e.clientY;
-    const t = e.target.closest?.(SEL);
-    if (t !== target) { target = t; r.classList.toggle("lock", !!t); }
-  }, { passive: true });
-  addEventListener("pointerdown", () => { tw *= 0.8; th *= 0.8; });
-  (function loop() {
-    let cx = tx, cy = ty;
-    tw = 30; th = 30;
-    if (target && !target.matches(".ba")) {
-      const b = target.getBoundingClientRect();
-      if (b.width < 420 && b.height < 300) { cx = b.left + b.width / 2; cy = b.top + b.height / 2; tw = b.width + 14; th = b.height + 14; cx += (tx - cx) * 0.12; cy += (ty - cy) * 0.12; }
-    }
-    x += (cx - x) * 0.28; y += (cy - y) * 0.28; w += (tw - w) * 0.24; h += (th - h) * 0.24;
-    r.style.transform = `translate(${x - w / 2}px, ${y - h / 2}px)`; r.style.width = w + "px"; r.style.height = h + "px";
-    requestAnimationFrame(loop);
-  })();
 }
 
 // ---------- magnetic buttons ----------

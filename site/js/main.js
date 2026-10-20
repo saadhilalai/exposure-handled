@@ -1,7 +1,7 @@
 // Camera Agent · project site v2. The page plays like a camera: a viewfinder where the AI takes over, a pull-back
 // to the camera itself, an exploded view with the crew at work, then things to play with.
 import { createSim, SCENES, ISOS, SHUTTERS, FNUMS, KELVINS } from "./sim.js";
-import { $, $$, wait, clamp, motion, sound, toast, Dial, Feed, reticle, magnetic, grain, countUp, nearest } from "./ui.js";
+import { $, $$, wait, clamp, motion, sound, toast, Dial, Feed, magnetic, grain, countUp, nearest } from "./ui.js";
 import { solve, score, turn, fmt, RANGES } from "./ai.js";
 
 const html = document.documentElement;
@@ -28,7 +28,7 @@ async function main() {
   ScrollTrigger.config({ ignoreMobileResize: true });
   data = await fetch("data/site.json").then((r) => r.json()).catch(() => null);
   try { sim = createSim({ low }); } catch (e) { console.warn("simulator off:", e); }
-  nav(); toggles(); reticle(); magnetic(); eggs(); lineWrap();
+  nav(); toggles(); magnetic(); eggs(); lineWrap();
   let heroReady = Promise.resolve();
   if (sim) { simLoop(); heroReady = hero(); }
   // build the 3D camera once the opening is over, or as soon as someone scrolls, whichever comes first
