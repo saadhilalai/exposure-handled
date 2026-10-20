@@ -487,11 +487,14 @@ export function createSim({ low = false } = {}) {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
     return { t, f, w, h };
   }
-  const targets = new Map();
-  function targetsFor(w, h) {
-    const k = w + "x" + h;
-    if (!targets.has(k)) targets.set(k, { scene: target(w, h), tile: target(Math.ceil(w / 16), Math.ceil(h / 16), "r"), dofA: target(w, h, 0, true), dofB: target(w, h, 0, true) });
-    return targets.get(k);
+  function free(T) { for (const k in T) if (T[k] && T[k].t) { gl.deleteTexture(T[k].t); gl.deleteFramebuffer(T[k].f); } }
+  function targetsFor(v, w, h) {
+    if (!v.T || v.T.w !== w || v.T.h !== h) {
+      if (v.T) free(v.T);
+      v.T = { w, h, scene: target(w, h), tile: target(Math.ceil(w / 16), Math.ceil(h / 16), "r"), dofA: target(w, h, 0, true), dofB: null };
+    }
+    if (v.b && !v.T.dofB) v.T.dofB = target(w, h, 0, true);
+    return v.T;
   }
 
   let frame = 0;
@@ -555,13 +558,13 @@ export function createSim({ low = false } = {}) {
   function view(canvas, opts = {}) {
     const ctx = canvas.getContext("2d", { alpha: false });
     const v = {
-      canvas, ctx, visible: true, scale: opts.scale ?? 1, zoom: opts.zoom ?? 1, maxW: opts.maxW ?? 1600,
+      canvas, ctx, visible: true, scale: opts.scale ?? 1, zoom: opts.zoom ?? 1, maxW: opts.maxW ?? 1280, size: opts.size ?? null,
       scene: sceneVector(SCENES[opts.scene ?? 0]),
       a: { iso: 800, shutter: 1 / 48, fnum: 2.8, wb: 5600, mode: "normal" },
       b: null, split: 0.5, splitDir: "x",
       t0: performance.now() / 1000, time: 0, onFrame: null, w: 0, h: 0, dirty: true,
       setScene(i, dur = 0) { tweenScene(v, SCENES[i], dur); },
-      destroy() { views.delete(v); },
+      destroy() { views.delete(v); if (v.T) free(v.T); },
     };
     views.add(v);
     return v;
@@ -579,7 +582,8 @@ export function createSim({ low = false } = {}) {
   }
 
   function sizeOf(v) {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
+    if (v.size) return v.size;
+    const dpr = Math.min(devicePixelRatio || 1, 1.5);
     const r = v.canvas.getBoundingClientRect();
     let w = Math.max(2, Math.round(r.width * dpr * v.scale)), h = Math.max(2, Math.round(r.height * dpr * v.scale));
     const cap = low ? Math.min(v.maxW, 760) : v.maxW;
@@ -592,7 +596,7 @@ export function createSim({ low = false } = {}) {
     const [w, h] = sizeOf(v);
     if (v.canvas.width !== w || v.canvas.height !== h) { v.canvas.width = w; v.canvas.height = h; }
     if (glc.width < w || glc.height < h) { glc.width = Math.max(glc.width, w); glc.height = Math.max(glc.height, h); }
-    const T = targetsFor(w, h), win = windowFor(w, h, v.zoom), t = v.time;
+    const T = targetsFor(v, w, h), win = windowFor(w, h, v.zoom), t = v.time;
     const sc = v.scene;
     // the reel is rendered once per side when the shutters differ; usually one pass is shared
     const sides = v.b ? [v.a, v.b] : [v.a];

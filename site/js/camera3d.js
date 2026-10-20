@@ -415,7 +415,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
 
   // ---------- state, driven by the page ----------
   const S = {
-    explode: 0, yaw: Math.PI, pitch: 0.0, dist: 6.2, frameX: 0, frameY: 0, lift: 0,
+    explode: 0, yaw: Math.PI, pitch: 0.0, dist: 6.2, frameX: 0, frameY: 0, lift: 0, tx: 0, ty: 0, tz: 0,
     fnum: 2.8, focus: "body", mode: "idle", agents: 0, chipGoal: 0, sensorGain: 0, snap: 0, turntable: 0,
   };
   const D = { ...S };            // damped copies
@@ -443,7 +443,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     return allSpots[0];
   }
 
-  function placeParts(e, dt) {
+  function placeParts(e) {
     const tmpE = new THREE.Euler();
     parts.forEach((p) => {
       const k = THREE.MathUtils.clamp((e - p.delay) / (1 - 0.35), 0, 1);
@@ -538,6 +538,15 @@ export function createCamera3D(canvas, { low = false } = {}) {
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
+  // where a named thing sits when the camera is exploded by e (model space, rotations ignored)
+  function anchor(name, e = 1) {
+    const p = { sensor: sensorPart, iris: irisPart, chip: pcbPart, lcd: lcdPart }[name];
+    if (!p) return new THREE.Vector3(0, 0.15 * e, 0.9 * e);
+    const s = name === "chip" ? p.spots.find((x) => x.kind === "chip" && x.tile === 4) : name === "sensor" ? p.spots[7] : name === "lcd" ? null : p.spots[0];
+    const local = s ? s.local.clone() : new THREE.Vector3(-0.13, -0.02, -0.47);
+    if (name === "iris") local.set(0.04, -0.02, 0.92);
+    return local.add(p.homePos).addScaledVector(p.off, e);
+  }
   function focusPoint(name) {
     const p = name === "sensor" ? sensorPart : name === "iris" ? irisPart : name === "chip" ? pcbPart : name === "lcd" ? lcdPart : null;
     if (!p) return model.localToWorld(new THREE.Vector3(0, 0, D.explode * 0.8));
@@ -564,19 +573,24 @@ export function createCamera3D(canvas, { low = false } = {}) {
     step(dt);
     composer.render(dt);
   }
-  function step(dt) {
-    resize();
-    if (!frozen) time += dt;
-    for (const k of ["explode", "yaw", "pitch", "dist", "frameX", "frameY", "lift", "fnum", "agents", "sensorGain"]) D[k] = damp(D[k], S[k], k === "explode" ? 7 : 5, dt);
-    if (S.snap) { D.explode = S.explode; }
-    // camera on a sphere around the body
-    const tgt = new THREE.Vector3(0, D.lift, D.explode * 0.9);
-    const yaw = D.yaw + (frozen ? 0 : S.turntable * time * 0.25);
+  let spin = 0;
+  function placeCamera() {
+    const tgt = new THREE.Vector3(D.tx, D.ty + D.lift, D.tz);
+    const yaw = D.yaw + spin;
     cam.position.set(tgt.x + Math.sin(yaw) * Math.cos(D.pitch) * D.dist, tgt.y + Math.sin(D.pitch) * D.dist, tgt.z + Math.cos(yaw) * Math.cos(D.pitch) * D.dist);
     cam.lookAt(tgt);
     cam.setViewOffset(W0, H0, -D.frameX * W0, -D.frameY * H0, W0, H0);
-    placeParts(D.explode, dt);
+    placeParts(D.explode);
     model.updateMatrixWorld(true);
+    cam.updateMatrixWorld(true);
+  }
+  function step(dt) {
+    resize();
+    if (!frozen) time += dt;
+    for (const k of ["explode", "yaw", "pitch", "dist", "frameX", "frameY", "lift", "tx", "ty", "tz", "fnum", "agents", "sensorGain"]) D[k] = damp(D[k], S[k], k === "explode" ? 7 : 4.5, dt);
+    if (S.snap) { D.explode = S.explode; }
+    if (!frozen) spin += dt * S.turntable * 0.25;
+    placeCamera();
     updateSpots();
     setIris(D.fnum);
     // spinning things, unless the kill switch froze them
@@ -610,7 +624,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
 
   // Screen rectangle of the rear screen (CSS pixels), for the "pull back from the viewfinder" move.
   function lcdRect() {
-    model.updateMatrixWorld(true); cam.updateMatrixWorld(true);
+    resize(); placeCamera();
     const g = lcdMesh.geometry; g.computeBoundingBox();
     const bb = g.boundingBox, pts = [];
     for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) {
@@ -622,7 +636,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   }
 
   return {
-    state: S, lcdCanvas,
+    state: S, lcdCanvas, anchor,
     start() { if (running) return; running = true; clock.update(); frame(); },
     stop() { running = false; cancelAnimationFrame(raf); },
     get running() { return running; },

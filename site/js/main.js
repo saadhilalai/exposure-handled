@@ -1,365 +1,656 @@
-// Camera Agent site. Scroll scenes use GSAP + ScrollTrigger (vendor/gsap, 3.14.2) with tall sections and
-// sticky stages. Without motion (prefers-reduced-motion) every scene shows its end state instead.
-import { initReplay } from "./replay.js";
+// Camera Agent · project site v2. The page plays like a camera: a viewfinder where the AI takes over, a pull-back
+// to the camera itself, an exploded view with the crew at work, then things to play with.
+import { createSim, SCENES, ISOS, SHUTTERS, FNUMS, KELVINS } from "./sim.js";
+import { $, $$, wait, clamp, motion, sound, toast, Dial, Feed, reticle, magnetic, grain, countUp, nearest } from "./ui.js";
+import { solve, score, turn, fmt, RANGES } from "./ai.js";
 
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const html = document.documentElement;
-const motion = html.classList.contains("motion");
-const fine = html.classList.contains("fine");
+const low = html.classList.contains("low");
+const mobile = () => innerWidth < 820;
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+function kf(p, keys) {
+  if (p <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) {
+    const [p1, v1] = keys[i];
+    if (p <= p1) { const [p0, v0] = keys[i - 1]; const t = smooth(p0, p1, p); return v0 + (v1 - v0) * t; }
+  }
+  return keys[keys.length - 1][1];
+}
 
-const ready = new Promise((res) => (document.readyState === "complete" ? res() : addEventListener("load", res)));
-const scriptsReady = new Promise((res) => {
-  const check = () => (window.gsap && window.ScrollTrigger && window.SplitText ? res() : setTimeout(check, 30));
-  check();
-});
+let sim = null, cam3d = null, data = null;
+const views = {};
+const prog = { hero: 0, inside: 0, try: 0, finale: 0 };
 
 main();
 
 async function main() {
   grain();
-  const data = await fetch("data/site.json").then((r) => r.json());
-  await scriptsReady;
-  gsap.registerPlugin(ScrollTrigger, SplitText);
+  if (!window.gsap) await new Promise((r) => addEventListener("load", r, { once: true }));
+  gsap.registerPlugin(ScrollTrigger);
   ScrollTrigger.config({ ignoreMobileResize: true });
-  nav();
-  hero(data);
-  manifesto();
-  logScene();
-  how();
-  initReplay(data, { motion });
-  looks(data);
-  safety(data);
-  dashboard();
-  entrances();
-  closeScene();
-  cursor();
-  videos();
+  data = await fetch("data/site.json").then((r) => r.json()).catch(() => null);
+  try { sim = createSim({ low }); } catch (e) { console.warn("simulator off:", e); }
+  nav(); toggles(); reticle(); magnetic(); eggs(); lineWrap();
+  if (sim) { simLoop(); hero(); }
+  await load3D();
+  heroPull();
+  inside();
+  if (sim) { tryIt(); game(); compare(); }
+  real(); safety(); dash(); finale();
   await document.fonts.ready;
-  await ready;
   ScrollTrigger.refresh();
 }
 
-// ---------- film grain: a small noise tile drawn once ----------
-function grain() {
-  const c = document.createElement("canvas");
-  c.width = c.height = 180;
-  const x = c.getContext("2d");
-  const img = x.createImageData(180, 180);
-  for (let i = 0; i < img.data.length; i += 4) {
-    const v = Math.random() * 255;
-    img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
-    img.data[i + 3] = 255;
-  }
-  x.putImageData(img, 0, 0);
-  $(".grain").style.backgroundImage = `url(${c.toDataURL()})`;
+// wrap each headline line so it can rise out of its own mask
+function lineWrap() { $$(".big .line, .huge .line, .hero-title .line").forEach((l) => (l.innerHTML = `<span class="in">${l.innerHTML}</span>`)); }
+
+// ---------- the simulator's render loop: only views on screen are drawn ----------
+function simLoop() {
+  const io = new IntersectionObserver((es) => es.forEach((e) => { const v = e.target.__view; if (v) v.visible = e.isIntersecting; }), { rootMargin: "120px" });
+  sim.observe = (v) => { v.canvas.__view = v; v.visible = false; io.observe(v.canvas); };
+  (function loop(now) { sim.render(now); requestAnimationFrame(loop); })(performance.now());
 }
 
-// ---------- nav: under the draft bar at the top, solid after, hides on the way down ----------
+// ---------- nav, toggles, easter eggs ----------
 function nav() {
-  const n = $("#nav"), bar = $(".draft-bar");
-  let lastY = scrollY;
-  const update = () => {
-    const y = scrollY, top = bar.offsetHeight;
-    n.style.setProperty("--nav-y", y < top ? top - y + "px" : "0px");
-    n.classList.toggle("solid", y > top);
-    n.classList.toggle("hide", y > lastY && y > innerHeight * 0.6);
-    lastY = y;
-  };
-  addEventListener("scroll", update, { passive: true });
-  update();
-  for (const s of $$("[data-theme=light]")) {
-    ScrollTrigger.create({ trigger: s, start: "top 64px", end: "bottom 64px", toggleClass: { targets: n, className: "light" } });
-  }
+  const n = $("#nav");
+  const upd = () => n.classList.toggle("solid", scrollY > 40);
+  addEventListener("scroll", upd, { passive: true }); upd();
 }
-
-// ---------- 01 hero: the viewfinder ----------
-function hero(data) {
-  if (motion) $("#hero-video").play().catch(() => {});
-  // Timecode at 23.976 fps, counted in 24-frame seconds, like the camera.
-  const tc = $("#hero-tc"), startMs = performance.now();
-  const pad = (n) => String(n).padStart(2, "0");
-  (function runTC() {
-    const f = Math.floor(((performance.now() - startMs) / 1000) * (24000 / 1001));
-    const s = Math.floor(f / 24), m = Math.floor(s / 60);
-    tc.textContent = `01:${pad(m % 60)}:${pad(s % 60)}:${pad(f % 24)}`;
-    requestAnimationFrame(runTC);
-  })();
-  // Subtitles: the real lines from Test 1, with the ISO readout following them.
-  const test = data.tests.test1, sub = $("#hero-sub"), iso = $("#hero-iso");
-  const lines = test.changes.map((c) => ({ text: c.reason, small: `Confirmed by the camera in ${c.ms} ms`, iso: c.to }));
-  lines.push({ text: test.settled_status, small: `Settled in ${test.settle_s} s · Oct 19, real FX2`, iso: test.changes.at(-1).to });
-  let k = 0;
-  const next = () => {
-    const l = lines[k % lines.length];
-    sub.classList.remove("on");
-    setTimeout(() => {
-      sub.innerHTML = `${l.text}<small>${l.small}</small>`;
-      sub.classList.add("on");
-      iso.textContent = l.iso.replace("ISO ", "");
-      iso.classList.add("flash");
-      setTimeout(() => iso.classList.remove("flash"), 900);
-    }, 450);
-    k = k % lines.length === lines.length - 1 ? 0 : k + 1;
-    if (k === 0) setTimeout(() => (iso.textContent = test.setup[0].to.replace("ISO ", "")), 3600);
+function toggles() {
+  const s = $("#sound-toggle"), nb = $("#nerd-toggle");
+  s.addEventListener("click", () => {
+    const on = !sound.on;
+    on ? sound.enable() : sound.disable();
+    s.setAttribute("aria-pressed", on); if (on) { sound.beep(); }
+    toast(on ? "Sound on" : "Sound off");
+  });
+  const setNerd = (on, quiet) => {
+    html.classList.toggle("nerd", on); nb.setAttribute("aria-pressed", on);
+    try { localStorage.setItem("nerd", on ? "1" : "0"); } catch {}
+    if (!quiet) { toast(on ? "Nerd mode on" : "Nerd mode off"); sound.tick(); }
+    requestAnimationFrame(() => ScrollTrigger.refresh());
   };
-  setTimeout(() => { next(); setInterval(next, 3900); }, 1400);
-  $("#hero-state").closest(".tally").classList.add("auto");
-
-  if (!motion) return;
-  gsap.from(".hero-title .ln > span", { yPercent: 118, duration: 1.7, ease: "expo.out", stagger: 0.12, delay: 0.15 });
-  gsap.from([".hero .eyebrow", ".hero .lede", ".hero-notes"], { y: 24, opacity: 0, duration: 1.4, ease: "power3.out", stagger: 0.1, delay: 0.5 });
-  gsap.from(".hero .vf i", { scale: 1.6, opacity: 0, duration: 1.4, ease: "expo.out", stagger: 0.05, delay: 0.2 });
-  gsap.from(".hero .hud", { opacity: 0, duration: 1, delay: 0.7 });
-  // Scroll: the frame pushes in, the letterbox closes to 2.39:1, the title lifts away.
-  const lb = () => Math.max(innerHeight * 0.08, (innerHeight - innerWidth / 2.39) / 2);
-  const tl = gsap.timeline({ scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom bottom", scrub: 0.6, invalidateOnRefresh: true } });
-  tl.to(".scroll-cue", { opacity: 0, duration: 0.1 }, 0)
-    .fromTo(".hero", { "--lb": "0px" }, { "--lb": () => lb() + "px", duration: 0.6, ease: "power2.inOut" }, 0)
-    .fromTo("#hero-frame", { scale: 1.08 }, { scale: 1, duration: 1, ease: "none" }, 0)
-    .to(".hero-copy", { y: -80, opacity: 0, duration: 0.45, ease: "power1.in" }, 0.12)
-    .to(".hero-notes", { opacity: 0, duration: 0.3 }, 0.2)
-    .to("#hero-frame .shade", { opacity: 0.45, duration: 0.4 }, 0.3)
-    .to({}, { duration: 0.2 });
-}
-
-// ---------- 02 manifesto: words light up as you read ----------
-function manifesto() {
-  const p = $("#manifesto");
-  const split = new SplitText(p, { type: "words", wordsClass: "w" });
-  if (!motion) return;
-  gsap.to(split.words, {
-    opacity: 1, ease: "none", stagger: 0.1,
-    scrollTrigger: { trigger: p, start: "top 78%", end: "bottom 42%", scrub: 0.5 },
+  nb.addEventListener("click", () => setNerd(!html.classList.contains("nerd")));
+  try { if (localStorage.getItem("nerd") === "1") setNerd(true, true); } catch {}
+  addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || /input|textarea/i.test(e.target.tagName)) return;
+    if (e.key === "n" || e.key === "N") setNerd(!html.classList.contains("nerd"));
+    if (e.key === "m" || e.key === "M") s.click();
   });
 }
-
-// ---------- 03 S-Log3 -> LUT wipe ----------
-function logScene() {
-  const log = $("#log-video"), graded = $("#graded-video"), wipe = $("#wipe");
-  // Keep the graded copy on the same frame as the log copy.
-  setInterval(() => {
-    if (!log.paused && Math.abs(graded.currentTime - log.currentTime) > 0.06) graded.currentTime = log.currentTime;
-  }, 500);
-  if (!motion) return;
-  const tl = gsap.timeline({ scrollTrigger: { trigger: ".logscene", start: "top top", end: "bottom bottom", scrub: 0.7 } });
-  tl.from(".log-copy > *", { y: 40, opacity: 0, stagger: 0.05, duration: 0.25, ease: "power3.out" }, 0)
-    .from(".wipe-label", { opacity: 0, duration: 0.1 }, 0.2)
-    .fromTo(wipe, { "--split": "100%" }, { "--split": "50%", duration: 0.5, ease: "power2.inOut" }, 0.22)
-    .to(".log-copy", { opacity: 0.15, duration: 0.2 }, 0.5)
-    .to({}, { duration: 0.25 });
-}
-
-// ---------- 04 how it thinks: four steps, one monitor ----------
-function how() {
-  const mon = $("#monitor"), cap = $("#monitor-cap");
-  const caps = {
-    see: "Readouts are an illustration, measured live from the placeholder clip.",
-    decide: "Illustration: the Interview look's rules.",
-    check: "Illustration: the range check every change goes through.",
-    change: "This line is real, from Test 3 on Oct 19. The clip is a placeholder.",
-  };
-  const set = (step) => {
-    mon.dataset.step = step;
-    cap.textContent = caps[step];
-    for (const s of $$(".step")) s.classList.toggle("on", s.dataset.step === step);
-  };
-  for (const s of $$(".step")) {
-    ScrollTrigger.create({ trigger: s, start: "top 58%", end: "bottom 58%", onToggle: (st) => st.isActive && set(s.dataset.step) });
-  }
-  set("see");
-  // 48 regions, measured from the clip itself every 300 ms (display light, so it's an illustration).
-  const v = $("#how-video"), c = $("#region-grid"), x = c.getContext("2d", { willReadFrequently: true }), cells = $("#cells");
-  for (let i = 0; i < 48; i++) cells.append(document.createElement("span"));
-  const lin = (u) => (u <= 0.04045 ? u / 12.92 : ((u + 0.055) / 1.055) ** 2.4);
-  setInterval(() => {
-    if (v.paused || mon.dataset.step !== "see" || v.readyState < 2) return;
-    x.drawImage(v, 0, 0, 8, 6);
-    const d = x.getImageData(0, 0, 8, 6).data;
-    let sum = 0;
-    cells.childNodes.forEach((cell, i) => {
-      const Y = 0.2126 * lin(d[i * 4] / 255) + 0.7152 * lin(d[i * 4 + 1] / 255) + 0.0722 * lin(d[i * 4 + 2] / 255);
-      const st = Math.log2(Math.max(Y, 1e-4) / 0.18);
-      sum += st;
-      cell.textContent = (st >= 0 ? "+" : "−") + Math.abs(st).toFixed(1);
-      cell.classList.toggle("hot", st > 1.5);
-    });
-    $("#see-key").textContent = ((sum / 48) >= 0 ? "+" : "−") + Math.abs(sum / 48).toFixed(1);
-  }, 300);
-}
-
-// ---------- 06 looks: built from agent/looks.py, scrolled sideways ----------
-function looks(data) {
-  const track = $("#looks-track");
-  const bgs = ["media/placeholder/night.jpg", "media/placeholder/lamp.jpg", "media/placeholder/sunbeam.jpg", "media/placeholder/lamp.jpg", "media/placeholder/sunbeam.jpg"];
-  const st = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(1);
-  data.looks.forEach((l, i) => {
-    const [name, sub] = l.name.replace(")", "").split(" (");
-    const [a0, a1] = l.aperture_range;
-    const card = document.createElement("article");
-    card.className = "look-card";
-    card.innerHTML = `<div class="bgimg"></div><span class="no"></span><h3></h3><p></p><dl class="specs"></dl>`;
-    card.querySelector(".bgimg").style.backgroundImage = `url(${bgs[i % bgs.length]})`;
-    card.querySelector(".no").textContent = String(i + 1).padStart(2, "0");
-    card.querySelector("h3").textContent = name;
-    if (sub) card.querySelector("h3").insertAdjacentHTML("beforeend", "<em></em>"), (card.querySelector("h3 em").textContent = sub);
-    card.querySelector("p").textContent = l.description;
-    const specs = [
-      ["Aperture", a0 === a1 ? `f/${a0}, fixed` : `f/${a0} – f/${a1}`],
-      ["Shutter", l.shutter_180 ? "180°" : "Yours"],
-      ["Face at", st(l.face_target) + " st"],
-      ["Scene window", `${st(l.key_window[0])} to ${st(l.key_window[1])}`],
-      ["Clipping", `≤ ${l.max_clip_pct}%`],
-      ["ISO", l.iso_policy === "base_first" ? "Base ISO first" : "Free, fast"],
-    ];
-    const dl = card.querySelector(".specs");
-    for (const [k, v] of specs) {
-      const d = document.createElement("div");
-      d.innerHTML = "<dt></dt><dd></dd>";
-      d.firstChild.textContent = k;
-      d.lastChild.textContent = v;
-      dl.append(d);
+function eggs() {
+  addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || /input|textarea/i.test(e.target.tagName)) return;
+    if (e.key === "z" || e.key === "Z") {
+      const on = html.classList.toggle("zebra"); if (sim) sim.fx.zebra = on;
+      toast(on ? "Zebras on · 95%" : "Zebras off"); sound.beep();
     }
-    track.append(card);
+    if (e.key === "f" || e.key === "F") {
+      const on = html.classList.toggle("fc"); if (sim) sim.fx.falseColor = on;
+      toast(on ? "False color on" : "False color off"); sound.beep();
+    }
   });
-  if (!motion) return;
-  const scene = $(".looks"), dist = () => Math.max(0, track.scrollWidth - innerWidth);
-  const size = () => (scene.style.height = dist() + innerHeight + "px");
-  size();
-  ScrollTrigger.addEventListener("refreshInit", size);
-  gsap.to(track, { x: () => -dist(), ease: "none", scrollTrigger: { trigger: scene, start: "top top", end: "bottom bottom", scrub: 0.6, invalidateOnRefresh: true } });
-  gsap.from(".look-card", { y: 60, opacity: 0, duration: 1.2, ease: "power3.out", stagger: 0.08, scrollTrigger: { trigger: scene, start: "top 70%" } });
 }
 
-// ---------- 07 safety: ranges drawn on the camera's full scale; counters ----------
-function safety(data) {
-  const r = data.ranges;
-  const log2 = Math.log2;
-  const rows = [
-    { name: "ISO", val: `${r.IsoSensitivity.min_iso} – ${r.IsoSensitivity.max_iso}`, lo: 100, hi: 102400,
-      a: r.IsoSensitivity.min_iso, b: r.IsoSensitivity.max_iso, f: log2, ends: ["100", "102,400"], note: "Always on" },
-    { name: "Aperture", val: `f/${r.FNumber.min_f} – f/${r.FNumber.max_f}`, lo: 1.4, hi: 22, a: r.FNumber.min_f, b: r.FNumber.max_f,
-      f: log2, ends: ["f/1.4", "f/22"], note: "Behind the exposure switch, off by default" },
-    { name: "Shutter", val: r.ShutterSpeed.approved_range.replace(" (video only)", ""), lo: 1 / 8000, hi: 1 / 24,
-      a: r.ShutterSpeed.min_seconds, b: r.ShutterSpeed.max_seconds, f: log2, ends: ["1/8000", "1/24"], note: "Video only · behind the exposure switch" },
-    { name: "White balance", val: `${r.Colortemp.min_k}K – ${r.Colortemp.max_k}K`, lo: 2500, hi: 9900, a: r.Colortemp.min_k, b: r.Colortemp.max_k,
-      f: (k) => k, ends: ["2500K", "9900K"], note: "Auto or Color Temp only; presets and Custom blocked" },
-  ];
-  const host = $("#ranges");
-  for (const row of rows) {
-    const p = (v) => ((row.f(v) - row.f(row.lo)) / (row.f(row.hi) - row.f(row.lo))) * 100;
-    const d = document.createElement("div");
-    d.className = "rg";
-    d.innerHTML = `<div class="top"><span class="name"></span><span class="val"></span></div>
-      <div class="scale"><i class="ok"></i></div><div class="ends"><span></span><span></span></div><p class="note"></p>`;
-    d.querySelector(".name").textContent = row.name;
-    d.querySelector(".val").textContent = row.val;
-    const ok = d.querySelector(".ok");
-    ok.style.left = p(row.a) + "%";
-    ok.style.width = p(row.b) - p(row.a) + "%";
-    const [e0, e1] = d.querySelectorAll(".ends span");
-    e0.textContent = row.ends[0];
-    e1.textContent = row.ends[1];
-    d.querySelector(".note").textContent = row.note;
-    host.append(d);
+// ---------- shared: the AI turning dials, one detent at a time, while it talks ----------
+async function runAI(view, sceneIdx, { feed, dials, tally, onSet, speed = 1 }) {
+  const plan = solve(sim, sceneIdx, { ...view.a });
+  tally?.classList.add("on");
+  Object.values(dials || {}).forEach((d) => { d.ai(true); d.lock(true); });
+  await feed.say(plan.assess, "", 420 / speed);
+  for (const st of plan.steps) {
+    await feed.say(st.msg, "", 260 / speed);
+    await turn(st.key, st.from, st.to, (val, i) => {
+      view.a[st.key] = val;
+      if (dials?.[st.key]) dials[st.key].set(i, { source: "ai" }); else sound.tick();
+      onSet?.(st.key, val);
+    }, { speed });
+    await wait(140 / speed);
   }
-  const get = (path) => path.split(".").reduce((o, k) => o?.[k], data);
-  for (const dd of $$("[data-count]")) {
-    const target = get(dd.dataset.count);
-    if (!motion) { dd.textContent = target; continue; }
+  await feed.say(plan.final.msg, plan.final.cls, 240 / speed);
+  sound.click();
+  Object.values(dials || {}).forEach((d) => { d.ai(false); d.lock(false); });
+  setTimeout(() => tally?.classList.remove("on"), 1800);
+  return plan;
+}
+
+function makeDials(parent, view, onUser, size) {
+  parent.innerHTML = "";
+  const conf = [["iso", "ISO", ISOS], ["shutter", "Shutter", SHUTTERS], ["fnum", "Iris", FNUMS], ["wb", "WB", KELVINS]];
+  const out = {};
+  conf.forEach(([k, label, list]) => {
+    out[k] = Dial(parent, { key: k, label, values: list, format: fmt[k], index: nearest(list, view.a[k]), ok: RANGES[k], size,
+      onChange: (val, i, src) => { view.a[k] = val; if (src === "user") onUser?.(k, val); } });
+  });
+  return out;
+}
+
+// the focus box sits on the reel, wherever the crop puts it
+function placeAF(box, view) {
+  const c = view.canvas, w = c.clientWidth, h = c.clientHeight;
+  if (!w || !view.w) return;
+  const win = sim.windowFor(view.w, view.h, view.zoom);
+  const cx = ((-0.13 - win[0]) / win[2]) * w, cy = (1 - (0.085 - win[1]) / win[3]) * h;
+  const s = ((0.19 * 2 * 1.16) / win[2]) * w;
+  box.style.transform = `translate(${cx - s / 2}px, ${cy - s / 2}px)`; box.style.width = box.style.height = s + "px";
+}
+
+// ============ 1 · viewfinder: the AI takes over ============
+function hero() {
+  const canvas = $("#hero-canvas");
+  const v = (views.hero = sim.view(canvas, { scene: 0 }));
+  sim.observe(v);
+  // a fixed render size, so the picture doesn't reallocate while the frame shrinks into the camera
+  const fit = () => { const d = Math.min(devicePixelRatio || 1, 1.5), cap = low ? 900 : 1680; let w = Math.round(innerWidth * d), h = Math.round(innerHeight * d); if (w > cap) { h = Math.round(h * cap / w); w = cap; } v.size = [w, h]; };
+  fit(); addEventListener("resize", fit);
+  Object.assign(v.a, { iso: 6400, shutter: 1 / 48, fnum: 2.8, wb: 3200 });
+  const feed = Feed($("#hero-feed"), { max: 4 });
+  const hud = { iso: $("#h-iso"), shutter: $("#h-sh"), fnum: $("#h-f"), wb: $("#h-wb") };
+  const hf = { iso: (x) => x, shutter: (x) => "1/" + Math.round(1 / x), fnum: (x) => "F" + x, wb: (x) => Math.round(x) + "K" };
+  const setHud = (k, val, flash) => {
+    hud[k].textContent = hf[k](val);
+    if (flash) { hud[k].classList.add("tick"); clearTimeout(hud[k]._t); hud[k]._t = setTimeout(() => hud[k].classList.remove("tick"), 240); }
+  };
+  Object.keys(hud).forEach((k) => setHud(k, v.a[k]));
+  // timecode at 23.976
+  const tc = $("#hero-tc"), t0 = performance.now(), p2 = (n) => String(n).padStart(2, "0");
+  setInterval(() => {
+    const f = Math.floor(((performance.now() - t0) / 1000) * 23.976);
+    tc.textContent = `01:${p2(Math.floor(f / 1440) % 60)}:${p2(Math.floor(f / 24) % 60)}:${p2(f % 24)}`;
+  }, 42);
+  // meter, focus box, histogram
+  const af = $("#hero-af"), needle = $("#h-meter .needle"), hc = $("#h-histo"), hx = hc.getContext("2d");
+  const sm = document.createElement("canvas"); sm.width = 64; sm.height = 36;
+  const sx = sm.getContext("2d", { willReadFrequently: true });
+  let lastH = 0;
+  v.onFrame = (view) => {
+    placeAF(af, view);
+    const m = sim.meter(0, view.a, view.scene);
+    needle.style.left = clamp((m.subject + 3) / 6, 0, 1) * 100 + "%";
+    const now = performance.now();
+    if (now - lastH > 180 && hc.offsetParent) {
+      lastH = now;
+      sx.drawImage(view.canvas, 0, 0, 64, 36);
+      const d = sx.getImageData(0, 0, 64, 36).data, bins = new Array(40).fill(0);
+      for (let i = 0; i < d.length; i += 4) bins[Math.min(39, Math.floor(((d[i] * 0.2126 + d[i + 1] * 0.7152 + d[i + 2] * 0.0722) / 256) * 40))]++;
+      const mx = Math.max(...bins.slice(0, 39), 1);
+      hx.clearRect(0, 0, 120, 44);
+      bins.forEach((b, i) => { hx.fillStyle = i >= 38 ? "rgba(255,90,60,.95)" : "rgba(255,255,255,.75)"; const hh = Math.min(42, (b / mx) * 42); hx.fillRect(i * 3, 44 - hh, 2, hh); });
+    }
+  };
+  // title hidden until the AI is done
+  const lines = $$("#hero-title .in");
+  const reveal = () => motion ? gsap.fromTo(lines, { yPercent: 110 }, { yPercent: 0, duration: 1.3, ease: "expo.out", stagger: 0.12 }) : null;
+  if (motion) gsap.set(lines, { yPercent: 110 });
+  const intro = async () => {
+    await wait(1100);
+    await runAI(v, 0, { feed, tally: $("#ai-tally"), onSet: (k, val) => setHud(k, val, true), speed: 0.85 });
+    af.classList.add("lock");
+    reveal();
+  };
+  if (motion) intro();
+  else {
+    const plan = solve(sim, 0, { ...v.a });
+    Object.assign(v.a, plan.target); Object.keys(hud).forEach((k) => setHud(k, v.a[k]));
+    feed.push(plan.final.msg, "done"); af.classList.add("lock");
+  }
+}
+
+// ============ the 3D camera ============
+const HERO_POSE = { yaw: Math.PI, pitch: 0.05, dist: 3.4, tx: -0.13, ty: -0.02, tz: -0.47, explode: 0, agents: 0, frameX: 0, frameY: 0, lift: 0, mode: "idle", focus: "lcd" };
+async function load3D() {
+  try {
+    const m = await import("./camera3d.js");
+    cam3d = m.createCamera3D($("#cam3d"), { low });
+  } catch (e) { console.warn("3D off:", e); cam3d = null; return; }
+  Object.assign(cam3d.state, HERO_POSE); cam3d.settle();
+  if (sim && views.hero) {
+    const lv = (views.lcd = sim.view(cam3d.lcdCanvas, { scene: 0, size: [640, 360] }));
+    lv.a = views.hero.a; lv.t0 = views.hero.t0; lv.visible = false;
+  }
+  if (!motion) {
+    // still picture of the exploded camera behind the "inside" beats
+    Object.assign(cam3d.state, { yaw: 0.85, pitch: 0.25, dist: 10.5, explode: 1, agents: 1, tx: 0, ty: 0.15, tz: 0.9, frameX: mobile() ? 0 : 0.22 });
+    cam3d.settle();
+    const io = new IntersectionObserver(([e]) => { $("#cam3d").style.opacity = e.isIntersecting ? 0.55 : 0; if (e.isIntersecting) cam3d.renderOnce(); });
+    io.observe($("#inside"));
+  }
+}
+function vis3D() {
+  if (!cam3d || !motion) return;
+  const o = prog.finale > 0 ? smooth(0, 0.18, prog.finale)
+    : prog.try > 0 ? 1 - smooth(0, 1, prog.try)
+    : prog.inside > 0 ? 1
+    : smooth(0.3, 0.6, prog.hero);
+  $("#cam3d").style.opacity = o;
+  $(".cam3d-shade").style.opacity = prog.inside > 0.12 && prog.try === 0 ? smooth(0.12, 0.2, prog.inside) : 0;
+  if (o > 0.005) cam3d.start(); else cam3d.stop();
+  if (views.lcd) views.lcd.visible = o > 0.005 && prog.inside < 0.3;
+}
+
+// ============ pull back from the viewfinder to the camera's own screen ============
+function heroPull() {
+  if (!motion) return;
+  const vf = $("#vf"), fade = [$(".vf-hud"), $("#hero-feed"), $(".scroll-cue")], title = $("#hero-title");
+  ScrollTrigger.create({
+    trigger: ".hero", start: "top top", end: "bottom bottom", scrub: true,
+    onUpdate: (s) => {
+      const p = (prog.hero = s.progress);
+      fade.forEach((el) => (el.style.opacity = 1 - smooth(0, 0.12, p)));
+      title.style.transform = `translateY(${-p * 160}px)`; title.style.opacity = 1 - smooth(0.02, 0.22, p);
+      if (cam3d) {
+        Object.assign(cam3d.state, HERO_POSE); cam3d.settle();
+        cam3d.resize();
+        const r = cam3d.lcdRect(), W = innerWidth, H = innerHeight;
+        const e = smooth(0.1, 0.88, p);
+        vf.style.left = r.left * e + "px"; vf.style.top = r.top * e + "px";
+        vf.style.width = W + (r.width - W) * e + "px"; vf.style.height = H + (r.height - H) * e + "px";
+        vf.style.borderRadius = 2 + 8 * e + "px";
+        vf.style.opacity = 1 - smooth(0.86, 0.97, p);
+      } else {
+        vf.style.opacity = 1 - smooth(0.4, 0.9, p);
+      }
+      vis3D();
+    },
+  });
+}
+
+// ============ 2 · inside the camera: the scroll backbone ============
+function inside() {
+  const beats = Object.fromEntries($$(".beat").map((b) => [b.dataset.beat, b]));
+  const dots = $$(".inside-progress i");
+  buildIsoGauge(); buildStopwatch();
+  killSwitch();
+  if (!motion || !cam3d) return;
+  const S = cam3d.state;
+  const A = { sensor: cam3d.anchor("sensor"), iris: cam3d.anchor("iris"), chip: cam3d.anchor("chip"), mid: cam3d.anchor("center", 1), mid0: cam3d.anchor("center", 0.25) };
+  const W = { crew: [0.15, 0.28], iso: [0.3, 0.46], iris: [0.48, 0.63], wb: [0.65, 0.8], kill: [0.82, 1.2] };
+  const order = ["crew", "iso", "iris", "wb", "kill"];
+  const T = (key) => [[0, HERO_POSE[key]], [0.06, HERO_POSE[key]], [0.17, A.mid0[key]], [0.25, A.mid[key]], [0.3, A.sensor[key]], [0.45, A.sensor[key]], [0.5, A.iris[key]], [0.62, A.iris[key]], [0.67, A.chip[key]], [0.79, A.chip[key]], [0.86, A.mid[key]], [1, A.mid[key]]];
+  ["x", "y", "z"].forEach((c) => { A.mid0["t" + c] = A.mid0[c]; });
+  const tk = { tx: T("x").map(([p, v], i) => [p, i < 2 ? HERO_POSE.tx : v]), ty: T("y").map(([p, v], i) => [p, i < 2 ? HERO_POSE.ty : v]), tz: T("z").map(([p, v], i) => [p, i < 2 ? HERO_POSE.tz : v]) };
+  const K = {
+    yaw: [[0, Math.PI], [0.05, Math.PI], [0.17, 0.95], [0.25, 0.8], [0.3, 0.38], [0.45, 0.38], [0.5, 0.3], [0.62, 0.3], [0.67, 0.55], [0.79, 0.6], [0.87, 0.92], [1, 1.05]],
+    pitch: [[0, 0.05], [0.17, 0.2], [0.3, 0.12], [0.45, 0.12], [0.5, 0.08], [0.62, 0.08], [0.67, 0.3], [0.79, 0.3], [0.87, 0.24], [1, 0.24]],
+    dist: [[0, 3.4], [0.05, 3.6], [0.17, 7.2], [0.25, 10.8], [0.3, 3.4], [0.45, 3.4], [0.5, 3.6], [0.62, 3.6], [0.67, 3.1], [0.79, 3.1], [0.87, 11.2], [1, 11.4]],
+    explode: [[0, 0], [0.13, 0], [0.25, 1], [1, 1]],
+    agents: [[0, 0], [0.18, 0], [0.26, 1], [1, 1]],
+  };
+  const fx = mobile() ? [[0, 0], [1, 0]] : [[0, 0], [0.07, 0], [0.18, 0.2], [1, 0.2]];
+  const fy = mobile() ? [[0, 0], [0.07, 0], [0.18, 0.2], [1, 0.2]] : [[0, 0], [1, 0]];
+  let lastIso = -1, lastF = -1, lastBeat = "";
+  const isoSeq = [6400, 5000, 4000, 3200, 2500, 2000];
+
+  ScrollTrigger.create({ trigger: "#try", start: "top bottom", end: "top 30%", scrub: true, onUpdate: (s) => { prog.try = s.progress; vis3D(); } });
+  ScrollTrigger.create({
+    trigger: "#inside", start: "top top", end: "bottom bottom", scrub: true,
+    onUpdate: (s) => { prog.inside = s.progress; apply(s.progress); vis3D(); },
+    onLeaveBack: () => { prog.inside = 0; vis3D(); },
+  });
+  function apply(p) {
+    for (const k in K) S[k] = kf(p, K[k]);
+    for (const k in tk) S[k] = kf(p, tk[k]);
+    S.frameX = kf(p, fx); S.frameY = kf(p, fy);
+    const mob = mobile();
+    let active = "";
+    order.forEach((name, i) => {
+      const [a, b] = W[name], el = beats[name];
+      const al = clamp(Math.min((p - a) / 0.035, (b - p) / 0.035), 0, 1);
+      if (al > 0.5) active = name;
+      el.style.opacity = al; el.style.visibility = al > 0.001 ? "visible" : "hidden";
+      const base = mob ? "" : "translateY(-50%) ";
+      const out = 1 - al;
+      el.style.transform = base + ({ crew: `translateY(${out * 50}px)`, iso: `translateX(${-out * 60}px)`, iris: `scale(${0.94 + 0.06 * al})`, wb: `translateY(${-out * 40}px)`, kill: `translateY(${out * 70}px) scale(${0.96 + 0.04 * al})` })[name];
+      el.style.filter = name === "wb" && out > 0.01 ? `blur(${out * 10}px)` : "";
+      dots[i]?.classList.toggle("on", al > 0.5);
+    });
+    S.mode = { iso: "iso", iris: "iris", wb: "wb" }[active] || "idle";
+    S.focus = { iso: "sensor", iris: "iris", wb: "chip" }[active] || (p < 0.1 ? "lcd" : "body");
+    if (active !== lastBeat) { if (active) sound.whoosh(); lastBeat = active; }
+    // ISO: the real Oct 19 sequence
+    const li = smooth(0.32, 0.43, p), k = Math.min(5, Math.floor(li * 5.999));
+    if (k !== lastIso) { lastIso = k; setIso(isoSeq[k], p > W.iso[0] && p < W.iso[1]); }
+    S.sensorGain = p < W.iso[0] - 0.05 ? 0 : 1 - (k / 5) * 0.75;
+    // iris: f/2.8 to f/8 in thirds
+    const lf = smooth(0.5, 0.6, p), fi = FNUMS.indexOf(2.8) + Math.round(lf * 9);
+    if (fi !== lastF) { lastF = fi; setIris(FNUMS[fi], p > W.iris[0] && p < W.iris[1]); }
+    S.fnum = FNUMS[fi];
+    // white balance: 3200 K to 5600 K, the crew repaints the chip
+    const lw = smooth(0.67, 0.77, p), K2 = Math.round((3200 + lw * 2400) / 100) * 100;
+    $("#wb-val").textContent = K2 + "K"; $("#wb-marker").style.left = ((K2 - 2500) / 7500) * 100 + "%";
+    S.chipGoal = lw;
+    if (p < W.kill[0] - 0.02 && cam3d.frozen) release(true);
+  }
+}
+function buildIsoGauge() {
+  const g = $("#iso-ticks"); if (!g) return;
+  let out = "";
+  const list = ISOS.filter((v) => v >= 800 && v <= 12800);
+  list.forEach((v) => {
+    const f = Math.log2(v / 800) / 4, a = Math.PI * (1 - f);
+    const major = [800, 1600, 3200, 6400, 12800].includes(v);
+    const r1 = 128, r2 = major ? 140 : 135;
+    out += `<line class="${major ? "major" : ""}" x1="${150 + Math.cos(a) * r1}" y1="${150 - Math.sin(a) * r1}" x2="${150 + Math.cos(a) * r2}" y2="${150 - Math.sin(a) * r2}"/>`;
+    if (major) out += `<text x="${150 + Math.cos(a) * 154}" y="${150 - Math.sin(a) * 154 + 4}">${v}</text>`;
+  });
+  g.innerHTML = out;
+  const arc = $("#iso-arc"), len = arc.getTotalLength(); arc.style.strokeDasharray = `${len} ${len}`; arc.dataset.len = len;
+  setIso(6400, false);
+}
+function setIso(v, audible) {
+  const f = Math.log2(v / 800) / 4;
+  $("#iso-needle").style.transform = `rotate(${-90 + 180 * f}deg)`;
+  const arc = $("#iso-arc"); arc.style.strokeDashoffset = arc.dataset.len * (1 - f);
+  $("#iso-val").textContent = v;
+  if (audible) sound.tick();
+}
+function setIris(f, audible) {
+  const r = 74 * (2.8 / f), R = r / Math.cos(Math.PI / 9), rot = (f - 2.8) * 0.08;
+  const pts = Array.from({ length: 9 }, (_, i) => { const a = rot + (i / 9) * Math.PI * 2; return `${100 + Math.cos(a) * R},${100 + Math.sin(a) * R}`; }).join(" ");
+  $("#iris-poly").setAttribute("points", pts);
+  $("#iris-val").textContent = "F" + f;
+  if (audible) sound.tick();
+}
+function buildStopwatch() {
+  const g = $("#sw-ticks"); if (!g) return;
+  let out = "";
+  for (let i = 0; i < 20; i++) { const a = (i / 20) * Math.PI * 2; out += `<line x1="${80 + Math.cos(a) * 72}" y1="${80 + Math.sin(a) * 72}" x2="${80 + Math.cos(a) * (i % 5 ? 75 : 78)}" y2="${80 + Math.sin(a) * (i % 5 ? 75 : 78)}"/>`; }
+  g.innerHTML = out;
+}
+let release = () => {};
+function killSwitch() {
+  const b = $("#estop"), arc = $("#sw-arc"), val = $("#sw-val");
+  const ms = data?.tests?.test1?.kill?.ms_to_stop ?? 33;
+  const press = () => {
+    if (cam3d?.frozen) return release();
+    cam3d?.freeze(true);
+    html.classList.add("killed"); b.setAttribute("aria-pressed", "true");
+    sound.clunk();
     const o = { v: 0 };
-    gsap.to(o, { v: target, duration: 1.8, ease: "power3.out", onUpdate: () => (dd.textContent = Math.round(o.v)),
-      scrollTrigger: { trigger: "#counters", start: "top 80%" } });
-  }
-  if (motion) {
-    gsap.from(".rg .ok", { scaleX: 0, duration: 1.4, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: "#ranges", start: "top 80%" } });
-    gsap.from(".rule-col li", { y: 24, opacity: 0, duration: 1, ease: "power3.out", stagger: 0.05, scrollTrigger: { trigger: ".rules", start: "top 78%" } });
-  }
-}
-
-// ---------- 08 dashboard ----------
-function dashboard() {
-  const img = $("#dash-img"), cap = $("#dash-cap");
-  const shots = {
-    auto: ["Auto: it sets ISO itself and says why.", "The Camera Agent dashboard in Auto, on the fake camera"],
-    limit: ["A limit: “Light is warmer than your 2800K limit.”", "The dashboard showing an amber limit note"],
-    falsecolor: ["False color and the 48 exposure regions, drawn by the agent.", "The dashboard with false color on"],
-    locked: ["Locked: it holds everything now and only suggests.", "The dashboard locked"],
-    killed: ["Kill switch: the agent stops and the bridge locks.", "The dashboard after the kill switch"],
+    gsap.to(o, { v: ms, duration: 0.7, ease: "power3.out", onUpdate: () => { val.textContent = Math.round(o.v); arc.style.strokeDashoffset = 402 * (1 - o.v / 100); } });
+    toast("Stopped · " + ms + " ms", "bad");
   };
-  for (const k of Object.keys(shots)) new Image().src = `media/screens/${k}.png`;
-  for (const b of $$("#dash-seg button")) {
-    b.addEventListener("click", () => {
-      for (const o of $$("#dash-seg button")) o.setAttribute("aria-selected", String(o === b));
-      img.classList.add("swap");
-      setTimeout(() => {
-        img.src = `media/screens/${b.dataset.shot}.png`;
-        img.alt = shots[b.dataset.shot][1];
-        cap.textContent = shots[b.dataset.shot][0];
-        img.decode().catch(() => {}).then(() => img.classList.remove("swap"));
-      }, 220);
-    });
+  release = (quiet) => {
+    cam3d?.freeze(false);
+    html.classList.remove("killed"); b.setAttribute("aria-pressed", "false");
+    val.textContent = "0"; arc.style.strokeDashoffset = 402;
+    if (!quiet) { toast("Back to work"); sound.pop(); }
+  };
+  b.addEventListener("click", press);
+}
+
+// ============ 3 · try it ============
+function tryIt() {
+  const v = (views.sim = sim.view($("#sim-canvas"), { scene: 0, maxW: 1440 }));
+  sim.observe(v);
+  let sceneIdx = 0, busy = false;
+  Object.assign(v.a, { iso: 3200, shutter: 1 / 48, fnum: 2.8, wb: 3200 });
+  const feed = Feed($("#sim-feed"), { max: 7 });
+  const tally = $("#sim-tally"), needle = $("#sim-needle"), af = $("#sim-af");
+  const dials = makeDials($("#sim-dials"), v, () => { af.classList.remove("lock"); }, mobile() ? 64 : 92);
+  v.onFrame = (view) => {
+    placeAF(af, view);
+    const m = sim.meter(sceneIdx, view.a, view.scene);
+    needle.style.left = clamp((m.subject + 3) / 6, 0, 1) * 100 + "%";
+    needle.className = "ev-needle" + (m.subject > -0.05 ? " over" : m.subject < -0.85 ? " under" : "");
+  };
+  let greeted = false;
+  ScrollTrigger.create({ trigger: "#sim", start: "top 75%", once: true, onEnter: async () => { if (greeted) return; greeted = true; await feed.say("Turn the dials. Break it.", "", 500); await feed.say("Then let me fix it.", "", 400); } });
+  const go = async () => {
+    if (busy) return; busy = true; $("#sim-ai").disabled = true;
+    await runAI(v, sceneIdx, { feed, dials, tally });
+    af.classList.add("lock");
+    busy = false; $("#sim-ai").disabled = false;
+  };
+  $("#sim-ai").addEventListener("click", go);
+  $$("#sim .scenes button").forEach((b) => b.addEventListener("click", async () => {
+    if (busy) return;
+    $$("#sim .scenes button").forEach((x) => x.setAttribute("aria-checked", x === b));
+    sceneIdx = +b.dataset.scene; v.setScene(sceneIdx, 1.6); af.classList.remove("lock");
+    sound.whoosh();
+    await feed.say(`${SCENES[sceneIdx].name}. The light changed.`, "warn", 300);
+    await wait(1300);
+    go();
+  }));
+  $("#sim-fc").addEventListener("click", (e) => {
+    v.a.falseColor = !v.a.falseColor; e.currentTarget.setAttribute("aria-pressed", v.a.falseColor); sound.tick();
+  });
+}
+
+// ============ 4 · beat the AI ============
+function game() {
+  const card = $("#game-card");
+  const gv = sim.view($("#g-canvas"), { scene: 0 }), yv = sim.view($("#g-you"), {}), av = sim.view($("#g-ai"), {});
+  [gv, yv, av].forEach((v) => sim.observe(v));
+  let dials = null, sceneIdx = 0, start = null, timer = null, best = 0;
+  try { best = +localStorage.getItem("best") || 0; } catch {}
+  const showBest = () => { const el = $("#g-best"); if (best) { el.hidden = false; el.textContent = "Your best · " + best; } };
+  showBest();
+  const ring = $("#g-timer");
+  function round() {
+    sceneIdx = Math.floor(Math.random() * 4);
+    let s, tries = 0;
+    do {
+      s = { iso: ISOS[3 + Math.floor(Math.random() * 22)], shutter: SHUTTERS[2 + Math.floor(Math.random() * 18)], fnum: FNUMS[Math.floor(Math.random() * 22)], wb: KELVINS[Math.floor(Math.random() * KELVINS.length)] };
+    } while (score(sim, sceneIdx, s).score > 45 && tries++ < 40);
+    start = s;
+    gv.setScene(sceneIdx); Object.assign(gv.a, start, { falseColor: false });
+    card.dataset.stage = "play";
+    dials = makeDials($("#g-dials"), gv, null, mobile() ? 62 : 84);
+    ScrollTrigger.refresh();
+    const T = 15;
+    gsap.killTweensOf(ring);
+    gsap.fromTo(ring, { strokeDashoffset: 0 }, { strokeDashoffset: 107, duration: T, ease: "none" });
+    clearTimeout(timer); timer = setTimeout(lockIn, T * 1000);
+    sound.beep();
   }
-  if (!motion) return;
-  gsap.fromTo("#device", { rotateX: 22, scale: 0.86, y: 40 }, { rotateX: 0, scale: 1, y: 0, ease: "power2.out",
-    scrollTrigger: { trigger: ".device-wrap", start: "top 95%", end: "top 25%", scrub: 0.6 } });
+  async function lockIn() {
+    clearTimeout(timer); gsap.killTweensOf(ring);
+    const you = { ...gv.a };
+    const ys = score(sim, sceneIdx, you), plan = solve(sim, sceneIdx, start), as = score(sim, sceneIdx, plan.target);
+    yv.setScene(sceneIdx); av.setScene(sceneIdx);
+    Object.assign(yv.a, you); Object.assign(av.a, start);
+    card.dataset.stage = "result";
+    sound.click();
+    ["#g-you-score", "#g-ai-score"].forEach((s) => ($(s).textContent = "0"));
+    ["#g-you-ring", "#g-ai-ring"].forEach((s) => ($(s).style.strokeDashoffset = 119.4));
+    $("#g-you-why").innerHTML = ""; $("#g-ai-why").innerHTML = ""; $("#g-verdict").textContent = "";
+    ScrollTrigger.refresh();
+    const showScore = (who, sc) => {
+      $(`#g-${who}-ring`).style.strokeDashoffset = 119.4 * (1 - sc.score / 100);
+      countUp($(`#g-${who}-score`), sc.score, { dur: 1.1 });
+      $(`#g-${who}-why`).innerHTML = sc.why.map((w) => `<span class="${w === "Nailed it" ? "good" : ""}">${w}</span>`).join("");
+    };
+    await wait(250); showScore("you", ys);
+    for (const st of plan.steps) await turn(st.key, st.from, st.to, (val) => { av.a[st.key] = val; sound.tick(); }, { speed: 2.4 });
+    showScore("ai", as);
+    await wait(900);
+    const d = ys.score - as.score;
+    $("#g-verdict").textContent = d > 0 ? `You win by ${d}.` : d === 0 ? "A tie. Respect." : d > -8 ? `So close. The AI by ${-d}.` : `The AI wins by ${-d}.`;
+    if (ys.score > best) { best = ys.score; try { localStorage.setItem("best", best); } catch {} showBest(); }
+  }
+  $("#g-start").addEventListener("click", round);
+  $("#g-lock").addEventListener("click", lockIn);
+  $("#g-again").addEventListener("click", round);
 }
 
-// ---------- headings and paragraphs slide up as they arrive ----------
-function entrances() {
-  const els = $$(".how-head > *, .replay-head > *, .sheet-head > *, .dash-head > *, .proof-inner > *, .next-grid > div > *, .tiles > div, .features li, .chart-card, .stats, .big-stats div");
-  els.forEach((e) => e.setAttribute("data-up", ""));
-  const io = new IntersectionObserver((es) => {
-    for (const e of es) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
-  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.1 });
-  els.forEach((e, i) => {
-    const sib = [...e.parentElement.children].indexOf(e);
-    e.style.transitionDelay = Math.min(sib, 6) * 90 + "ms";
-    io.observe(e);
+// ============ 5 · before / after ============
+function compare() {
+  const v = sim.view($("#ba-canvas"), { scene: 3 });
+  sim.observe(v);
+  const bad = { iso: 2500, shutter: 1 / 48, fnum: 2.8, wb: 7200, mode: "normal" };
+  const good = { ...solve(sim, 3, bad).target, mode: "normal" };
+  const modes = {
+    fix: [bad, good, "Before", "AI fixed"],
+    log: [{ ...good, mode: "log" }, good, "S-Log3", "Graded"],
+    false: [good, { ...good, falseColor: true }, "Picture", "False color"],
+    zebra: [bad, { ...bad, zebra: true }, "Picture", "Zebras"],
+  };
+  const setMode = (m) => {
+    const [a, b, l, r] = modes[m];
+    v.a = { ...a }; v.b = { ...b };
+    $("#ba-l").textContent = l; $("#ba-r").textContent = r;
+  };
+  setMode("fix");
+  const handle = $("#ba-handle"), box = $("#ba");
+  const setSplit = (x) => { v.split = clamp(x, 0.02, 0.98); handle.style.left = v.split * 100 + "%"; handle.setAttribute("aria-valuenow", Math.round(v.split * 100)); };
+  setSplit(0.5);
+  let drag = false;
+  box.addEventListener("pointerdown", (e) => { drag = true; box.setPointerCapture(e.pointerId); const r = box.getBoundingClientRect(); setSplit((e.clientX - r.left) / r.width); });
+  box.addEventListener("pointermove", (e) => { if (!drag) return; const r = box.getBoundingClientRect(); setSplit((e.clientX - r.left) / r.width); });
+  box.addEventListener("pointerup", () => (drag = false)); box.addEventListener("pointercancel", () => (drag = false));
+  handle.addEventListener("keydown", (e) => { const d = { ArrowLeft: -0.04, ArrowRight: 0.04 }[e.key]; if (d) { setSplit(v.split + d); e.preventDefault(); } });
+  $$("#compare .modes button").forEach((b) => b.addEventListener("click", () => {
+    $$("#compare .modes button").forEach((x) => x.setAttribute("aria-checked", x === b));
+    setMode(b.dataset.mode); sound.tick();
+  }));
+  if (motion) ScrollTrigger.create({ trigger: box, start: "top 70%", once: true, onEnter: () => {
+    const o = { x: 0.5 };
+    gsap.timeline().to(o, { x: 0.16, duration: 0.9, ease: "power2.inOut", onUpdate: () => setSplit(o.x) })
+      .to(o, { x: 0.84, duration: 1.3, ease: "power2.inOut", onUpdate: () => setSplit(o.x) })
+      .to(o, { x: 0.5, duration: 0.9, ease: "power3.out", onUpdate: () => setSplit(o.x) });
+  } });
+}
+
+// ============ 6 · the real test: the agent's own log ============
+function real() {
+  const t = data?.tests?.test1;
+  if (!t) return;
+  buildChart($("#real-chart"), t);
+  const conf = { kill: [t.kill.ms_to_stop, t.kill.ms_to_stop / 100, 0, ""], confirm: [data.safety.confirmed, data.safety.confirmed / data.safety.changes, 0, "/" + data.safety.changes],
+    settle: [t.settle_s, t.settle_s / 20, 1, ""], hold: [t.changes_during_hold, 1, 0, ""] };
+  $$(".g4").forEach((g) => {
+    const [v, frac, dec, suf] = conf[g.dataset.k];
+    const b = g.querySelector("[data-v]"); b.textContent = (0).toFixed(dec) + suf;
+    ScrollTrigger.create({ trigger: g, start: "top 85%", once: true, onEnter: () => {
+      g.querySelector(".fill").style.strokeDashoffset = 314.2 * (1 - frac);
+      countUp(b, v, { dec, suffix: suf });
+    } });
+  });
+}
+function buildChart(fig, t) {
+  const rows = t.trace.filter((r) => r[1] != null && r[0] >= -2 && r[0] <= t.settle_s + 6);
+  const W = 800, H = 340, L = 46, R = 16, T = 18, B = 36;
+  const t0 = rows[0][0], t1 = rows[rows.length - 1][0];
+  const ks = rows.map((r) => r[1]), ymin = Math.min(-1.5, ...ks) - 0.2, ymax = Math.max(3.2, ...ks) + 0.2;
+  const X = (x) => L + ((x - t0) / (t1 - t0)) * (W - L - R), Y = (y) => T + ((ymax - y) / (ymax - ymin)) * (H - T - B);
+  const [w0, w1] = t.window;
+  let g = "";
+  for (let y = Math.ceil(ymin); y <= Math.floor(ymax); y++) g += `<line x1="${L}" x2="${W - R}" y1="${Y(y)}" y2="${Y(y)}"/><text x="${L - 10}" y="${Y(y) + 4}" text-anchor="end">${y > 0 ? "+" : ""}${y}</text>`;
+  let xt = "";
+  for (let x = Math.ceil(t0 / 5) * 5; x <= t1; x += 5) xt += `<text x="${X(x)}" y="${H - 10}" text-anchor="middle">${x} S</text>`;
+  const d = rows.map((r, i) => `${i ? "L" : "M"}${X(r[0]).toFixed(1)},${Y(r[1]).toFixed(1)}`).join("");
+  const keyAt = (x) => { let best = rows[0]; rows.forEach((r) => { if (Math.abs(r[0] - x) < Math.abs(best[0] - x)) best = r; }); return best[1]; };
+  const ch = t.changes;
+  const marks = ch.map((c, i) => {
+    const x = X(c.t), y = Y(keyAt(c.t)), lab = i === 0 ? `ISO ${c.from.replace("ISO ", "")} → ${c.to.replace("ISO ", "")}` : i === ch.length - 1 ? `→ ${c.to.replace("ISO ", "")}` : "";
+    return `<line class="tick-line" x1="${x}" x2="${x}" y1="${T}" y2="${H - B}"/><circle class="tick-dot" cx="${x}" cy="${y}" r="5"/>${lab ? `<text class="tick-lab" x="${x + 9}" y="${y - 10}">${lab}</text>` : ""}`;
+  }).join("");
+  fig.innerHTML = `<div class="chart-head"><span class="label">Scene exposure, stops · first 15 s of auto</span><span class="label" style="color:var(--good)">Inside the window</span></div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Real test on Oct 19: the scene started ${ks[0] > 0 ? "+" : ""}${ks[0].toFixed(1)} stops over; five ISO changes brought it to ${ks[ks.length - 1].toFixed(1)} stops, inside the −1 to +1 window, in ${t.settle_s} seconds.">
+      <rect class="band" x="${L}" y="${Y(w1)}" width="${W - L - R}" height="${Y(w0) - Y(w1)}"/>
+      <line class="band-edge" x1="${L}" x2="${W - R}" y1="${Y(w1)}" y2="${Y(w1)}"/><line class="band-edge" x1="${L}" x2="${W - R}" y1="${Y(w0)}" y2="${Y(w0)}"/>
+      <g class="grid axis">${g}</g><g class="axis">${xt}</g>
+      ${marks}
+      <path class="line" id="real-line" d="${d}"/>
+      <line class="cross" id="real-cross" x1="0" x2="0" y1="${T}" y2="${H - B}" style="opacity:0"/>
+      <rect id="real-hit" x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent"/>
+    </svg><div class="tip" id="real-tip"></div>`;
+  const path = $("#real-line", fig), len = path.getTotalLength();
+  path.style.strokeDasharray = len; path.style.strokeDashoffset = motion ? len : 0;
+  if (motion) ScrollTrigger.create({ trigger: fig, start: "top 75%", once: true, onEnter: () => gsap.to(path, { strokeDashoffset: 0, duration: 2.4, ease: "power2.inOut" }) });
+  const svg = $("svg", fig), tip = $("#real-tip", fig), cross = $("#real-cross", fig);
+  const isoAt = (x) => { let iso = t.changes[0].from; t.changes.forEach((c) => { if (c.t <= x) iso = c.to; }); return x < 0 ? t.setup?.[0]?.to ?? iso : iso; };
+  svg.addEventListener("pointermove", (e) => {
+    const r = svg.getBoundingClientRect(), sx = ((e.clientX - r.left) / r.width) * W;
+    const x = t0 + ((sx - L) / (W - L - R)) * (t1 - t0);
+    if (x < t0 || x > t1) return;
+    const k = keyAt(x);
+    cross.setAttribute("x1", sx); cross.setAttribute("x2", sx); cross.style.opacity = 1;
+    tip.style.left = (sx / W) * 100 + "%"; tip.style.top = (Y(k) / H) * r.height + 40 + "px";
+    tip.innerHTML = `<b>${x.toFixed(1)} s</b> · scene ${k > 0 ? "+" : ""}${k.toFixed(1)} st · ${isoAt(x)}`;
+  });
+  svg.addEventListener("pointerleave", () => (cross.style.opacity = 0));
+}
+
+// ============ 7 · safety ============
+function safety() {
+  $$("#locks .key").forEach((k) => k.addEventListener("click", () => {
+    k.classList.remove("denied"); void k.offsetWidth; k.classList.add("denied");
+    sound.deny(); toast(`${k.dataset.k}: locked. Never touched.`, "bad");
+  }));
+  const R = [
+    ["ISO", 100, 51200, 800, 12800, "log", (v) => v],
+    ["Iris", 1.4, 22, 2.8, 11, "log", (v) => "f/" + v],
+    ["Shutter", 8, 2000, 48, 100, "log", (v) => "1/" + v],
+    ["WB", 2500, 10000, 2800, 7500, "lin", (v) => v + "K"],
+  ];
+  const box = $("#ranges");
+  box.innerHTML = R.map(([n, a, b, lo, hi, sc, f]) => {
+    const fr = (v) => sc === "log" ? Math.log(v / a) / Math.log(b / a) : (v - a) / (b - a);
+    const pt = (u) => { const ang = Math.PI * (1 - u); return [100 + Math.cos(ang) * 86, 92 - Math.sin(ang) * 86]; };
+    const [x0, y0] = pt(fr(lo)), [x1, y1] = pt(fr(hi));
+    return `<div class="range"><svg viewBox="0 0 200 100"><path class="arc-all" d="M14 92 A86 86 0 0 1 186 92"/><path class="arc-ok" d="M${x0} ${y0} A86 86 0 0 1 ${x1} ${y1}"/></svg>
+      <div class="ends"><span><small>${n}</small>${f(lo)}</span><span style="text-align:right"><small>&nbsp;</small>${f(hi)}</span></div></div>`;
+  }).join("");
+  $$(".range", box).forEach((r) => {
+    const p = $(".arc-ok", r), len = p.getTotalLength(); r.style.setProperty("--len", len);
+    if (motion) ScrollTrigger.create({ trigger: r, start: "top 88%", once: true, onEnter: () => r.classList.add("in") }); else r.classList.add("in");
   });
 }
 
-// ---------- 11 close ----------
-function closeScene() {
-  const cta = $("#cta");
-  cta.addEventListener("click", (e) => e.preventDefault());
-  if (!motion) return;
-  const split = new SplitText("#close-title", { type: "words,chars", mask: "chars" });
-  gsap.from(split.chars, { yPercent: 110, duration: 1.4, ease: "expo.out", stagger: 0.035, scrollTrigger: { trigger: "#close-title", start: "top 72%" } });
-  if (!fine) return;
-  const xTo = gsap.quickTo(cta, "x", { duration: 0.8, ease: "power3.out" }), yTo = gsap.quickTo(cta, "y", { duration: 0.8, ease: "power3.out" });
-  addEventListener("pointermove", (e) => {
-    const r = cta.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
-    const near = Math.hypot(dx, dy) < 320;
-    xTo(near ? dx * 0.35 : 0);
-    yTo(near ? dy * 0.35 : 0);
-  });
+// ============ 8 · dashboard ============
+function dash() {
+  const img = $("#dash-img"), dev = $("#device");
+  $$("#dash-modes button").forEach((b) => b.addEventListener("click", () => {
+    $$("#dash-modes button").forEach((x) => x.setAttribute("aria-checked", x === b));
+    img.style.opacity = 0; sound.tick();
+    setTimeout(() => { img.src = `media/screens/${b.dataset.shot}.png`; img.onload = () => (img.style.opacity = 1); }, 180);
+  }));
+  if (html.classList.contains("fine") && motion) {
+    dev.addEventListener("pointermove", (e) => {
+      const r = dev.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+      dev.style.transform = `perspective(1600px) rotateY(${x * 5}deg) rotateX(${-y * 4}deg)`;
+    });
+    dev.addEventListener("pointerleave", () => (dev.style.transform = ""));
+  }
 }
 
-// ---------- cursor: an AF frame that locks on (teal) over anything you can click ----------
-function cursor() {
-  if (!fine) return;
-  const af = $("#af");
-  let mx = innerWidth / 2, my = innerHeight / 2, x = mx, y = my;
-  addEventListener("pointermove", (e) => { mx = e.clientX; my = e.clientY; });
-  gsap.ticker.add(() => {
-    x += (mx - x) * 0.22;
-    y += (my - y) * 0.22;
-    af.style.transform = `translate(${x}px, ${y}px)`;
+// ============ 9 · finale: the camera snaps back together ============
+function finale() {
+  const lines = $$("#finale-title .in"), cta = $(".cta-row");
+  if (!motion || !cam3d) return;
+  gsap.set(lines, { yPercent: 110 }); gsap.set(cta, { opacity: 0, y: 20 });
+  const S = cam3d.state;
+  let snapped = false;
+  const mid = cam3d.anchor("center", 1);
+  ScrollTrigger.create({
+    trigger: "#finale", start: "top bottom", end: "bottom bottom", scrub: true,
+    onUpdate: (s) => {
+      const p = s.progress; prog.finale = p; vis3D();
+      if (cam3d.frozen) release(true);
+      if (!snapped) {
+        Object.assign(S, { explode: 1, agents: 1, mode: p > 0.42 ? "home" : "idle", yaw: 0.85 + p * 0.5, pitch: 0.24, dist: 11, tx: mid.x, ty: mid.y, tz: mid.z, frameX: 0, frameY: mobile() ? -0.08 : -0.06, focus: "body", turntable: 0, snap: 0 });
+      }
+      if (p > 0.66 && !snapped) doSnap();
+      else if (p < 0.55 && snapped) unSnap();
+    },
+    onLeaveBack: () => { prog.finale = 0; vis3D(); },
   });
-  document.addEventListener("pointerover", (e) => af.classList.toggle("lock", !!e.target.closest("a, button, .look-card, .chart svg")));
-}
-
-// ---------- videos only play while they're on screen ----------
-function videos() {
-  const vids = $$("video.bg");
-  if (!motion) { vids.forEach((v) => v.removeAttribute("autoplay")); return; }
-  const io = new IntersectionObserver((es) => {
-    for (const e of es) {
-      const v = e.target;
-      if (e.isIntersecting) { if (v.preload === "none") v.preload = "auto"; v.play().catch(() => {}); }
-      else v.pause();
-    }
-  }, { threshold: 0.05 });
-  vids.forEach((v) => io.observe(v));
+  function doSnap() {
+    snapped = true;
+    S.agents = 0; S.snap = 1;
+    gsap.to(S, { explode: 0, duration: 0.5, ease: "power4.in", onComplete: () => {
+      cam3d.flashSweep(); sound.snap();
+      gsap.fromTo("#cam3d", { x: -8 }, { x: 0, duration: 0.5, ease: "elastic.out(1.2, 0.3)" });
+      Object.assign(S, { dist: 5.2, pitch: 0.16, tx: 0, ty: 0.06, tz: 0.25, turntable: 1, frameY: mobile() ? -0.12 : -0.1 });
+      gsap.to(lines, { yPercent: 0, duration: 1.2, ease: "expo.out", stagger: 0.1 });
+      gsap.to(cta, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", delay: 0.35 });
+    } });
+  }
+  function unSnap() {
+    snapped = false; gsap.killTweensOf(S); S.snap = 0; S.turntable = 0;
+    gsap.to(lines, { yPercent: 110, duration: 0.4, ease: "power2.in" }); gsap.to(cta, { opacity: 0, y: 20, duration: 0.3 });
+  }
 }
