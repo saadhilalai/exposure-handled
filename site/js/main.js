@@ -64,16 +64,16 @@ function toggles() {
     toast(on ? "Sound on" : "Sound off");
   });
   const setNerd = (on, quiet) => {
-    html.classList.toggle("nerd", on); nb.setAttribute("aria-pressed", on);
+    html.classList.toggle("nerd-on", on); nb.setAttribute("aria-pressed", on);
     try { localStorage.setItem("nerd", on ? "1" : "0"); } catch {}
     if (!quiet) { toast(on ? "Nerd mode on" : "Nerd mode off"); sound.tick(); }
     requestAnimationFrame(() => ScrollTrigger.refresh());
   };
-  nb.addEventListener("click", () => setNerd(!html.classList.contains("nerd")));
+  nb.addEventListener("click", () => setNerd(!html.classList.contains("nerd-on")));
   try { if (localStorage.getItem("nerd") === "1") setNerd(true, true); } catch {}
   addEventListener("keydown", (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey || /input|textarea/i.test(e.target.tagName)) return;
-    if (e.key === "n" || e.key === "N") setNerd(!html.classList.contains("nerd"));
+    if (e.key === "n" || e.key === "N") setNerd(!html.classList.contains("nerd-on"));
     if (e.key === "m" || e.key === "M") s.click();
   });
 }
@@ -441,7 +441,7 @@ function game() {
   const showBest = () => { const el = $("#g-best"); if (best) { el.hidden = false; el.textContent = "Your best · " + best; } };
   showBest();
   const ring = $("#g-timer");
-  gv.setScene(3); Object.assign(gv.a, { iso: 6400, shutter: 1 / 15, fnum: 1.8, wb: 9000 });
+  gv.setScene(1); Object.assign(gv.a, { iso: 6400, shutter: 1 / 48, fnum: 2.8, wb: 9000 });
   function round() {
     sceneIdx = Math.floor(Math.random() * 4);
     let s, tries = 0;

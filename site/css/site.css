@@ -119,8 +119,8 @@ em { font-style: italic; }
 
 /* ---------- nerd notes: hidden unless Nerd mode ---------- */
 .nerd { display: none !important; }
-html.nerd .nerd { display: block !important; }
-html.nerd .chip.nerd { display: inline-flex !important; }
+html.nerd-on .nerd { display: block !important; }
+html.nerd-on .chip.nerd { display: inline-flex !important; }
 .note { position: relative; max-width: 440px; margin-top: 22px; padding: 14px 16px 15px 18px; border-radius: 14px; font: 15px/1.5 var(--sans); color: #d8d6ff; background: rgba(28, 25, 60, .62); border: 1px solid rgba(150,140,255,.28); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); animation: note-in .5s var(--ease) both; }
 .note b { color: #fff; font-weight: 700; }
 .note code { color: #fff; }

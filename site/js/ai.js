@@ -21,9 +21,10 @@ const st = (x) => (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(1) + " st";
 export function idealWB(sceneIdx) {
   const sc = SCENES[sceneIdx];
   if (sc.id === "sunset") return 4800;          // a DP keeps golden hour warm
+  if (sc.id === "tungsten") return 3500;        // ...and a little warmth under tungsten
   return Math.min(RANGES.wb[1], Math.max(RANGES.wb[0], Math.round(sc.light / 100) * 100));
 }
-const LIGHT = { window: "Daylight", tungsten: "Tungsten light", low: "Mixed street light", sunset: "Golden hour. Keeping it warm" };
+const LIGHT = { window: "Daylight", tungsten: "Tungsten. Keeping a little warmth", low: "Mixed street light", sunset: "Golden hour. Keeping it warm" };
 
 export function solve(sim, sceneIdx, start) {
   const s = { ...start };
