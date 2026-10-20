@@ -29,7 +29,14 @@ async function main() {
   data = await fetch("data/site.json").then((r) => r.json()).catch(() => null);
   try { sim = createSim({ low }); } catch (e) { console.warn("simulator off:", e); }
   nav(); toggles(); reticle(); magnetic(); eggs(); lineWrap();
-  if (sim) { simLoop(); hero(); }
+  let heroReady = Promise.resolve();
+  if (sim) { simLoop(); heroReady = hero(); }
+  // build the 3D camera once the opening is over, or as soon as someone scrolls, whichever comes first
+  await new Promise((res) => {
+    if (!motion) return res();
+    heroReady.then(res); setTimeout(res, 8000);
+    for (const ev of ["wheel", "touchmove", "keydown", "scroll"]) addEventListener(ev, res, { once: true, passive: true });
+  });
   await load3D();
   heroPull();
   inside();
@@ -190,17 +197,21 @@ function hero() {
     await runAI(v, HERO_SCENE, { feed, tally: $("#ai-tally"), onSet: (k, val) => setHud(k, val, true), speed: 0.85 });
     af.classList.add("lock");
     reveal();
-    // while the title settles, quietly prepare the 3D camera (an invisible frame)
-    setTimeout(() => { if (cam3d && prog.hero < 0.05 && !cam3d.running) cam3d.warmup(); }, 1600);
-    await wait(2600);
+    await wait(1500);
+    ready();
+    await wait(1100);
     [...$("#hero-feed").children].slice(0, -1).forEach((li, i) => gsap.to(li, { opacity: 0, y: -8, duration: 0.5, delay: i * 0.06, ease: "power2.in" }));
   };
+  let ready;
+  const readyP = new Promise((r) => (ready = r));
   if (motion) intro();
   else {
+    ready();
     const plan = solve(sim, HERO_SCENE, { ...v.a });
     Object.assign(v.a, plan.target); Object.keys(hud).forEach((k) => setHud(k, v.a[k]));
     feed.push(plan.final.msg, "done"); af.classList.add("lock");
   }
+  return readyP;
 }
 
 // ============ the 3D camera ============
@@ -214,6 +225,7 @@ async function load3D() {
     } catch (e) { console.warn("3D off:", e); window.__3dError = String((e && e.stack) || e); cam3d = null; await wait(600); }
   }
   if (!cam3d) { html.classList.add("no3d"); return; }
+  if (motion) setTimeout(() => { if (prog.hero < 0.05 && !cam3d.running) cam3d.warmup(); }, 350);
   Object.assign(cam3d.state, HERO_POSE); cam3d.settle();
   if (sim && views.hero) {
     const lv = (views.lcd = sim.view(cam3d.lcdCanvas, { scene: HERO_SCENE, size: [640, 360] }));

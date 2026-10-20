@@ -443,8 +443,8 @@ export function createCamera3D(canvas, { low = false } = {}) {
     return allSpots[0];
   }
 
+  const tmpE = new THREE.Euler();
   function placeParts(e) {
-    const tmpE = new THREE.Euler();
     parts.forEach((p) => {
       const k = THREE.MathUtils.clamp((e - p.delay) / (1 - 0.35), 0, 1);
       const ease = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
@@ -457,17 +457,18 @@ export function createCamera3D(canvas, { low = false } = {}) {
   }
   function updateSpots() { allSpots.forEach((s) => s.world.copy(s.local).applyMatrix4(s.part.g.matrix)); }
 
-  const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3();
+  const tmp = new THREE.Vector3(), tmp2 = new THREE.Vector3(), _c = new THREE.Vector3();
+  const WARM = new THREE.Color(1, 0.5, 0.16), COOL = new THREE.Color(0.82, 0.9, 1.0);
   let activity = { sensor: 0, iris: 0, chip: 0 };
   function updateAgents(dt, time) {
     const vis = D.agents;
     agentMat.uniforms.uAlpha.value = vis;
     streaks.visible = agentPts.visible = vis > 0.01;
-    if (vis <= 0.01) { A.forEach((a) => { a.spot = null; }); return; }
+    if (vis <= 0.01) { A.forEach((a) => { a.spot = null; }); swarmLight.intensity = 0; return; }
     if (frozen) { agentMat.uniforms.uFreeze.value = Math.min(1, agentMat.uniforms.uFreeze.value + dt * 12); return; }
     agentMat.uniforms.uFreeze.value = Math.max(0, agentMat.uniforms.uFreeze.value - dt * 3);
     activity = { sensor: 0, iris: 0, chip: 0 };
-    const centroid = new THREE.Vector3(); let nc = 0;
+    const centroid = _c.set(0, 0, 0); let nc = 0;
     const mode = S.mode;
     A.forEach((a, i) => {
       if (!a.spot) {      // spawn from the AI core
@@ -506,7 +507,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
       centroid.add(a.p); nc++;
     });
     swarmLight.position.copy(centroid.multiplyScalar(1 / Math.max(nc, 1))).applyMatrix4(model.matrixWorld);
-    swarmLight.intensity = 3.5 * vis;
+    swarmLight.intensity = 1.8 * vis;
   }
   function writeAgents(dt) {
     const fz = agentMat.uniforms.uFreeze.value;
@@ -538,6 +539,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
+  const _f = new THREE.Vector3();
   // where a named thing sits when the camera is exploded by e (model space, rotations ignored)
   function anchor(name, e = 1) {
     const p = { sensor: sensorPart, iris: irisPart, chip: pcbPart, lcd: lcdPart }[name];
@@ -549,9 +551,9 @@ export function createCamera3D(canvas, { low = false } = {}) {
   }
   function focusPoint(name) {
     const p = name === "sensor" ? sensorPart : name === "iris" ? irisPart : name === "chip" ? pcbPart : name === "lcd" ? lcdPart : null;
-    if (!p) return model.localToWorld(new THREE.Vector3(0, 0, D.explode * 0.8));
+    if (!p) return model.localToWorld(_f.set(0, 0, D.explode * 0.8));
     const s = name === "chip" ? p.spots.find((x) => x.kind === "chip") : name === "sensor" ? p.spots[7] : p.spots[0];
-    return model.localToWorld(s ? s.world.clone() : p.g.position.clone());
+    return model.localToWorld(_f.copy(s ? s.world : p.g.position));
   }
 
   let W0 = 1, H0 = 1;
@@ -573,9 +575,9 @@ export function createCamera3D(canvas, { low = false } = {}) {
     step(dt);
     composer.render(dt);
   }
-  let spin = 0;
+  let spin = 0; const _t = new THREE.Vector3();
   function placeCamera() {
-    const tgt = new THREE.Vector3(D.tx, D.ty + D.lift, D.tz);
+    const tgt = _t.set(D.tx, D.ty + D.lift, D.tz);
     const yaw = D.yaw + spin;
     cam.position.set(tgt.x + Math.sin(yaw) * Math.cos(D.pitch) * D.dist, tgt.y + Math.sin(D.pitch) * D.dist, tgt.z + Math.cos(yaw) * Math.cos(D.pitch) * D.dist);
     cam.lookAt(tgt);
@@ -602,8 +604,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     }
     chipTiles.forEach((t, i) => {
       if (!frozen && S.mode !== "wb") t.paint += (S.chipGoal - t.paint) * Math.min(1, dt * 0.8);
-      const warm = new THREE.Color(1, 0.5, 0.16), cool = new THREE.Color(0.82, 0.9, 1.0);
-      t.mat.emissive.copy(warm).lerp(cool, THREE.MathUtils.clamp(t.paint, 0, 1));
+      t.mat.emissive.copy(WARM).lerp(COOL, THREE.MathUtils.clamp(t.paint, 0, 1));
       t.mat.emissiveIntensity = 0.62 + 0.12 * Math.sin(time * 3 + i);
     });
     M.sensor.emissiveIntensity = D.sensorGain * (0.35 + 0.15 * Math.sin(time * 6));
@@ -648,7 +649,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
       Object.assign(D, S);
       resize(); step(1 / 60); composer.render();
       Object.assign(S, keep); Object.assign(D, keepD);
-      A.forEach((a) => (a.spot = null));
+      A.forEach((a) => (a.spot = null)); swarmLight.intensity = 0;
     },
     freeze(on) { frozen = on; freezeT = time; },
     get frozen() { return frozen; },
