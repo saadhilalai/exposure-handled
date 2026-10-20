@@ -58,8 +58,8 @@ async function main() {
 // One quality level for everything heavy: the 3D camera and the camera pictures.
 function applyQuality(q) {
   cam3d?.setQuality(q.settings, q.scale);
-  sim?.setQuality(sim.software ? { prSim: 0.45, taps: 12 } : q.settings, q.scale);
-  if (sim?.software) for (const v of sim.views) v.fpsCap = 24;
+  sim?.setQuality(sim.software ? { prSim: 0.3, taps: 8 } : q.settings, sim?.software ? 1 : q.scale);
+  if (sim?.software) for (const v of sim.views) v.fpsCap = 10;     // no graphics chip: small pictures, 10 a second
   views.hero?.refit?.();
 }
 
@@ -80,6 +80,7 @@ function lineWrap() { $$(".big .line, .huge .line, .hero-title .line").forEach((
 
 // ---------- the simulator's render loop: only views on screen are drawn ----------
 function simLoop() {
+  if (sim.software) { const view = sim.view; sim.view = (...a) => { const v = view(...a); v.fpsCap = 10; return v; }; }
   const io = new IntersectionObserver((es) => es.forEach((e) => { const v = e.target.__view; if (v) v.visible = e.isIntersecting; }), { rootMargin: "120px" });
   sim.observe = (v) => { v.canvas.__view = v; v.visible = false; io.observe(v.canvas); };
   (function loop(now) { sim.render(now); requestAnimationFrame(loop); })(performance.now());
