@@ -75,7 +75,18 @@ It stays inside the real approved ranges. Nerd mode says so on the page.
   The same renderer serves every view on the page.
 - **3D:** three.js 0.186.1 (`vendor/three/`, MIT), with depth of field that racks to whatever the story is about, and bloom for the crew. Every part, texture and the crew is made in code; nothing is downloaded.
 - **Motion:** GSAP with ScrollTrigger (`vendor/gsap/`, GreenSock's standard license). The 3D camera follows the scroll, and the other sections are calm.
-- **Speed:** measured on the M2 at 60 fps, at laptop size (1440 × 900, retina) and phone size (390 × 844). It's lighter on phones, with fewer agents, no depth of field and lower resolution. It isn't tested on a real phone yet.
+- **Speed:**
+  - **Automatic quality** (`js/quality.js`). Three levels: high, medium, low.
+    - **First guess:** from the graphics chip, CPU cores and memory.
+    - **Then the real frame rate decides:** when frames run long, the render resolution drops; if that isn't enough, the level steps down. Under ~15 fps it goes straight to low. It never steps back up in a visit.
+    - **What changes per level:** the 3D pixel ratio, depth of field, glow, number of agents and edge smoothing (MSAA), plus the camera pictures' resolution and blur taps.
+    - **Nerd mode** shows a live counter: fps, level and resolution.
+  - **Only what's on screen renders:** the 3D stops when it's faded out, and each camera picture draws only while it's (nearly) visible. Hidden pictures give their GPU memory back after 15 s.
+  - **The 3D rear screen** gets one still frame, because copying a live picture between the two graphics contexts stalled frames.
+  - **Without a graphics chip** (software rendering): no 3D (the camera chapter reads as a normal page), small camera pictures that redraw only when something changes, and no blur, glow or moving grain.
+  - **The cursor** is drawn by the system, so it tracks the mouse exactly.
+  - **Measured in Chrome on the M2** (October 20): 60 fps everywhere on a retina screen, with the CPU slowed 4× and 6×, with a graphics chip emulated 2× and 9× weaker (the page renders that many more pixels), and with no GPU at all. Not tested on real Windows, Intel or iPhone hardware.
+  - **Testing knobs:** `?quality=high|medium|low` forces a level, `?gpuload=N` acts like a weaker chip, `?debug` exposes internals.
 - **Reduced motion:** with `prefers-reduced-motion`, nothing scrubs or flies. The camera chapter reads as a normal page over a still exploded view.
 - **If 3D can't start:** the page retries once, then shows the camera chapter as a normal page.
 - **Type:** Instrument Serif for headlines, D-DIN (the S4D type) for readouts. Both are SIL OFL, with license files in `fonts/`.
