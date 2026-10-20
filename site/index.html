@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Camera Agent · An AI camera assistant that thinks in stops</title>
+<meta name="description" content="An AI camera assistant for the Sony FX2. It reads the S-Log3 picture, sets exposure for the look you choose, and explains every change in one line.">
+<meta name="robots" content="noindex, nofollow"><!-- draft: remove at launch -->
+<meta name="theme-color" content="#050505">
+<link rel="icon" href="brand/favicon.png">
+<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+<link rel="preload" href="fonts/InstrumentSerif-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/D-DINExp-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/D-DIN.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/site.css">
+<script>
+  // Motion only when the viewer hasn't asked for less; hover effects only with a real pointer.
+  (function (h) {
+    h.classList.remove("no-js");
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) h.classList.add("motion");
+    if (matchMedia("(hover: hover) and (pointer: fine)").matches) h.classList.add("fine");
+  })(document.documentElement);
+</script>
+<script src="vendor/gsap/gsap.min.js" defer></script>
+<script src="vendor/gsap/ScrollTrigger.min.js" defer></script>
+<script src="vendor/gsap/SplitText.min.js" defer></script>
+<script src="js/main.js" type="module"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="draft-bar" role="note">
+  <span class="tag ph"><i class="ico"></i>Draft</span>
+  <span>Not published. Anything marked <b>Placeholder</b> is stand-in media until the real FX2 shoot. Anything marked <b>Real</b> comes from the camera's own logs.</span>
+</div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="#top" aria-label="Camera Agent, back to top">
+    <img src="brand/s4d.png" alt="" width="26" height="26">
+    <span class="sep"></span>
+    <span class="wordmark">Camera Agent</span>
+  </a>
+  <nav class="links" aria-label="Sections">
+    <a href="#how">How it thinks</a>
+    <a href="#replay">The real test</a>
+    <a href="#looks">Looks</a>
+    <a href="#safety">Safety</a>
+    <a href="#dashboard">Dashboard</a>
+  </nav>
+  <a class="nav-cta" href="#proof">Proof<span aria-hidden="true"> →</span></a>
+</header>
+
+<main id="main">
+
+<!-- 01 · HERO: the page opens as a viewfinder -->
+<section class="scene hero" id="top" aria-labelledby="hero-title">
+  <div class="stage">
+    <div class="frame" id="hero-frame">
+      <video class="bg" id="hero-video" src="media/placeholder/night.mp4" poster="media/placeholder/night.jpg"
+             muted loop playsinline preload="auto" aria-hidden="true"></video>
+      <div class="shade"></div>
+    </div>
+    <div class="letterbox top" aria-hidden="true"></div>
+    <div class="letterbox bottom" aria-hidden="true"></div>
+    <div class="vf" aria-hidden="true"><i></i><i></i><i></i><i></i><b class="cross"></b></div>
+    <div class="hud hud-top" aria-hidden="true">
+      <span class="tally"><i class="dot"></i><span id="hero-state">AUTO</span></span>
+      <span class="hud-mid">S-LOG3 · S-GAMUT3.CINE · 23.98P</span>
+      <span class="tc" id="hero-tc">01:00:00:00</span>
+    </div>
+    <div class="hud hud-bottom" aria-hidden="true">
+      <span><small>ISO</small><b id="hero-iso">6400</b></span>
+      <span><small>Shutter</small><b>1/50</b></span>
+      <span><small>Iris</small><b>F5.6</b></span>
+      <span><small>WB</small><b>AWB</b></span>
+    </div>
+    <p class="subtitle" id="hero-sub" aria-hidden="true"></p>
+
+    <div class="hero-copy">
+      <p class="eyebrow">An AI camera assistant for the Sony FX2</p>
+      <h1 id="hero-title" class="hero-title" aria-label="The camera assistant that thinks in stops.">
+        <span class="ln" aria-hidden="true"><span>The camera assistant</span></span>
+        <span class="ln" aria-hidden="true"><span>that thinks <em>in stops.</em></span></span>
+      </h1>
+      <p class="lede">It reads the FX2's S-Log3 picture, sets exposure for the look you choose, and explains every change in one line.</p>
+    </div>
+    <div class="hero-notes">
+      <span class="tag ph"><i class="ico"></i>Placeholder clip</span>
+      <span class="tag real"><i class="ico"></i>Real lines · Oct 19 log</span>
+    </div>
+    <div class="scroll-cue" aria-hidden="true"><span>Scroll</span><i></i></div>
+  </div>
+</section>
+
+<!-- 02 · WHY -->
+<section class="why" id="why">
+  <p class="manifesto" id="manifesto">Every camera can meter. None of them can tell you <em>why.</em> Camera Agent watches the picture the way a cinematographer does: in stops, protecting the highlights, holding the face. Then it makes the change, and says why in one line.</p>
+</section>
+
+<!-- 03 · LOG → LOOK -->
+<section class="scene logscene" id="log" aria-labelledby="log-title">
+  <div class="stage">
+    <div class="wipe" id="wipe">
+      <video class="bg" id="log-video" src="media/placeholder/night-log.mp4" poster="media/placeholder/night-log.jpg"
+             muted loop playsinline preload="none" aria-hidden="true"></video>
+      <video class="bg graded" id="graded-video" src="media/placeholder/night.mp4" poster="media/placeholder/night.jpg"
+             muted loop playsinline preload="none" aria-hidden="true"></video>
+      <div class="wipe-line" aria-hidden="true"><i></i></div>
+      <span class="wipe-label left">S-Log3 · what the agent reads</span>
+      <span class="wipe-label right">Sony LC-709TypeA · what you'll grade</span>
+    </div>
+    <div class="log-copy">
+      <p class="eyebrow">01 · The picture</p>
+      <h2 id="log-title" class="title">It reads the picture you'd <em>never</em> show a client.</h2>
+      <p class="lede">S-Log3 looks flat because it keeps every stop the sensor caught. That's why the agent reads it: it measures the image in stops from 18% grey, with the curve calibrated on this FX2.</p>
+    </div>
+    <div class="scene-notes"><span class="tag ph"><i class="ico"></i>Placeholder scene · made-up, run through the real S-Log3 curve and Sony's LUT</span></div>
+  </div>
+</section>
+
+<!-- 04 · HOW IT THINKS -->
+<section class="how" id="how" aria-labelledby="how-title">
+  <div class="how-head">
+    <p class="eyebrow">02 · How it thinks</p>
+    <h2 id="how-title" class="title">Four steps, <em>24 times</em> a second.</h2>
+  </div>
+  <div class="how-grid">
+    <div class="steps">
+      <article class="step" data-step="see">
+        <span class="num">01</span>
+        <h3>It sees.</h3>
+        <p>It reads the FX2's live view over USB and measures it in stops from 18% grey: 48 regions, the brightest highlights, faces, and the color of the light. Small practicals like lamps don't count as clipping.</p>
+      </article>
+      <article class="step" data-step="decide">
+        <span class="num">02</span>
+        <h3>It decides like a DP.</h3>
+        <p>You pick the look, and the look sets the rules: which f-stop, a 180° shutter, where a face should sit, how much clipping is fine, how fast to react. Exposure then moves a third of a stop at a time.</p>
+      </article>
+      <article class="step" data-step="check">
+        <span class="num">03</span>
+        <h3>It asks permission.</h3>
+        <p>Every change goes through one safety function with the ranges you approved. Anything outside them is refused and logged. While the camera records, it changes nothing.</p>
+      </article>
+      <article class="step" data-step="change">
+        <span class="num">04</span>
+        <h3>It explains itself.</h3>
+        <p>It makes the change, waits for the camera to confirm it, and writes one line about why. You can take control back at any moment with one key.</p>
+      </article>
+    </div>
+    <div class="monitor-wrap">
+      <figure class="monitor" id="monitor" data-step="see">
+        <div class="screen">
+          <video class="bg" id="how-video" src="media/placeholder/lamp.mp4" poster="media/placeholder/lamp.jpg"
+                 muted loop playsinline preload="none" aria-hidden="true"></video>
+          <canvas class="grid" id="region-grid" width="8" height="6" aria-hidden="true"></canvas>
+          <div class="cells" id="cells" aria-hidden="true"></div>
+          <div class="ov ov-see" aria-hidden="true">
+            <span class="chip">Key <b id="see-key">+0.0</b> st</span>
+            <span class="chip">Headroom <b>2.6</b> st</span>
+            <span class="chip">Light <b>≈ 2640K</b></span>
+          </div>
+          <div class="ov ov-decide" aria-hidden="true">
+            <span class="chip strong">Look · Interview</span>
+            <span class="chip">f/4</span><span class="chip">180°</span><span class="chip">Face +0.5 st</span>
+            <div class="window"><span class="lab">Window</span><div class="bar"><i class="band"></i><i class="mark"></i></div><span class="ticks"><b>−1.5</b><b>0</b><b>+1.5</b></span></div>
+          </div>
+          <div class="ov ov-check" aria-hidden="true">
+            <div class="range"><span class="lab">ISO · your range 800–12800</span><div class="bar"><i class="ok"></i><i class="mark"></i></div></div>
+            <p class="verdict ok"><i class="ico"></i>ISO 3200 → 2500 · approved</p>
+            <p class="verdict no"><i class="ico"></i>ISO 25600 · refused, outside your range</p>
+          </div>
+          <div class="ov ov-change" aria-hidden="true">
+            <p class="subtitle on">Scene +2.8 st (window -1.5 to +1.5): ISO 3200 → 2500<small>Confirmed by the camera in 170 ms</small></p>
+          </div>
+        </div>
+        <figcaption>
+          <span class="tag ph"><i class="ico"></i>Placeholder clip</span>
+          <span class="cap" id="monitor-cap">Readouts are an illustration on the placeholder clip.</span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- 05 · THE REAL TEST -->
+<section class="replay" id="replay" aria-labelledby="replay-title">
+  <div class="replay-head">
+    <p class="eyebrow">03 · The real test</p>
+    <h2 id="replay-title" class="title">October 19. A real FX2. <em>Nobody</em> touching it.</h2>
+    <p class="lede">The first unattended run on the real camera: a white wall, one lamp, the card out. Everything below is replayed from the agent's own logs, at real speed.</p>
+  </div>
+  <div class="replay-body">
+    <div class="seg" role="tablist" aria-label="Which test">
+      <button type="button" role="tab" aria-selected="true" data-test="test1">Test 1 · ISO only</button>
+      <button type="button" role="tab" aria-selected="false" data-test="test3">Test 3 · All four settings</button>
+    </div>
+    <figure class="player" id="player">
+      <div class="screen">
+        <img class="frame-img" id="rp-img-a" alt="">
+        <img class="frame-img" id="rp-img-b" alt="">
+        <div class="vf" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="hud hud-top">
+          <span class="tally" id="rp-tally"><i class="dot"></i><span id="rp-state">Suggesting</span></span>
+          <span class="hud-mid" id="rp-look">Look · Cinematic 24p</span>
+          <span class="tc" id="rp-t">T −3.0 s</span>
+        </div>
+        <div class="hud hud-bottom">
+          <span data-k="IsoSensitivity"><small>ISO</small><b id="rp-iso">1600</b></span>
+          <span data-k="ShutterSpeed"><small>Shutter</small><b id="rp-shutter">1/50</b></span>
+          <span data-k="FNumber"><small>Iris</small><b id="rp-f">F5.6</b></span>
+          <span data-k="Colortemp"><small>WB</small><b id="rp-wb">AWB</b></span>
+        </div>
+        <p class="subtitle" id="rp-sub" aria-live="polite"></p>
+        <button type="button" class="play" id="rp-play" aria-label="Play the replay"><span>Replay</span></button>
+      </div>
+      <figcaption>
+        <span class="tag real"><i class="ico"></i>Real · FX2 live view and log</span>
+        <span class="cap">The frame shown is the one the agent was looking at when it made each change (flat S-Log3, as the agent sees it).</span>
+      </figcaption>
+    </figure>
+    <div class="chart-card">
+      <div class="chart-head">
+        <span class="label">Scene exposure, stops from grey</span>
+        <span class="legend"><i class="sw band"></i>The look's window <i class="sw line"></i>Measured <i class="sw tick"></i>A change</span>
+      </div>
+      <div class="chart" id="rp-chart" role="img" aria-label="Scene exposure over time"></div>
+    </div>
+    <dl class="stats" id="rp-stats"></dl>
+  </div>
+</section>
+
+<!-- 06 · LOOKS: horizontal scroller -->
+<section class="scene looks" id="looks" aria-labelledby="looks-title">
+  <div class="stage">
+    <div class="track" id="looks-track">
+      <div class="looks-intro">
+        <p class="eyebrow">04 · Looks</p>
+        <h2 id="looks-title" class="title">You choose the look. <em>It keeps it.</em></h2>
+        <p class="lede">Each look is a short set of rules a DP would give an assistant. The agent never trades the look for exposure. It reaches for ISO, ND advice, or a word on the dashboard first.</p>
+        <span class="tag ph"><i class="ico"></i>Card backgrounds are placeholder scenes</span>
+      </div>
+      <!-- cards are built from data/site.json (agent/looks.py) -->
+    </div>
+  </div>
+</section>
+
+<!-- 07 · SAFETY: printed like a call sheet -->
+<section class="safety" id="safety" data-theme="light" aria-labelledby="safety-title">
+  <div class="sheet">
+    <div class="sheet-head">
+      <p class="eyebrow">05 · Safety</p>
+      <h2 id="safety-title" class="title">It can't touch what you <em>didn't approve.</em></h2>
+      <p class="lede">It's a working camera on real jobs, so the rules come first and they live in code: three separate layers, each with its own copy.</p>
+    </div>
+    <div class="rules">
+      <div class="rule-col never">
+        <h3 class="label">Never</h3>
+        <ul>
+          <li>Format a card or delete a file</li>
+          <li>Update firmware</li>
+          <li>Start or stop recording</li>
+          <li>Change codec, frame rate, resolution, picture profile or media settings</li>
+          <li>Touch focus</li>
+          <li>Change anything while the camera records</li>
+        </ul>
+      </div>
+      <div class="rule-col always">
+        <h3 class="label">Always</h3>
+        <ul>
+          <li>One safety function for every change</li>
+          <li>Only inside the ranges you approved</li>
+          <li>Logged: time, old value, new value, reason</li>
+          <li>A kill switch: one key, and the bridge locks</li>
+          <li>A snapshot at the start, and an offer to put it all back</li>
+        </ul>
+      </div>
+    </div>
+    <div class="ranges" id="ranges" aria-label="Approved ranges"></div>
+    <dl class="counters" id="counters">
+      <div><dt>Changes sent on Oct 19</dt><dd data-count="safety.changes">0</dd></div>
+      <div><dt>Confirmed by the camera</dt><dd data-count="safety.confirmed">0</dd></div>
+      <div><dt>Refused or lost</dt><dd data-count="safety.refused">0</dd></div>
+      <div><dt>Kill switch to stop</dt><dd><span data-count="tests.test1.kill.ms_to_stop">0</span><small> ms</small></dd></div>
+    </dl>
+    <p class="source"><span class="tag real dark"><i class="ico"></i>Real</span> Counts from the bridge log of the Oct 19 live test. Ranges from <code>config/safe_ranges.json</code>.</p>
+  </div>
+</section>
+
+<!-- 08 · DASHBOARD -->
+<section class="dash" id="dashboard" aria-labelledby="dash-title">
+  <div class="dash-head">
+    <p class="eyebrow">06 · On set</p>
+    <h2 id="dash-title" class="title">One screen. <em>Every</em> decision.</h2>
+    <p class="lede">The dashboard runs in a browser next to the camera: the picture with zebras or false color, the settings it may touch, each decision in plain words, and a kill switch that's always one key away.</p>
+  </div>
+  <div class="device-wrap">
+    <figure class="device" id="device">
+      <div class="bezel">
+        <img id="dash-img" src="media/screens/auto.png" alt="The Camera Agent dashboard in Auto, on the fake camera" width="1440" height="900">
+      </div>
+      <figcaption>
+        <span class="tag ph"><i class="ico"></i>Placeholder · fake-camera screenshots</span>
+        <span class="cap" id="dash-cap">Auto: it sets ISO itself and says why.</span>
+      </figcaption>
+    </figure>
+    <div class="seg" role="tablist" aria-label="Dashboard states" id="dash-seg">
+      <button type="button" role="tab" aria-selected="true" data-shot="auto">Auto</button>
+      <button type="button" role="tab" aria-selected="false" data-shot="limit">Limit</button>
+      <button type="button" role="tab" aria-selected="false" data-shot="falsecolor">False color</button>
+      <button type="button" role="tab" aria-selected="false" data-shot="locked">Locked</button>
+      <button type="button" role="tab" aria-selected="false" data-shot="killed">Kill switch</button>
+    </div>
+  </div>
+  <ul class="features">
+    <li><b>One-line reasons</b><span>Every change and every suggestion, in words a crew can read at a glance.</span></li>
+    <li><b>Your limits, named</b><span>"Light is warmer than your 2800K limit." It tells you which of your limits stopped it.</span></li>
+    <li><b>Lock and kill switch</b><span>Lock holds everything now. The kill switch stops the agent and locks the bridge.</span></li>
+    <li><b>Zebras and false color</b><span>Drawn by the agent from the S-Log3 picture, on the measured curve.</span></li>
+  </ul>
+</section>
+
+<!-- 09 · PROOF (pending) -->
+<section class="proof" id="proof" aria-labelledby="proof-title">
+  <video class="bg" src="media/placeholder/sunbeam.mp4" poster="media/placeholder/sunbeam.jpg" muted loop playsinline preload="none" aria-hidden="true"></video>
+  <div class="proof-inner">
+    <p class="eyebrow">07 · Proof</p>
+    <h2 id="proof-title" class="title">Proof comes from a <em>real shoot.</em></h2>
+    <p class="lede">Six scenes, from a window-backlit face to a sunset. Each scene is filmed three ways: by the agent, by the FX2's own auto exposure, and by hand. Then people who don't know which is which rate them.</p>
+    <dl class="big-stats">
+      <div><dt>Scored takes</dt><dd>63</dd></div>
+      <div><dt>Scenes</dt><dd>6</dd></div>
+      <div><dt>Ways each scene is filmed</dt><dd>3</dd></div>
+      <div><dt>Raters who know which is which</dt><dd>0</dd></div>
+    </dl>
+    <div class="pending">
+      <span class="tag ph"><i class="ico"></i>Pending · results after the shoot</span>
+      <p>The plan was frozen before a single take, so the rules can't bend to the results. Graded with Sony's LC-709TypeA LUT, the same for every clip.</p>
+    </div>
+  </div>
+  <span class="tag ph corner"><i class="ico"></i>Placeholder clip</span>
+</section>
+
+<!-- 10 · NEXT -->
+<section class="next" id="next" aria-labelledby="next-title">
+  <div class="next-grid">
+    <div>
+      <p class="eyebrow">08 · Next</p>
+      <h2 id="next-title" class="title">From a laptop <em>to the rig.</em></h2>
+      <p class="lede">Phase 2 moves the agent onto a Raspberry Pi 5 on the camera, powered from the battery plate. It's a plan, not a build yet.</p>
+    </div>
+    <dl class="tiles">
+      <div><dt>Per frame, on the Pi</dt><dd>≈ 33<small> ms</small></dd><p>Estimate, against a 41.7 ms budget at 24 fps.</p></div>
+      <div><dt>Rig, all in</dt><dd>≈ $244</dd><p>Pi 5 4GB, cooler, case, plate, D-tap power.</p></div>
+    </dl>
+  </div>
+  <p class="source"><span class="tag est"><i class="ico"></i>Estimates</span> From the Step 8 plan; the Pi hasn't been bought or measured.</p>
+</section>
+
+<!-- 11 · CLOSE -->
+<section class="close" id="close">
+  <h2 class="close-title" id="close-title">Exposure, <em>explained.</em></h2>
+  <a class="cta" id="cta" href="#top" aria-disabled="true"><span>Source on GitHub</span><small>Link at launch</small></a>
+</section>
+</main>
+
+<footer class="foot">
+  <img src="brand/s4d.png" alt="" width="22" height="22">
+  <span>Built by Saad Hilal · S4D</span>
+  <span class="dim">Type: Instrument Serif, D-DIN (SIL OFL)</span>
+</footer>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="af" id="af" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+</body>
+</html>

@@ -7,6 +7,10 @@ sdk/
 luts/*
 !luts/README.md
 
+# Website placeholder clips: stand-ins until the real shoot. Remake them with tools/make_placeholder_clips.py
+# (it needs the LUT in luts/), so they don't bloat the repo's history.
+site/media/placeholder/
+
 # Build output
 build/
 *.o

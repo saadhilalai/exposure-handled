@@ -2,6 +2,16 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## 🌙 Parked (2026-10-19, late night)
+
+- **Nothing is running and the camera isn't connected.** Everything is committed.
+- **Next session, with the director:** the live face test and the light-change test, then we schedule the Step 7 shoot.
+- **While we wait: the project website is started** (Step 9; a draft, not deployed). See [site/README.md](site/README.md).
+  - **Its own identity:** cinematic, built like a viewfinder, with camera readouts, timecode, a closing letterbox, and subtitles in the agent's own words.
+  - **Real data wherever it exists:** the Oct 19 replay (frames, log lines, exposure trace), the safety counts, the looks and the approved ranges. All of it is exported by `tools/export_site_data.py`.
+  - **Placeholders, labeled on the page:** three made-up clips (`tools/make_placeholder_clips.py`) and the fake-camera dashboard screenshots.
+  - **Preview:** `python tools/serve_site.py`, then http://127.0.0.1:8780/.
+
 ## 📍 Where things stand (2026-10-19, evening)
 
 **The live test is done.** It ran unattended on the director's go ("Camera ready, and I'm leaving it to you"), with the FX2 on a tripod at a white wall and one lamp, card out. Details: [docs/step5-live-test.md](docs/step5-live-test.md).
@@ -51,7 +61,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
    - shutter 1/50 ↔ 1/60 in daylight
    - the wall at f/8 and f/11
    - whether the lamp really is ≈ 2620K (below your 2800K floor)
-6. The Step 7 shoot.
+5. The Step 7 shoot.
 
 **How to start things again:**
 - Build: `cmake --build build/bridge -j2`
@@ -176,6 +186,10 @@ Parked 2026-10-17, 19:40 (director stepped away)
     - ✅ **LUT: Sony's LC-709TypeA**, `2_SGamut3CineSLog3_To_LC-709TypeA.cube` (S-Gamut3.Cine/S-Log3), named with its checksum on the plan's LUT line. It was found on the director's Mac and replaces the first pick, s709. The copy in `luts/` stays out of the repo.
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
 - [~] **Step 9: Package it.** Started overnight: README rewritten (what it does, how it thinks, safety, skin tones, results so far with sources, setup, honest limits, "How this was built"); [INTERVIEW.md](INTERVIEW.md) drafted with 10 Q&As + 3 draft resume bullets (real numbers only). Waiting on Step 7 results and a demo video.
+  - ✅ **Website draft (2026-10-19, director's request), not deployed:** [site/](site/README.md).
+    - Built to the robot site's level, with its own cinematic identity.
+    - Real Oct 19 data is used wherever it exists; placeholder clips and screenshots are labeled on the page.
+    - A 2-minute screen recording was sent to the director.
 
 ## Step 1 summary
 
