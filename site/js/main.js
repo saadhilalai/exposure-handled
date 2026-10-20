@@ -189,7 +189,7 @@ function hero() {
   sim.observe(v);
   // a fixed render size, so the picture doesn't reallocate while the frame shrinks into the camera
   let level = 1;
-  const fit = () => { const d = Math.max(0.35, Math.min(devicePixelRatio || 1, quality.settings.prSim) * quality.scale), cap = (low ? 900 : 1440) * level; let w = Math.round(innerWidth * d), h = Math.round(innerHeight * d); if (w > cap) { h = Math.round(h * cap / w); w = cap; } v.size = [w, h]; };
+  const fit = () => { const d = Math.max(0.35, Math.min(devicePixelRatio || 1, quality.settings.prSim) * quality.scale) * Math.sqrt(quality.settings.load), cap = (low ? 900 : 1440) * level * Math.sqrt(quality.settings.load); let w = Math.round(innerWidth * d), h = Math.round(innerHeight * d); if (w > cap) { h = Math.round(h * cap / w); w = cap; } v.size = [w, h]; };
   v.refit = fit;
   fit(); addEventListener("resize", fit);
   v.setLevel = (l) => { if (l !== level) { level = l; fit(); } };

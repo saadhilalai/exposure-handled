@@ -10,6 +10,8 @@ export const LEVELS = {
   low:    { pr3d: 0.75, dof: false, bloom: false, agents: 110, prSim: 0.7,  taps: 24, msaa: 0 },
 };
 const ORDER = ["high", "medium", "low"];
+// Testing only: ?gpuload=N renders N times the pixels, to act like a graphics chip N times weaker than this one.
+export const GPU_LOAD = Math.max(1, +(/[?&]gpuload=([\d.]+)/.exec(location.search) || [0, 1])[1]);
 const SLOW_MS = 21;          // a frame longer than this on average = below ~48 fps
 const FAST_MS = 15.5;        // comfortably at 60
 const WINDOW_MS = 1500;      // judge over this long
@@ -34,7 +36,7 @@ function guess() {
 export function createQuality() {
   const q = {
     level: guess(), scale: 1, fps: 0, frameMs: 16.7, listeners: new Set(), busy: () => true,
-    get settings() { return LEVELS[q.level]; },
+    get settings() { return { ...LEVELS[q.level], load: GPU_LOAD }; },
     onChange(fn) { q.listeners.add(fn); fn(q); return () => q.listeners.delete(fn); },
     set(level) { if (level !== q.level) { q.level = level; q.scale = 1; q.listeners.forEach((fn) => fn(q)); } },
   };

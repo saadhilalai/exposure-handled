@@ -646,7 +646,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     lcdChanged() { lcdDirty = true; },
     // Quality level: pixel ratio (scaled down further when frames run long), depth of field, glow, agents, MSAA.
     setQuality(q, scale = 1) {
-      dpr = Math.max(0.5, Math.min(window.devicePixelRatio || 1, q.pr3d) * scale);
+      dpr = Math.max(0.5, Math.min(window.devicePixelRatio || 1, q.pr3d) * scale) * Math.sqrt(q.load || 1);
       renderer.setPixelRatio(dpr);
       if (bokeh) bokeh.enabled = q.dof;
       bloom.enabled = q.bloom;

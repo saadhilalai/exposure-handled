@@ -585,10 +585,10 @@ export function createSim({ low = false } = {}) {
     };
   }
 
-  const Qs = { prSim: 1.25, taps: low ? 36 : 64, scale: 1 };
+  const Qs = { prSim: 1.25, taps: low ? 36 : 64, scale: 1, load: 1 };
   function sizeOf(v) {
     if (v.size) return v.size;
-    const dpr = Math.max(0.35, Math.min(devicePixelRatio || 1, Qs.prSim) * Qs.scale);
+    const dpr = Math.max(0.35, Math.min(devicePixelRatio || 1, Qs.prSim) * Qs.scale) * Math.sqrt(Qs.load);
     const r = v.canvas.getBoundingClientRect();
     let w = Math.max(2, Math.round(r.width * dpr * v.scale)), h = Math.max(2, Math.round(r.height * dpr * v.scale));
     const cap = low ? Math.min(v.maxW, 760) : v.maxW;
@@ -692,7 +692,7 @@ export function createSim({ low = false } = {}) {
   }
 
   // Quality level: pixel ratio cap (times the live scale), and depth-of-field taps.
-  function setQuality(q, scale = 1) { Qs.prSim = q.prSim; Qs.taps = q.taps; Qs.scale = scale; }
+  function setQuality(q, scale = 1) { Qs.prSim = q.prSim; Qs.taps = q.taps; Qs.scale = scale; Qs.load = q.load || 1; }
   const software = /swiftshader|llvmpipe|software/i.test((() => { const e = gl.getExtension("WEBGL_debug_renderer_info"); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : ""; })());
   return { view, views, render, meter, stats, fx, gl, floatOK, SCENES, windowFor, setQuality, software };
 }
