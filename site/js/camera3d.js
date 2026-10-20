@@ -106,7 +106,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   const key = new THREE.DirectionalLight(0xfff1e2, 2.4); key.position.set(-4, 6, 5); scene.add(key);
   const fill = new THREE.DirectionalLight(0xbcd2ff, 0.5); fill.position.set(5, 1, 4); scene.add(fill);
   const rimCool = new THREE.DirectionalLight(0x9fc4ff, 2.2); rimCool.position.set(5, 3, -6); scene.add(rimCool);
-  const rimWarm = new THREE.DirectionalLight(0xff7a2a, 0.22); rimWarm.position.set(-6, -2, -3); scene.add(rimWarm);
+  const rimWarm = new THREE.DirectionalLight(0xff7a2a, 0); rimWarm.position.set(-6, -2, -3); scene.add(rimWarm);
   const swarmLight = new THREE.PointLight(0xff6a1a, 0, 3.2, 1.6); scene.add(swarmLight);
   const sweep = new THREE.DirectionalLight(0xffffff, 0); sweep.position.set(-6, 2, 3); scene.add(sweep);
 

@@ -183,7 +183,7 @@ main, .foot { position: relative; z-index: 1; }
 .scroll-cue { position: absolute; z-index: 3; left: 50%; bottom: 14px; width: 1px; height: 46px; background: rgba(255,255,255,.18); overflow: hidden; }
 .scroll-cue i { position: absolute; left: 0; top: -40%; width: 1px; height: 40%; background: #fff; animation: cue 2s var(--ease-io) infinite; }
 @keyframes cue { to { top: 110%; } }
-.hero .note { position: absolute; left: var(--x); top: var(--y); z-index: 4; }
+.hero .note { position: absolute; right: clamp(18px, 3vw, 44px); bottom: clamp(96px, 14vh, 130px); z-index: 4; max-width: 380px; }
 
 /* ---------- chat feed ---------- */
 .feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -444,7 +444,7 @@ section.try, section.game, section.compare, section.real, section.safety, sectio
 .reticle.press { transform-origin: center; }
 
 /* ---------- easter eggs ---------- */
-html.zebra .big .line, html.zebra .huge .line, html.zebra .hero-title .line {
+html.zebra .big .in, html.zebra .huge .in, html.zebra .hero-title .in {
   color: transparent; background: repeating-linear-gradient(-45deg, #fff 0 6px, #111 6px 12px); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; animation: zebra 1s linear infinite;
 }
 @keyframes zebra { to { background-position: 17px 0; } }
