@@ -354,8 +354,11 @@ void main(){
   vec2 p = scenePos(vUv);
   float pxPerUnit = uRes.x / uWin.z;
   // string-light bulbs at 3.4 m
-  if (dep > 3.2 && dot(uString, uString) > 0.) {
-    float r = coc(3.4);
+  float pxPerScene = uRes.x / uWin.z;
+  float rStr = coc(3.4);
+  float wireY = .40 - .1 * (1. - p.x * p.x) - .014;
+  if (dep > 3.2 && dot(uString, uString) > 0. && abs(p.y - wireY) < (rStr + 3.) / pxPerScene + .012) {
+    float r = rStr;
     for (int i = 0; i < 30; i++) {
       float bx = -1.02 + float(i) * .072;
       vec2 bp = vec2(bx, .40 - .1 * (1. - bx * bx) - .014);
@@ -376,7 +379,8 @@ void main(){
     }
   }
   // dust in the window light, 1–3 m
-  if (uHazeI > 0.) {
+  float rDust = (coc(1.1) + 3.) / pxPerScene;
+  if (uHazeI > 0. && p.x > -.5 - rDust && p.x < .5 + rDust && p.y > -.25 - rDust && p.y < .4 + rDust) {
     for (int i = 0; i < 22; i++) {
       float fi = float(i); float z = 1.1 + 2. * hash11(fi * 5.1);
       if (dep < z) continue;
@@ -522,7 +526,7 @@ export function createSim({ low = false } = {}) {
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, T.scene.t);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, T.tile.t);
     gl.uniform1i(P.dof.u.uSrc, 0); gl.uniform1i(P.dof.u.uTile, 1);
-    gl.uniform4fv(P.dof.u.uLens, lensVec(s, w)); gl.uniform2f(P.dof.u.uRes, w, h); gl.uniform1i(P.dof.u.uTaps, low ? 36 : 72);
+    gl.uniform4fv(P.dof.u.uLens, lensVec(s, w)); gl.uniform2f(P.dof.u.uRes, w, h); gl.uniform1i(P.dof.u.uTaps, Qs.taps);
     gl.uniform4f(P.dof.u.uWin, win[0], win[1], win[2], win[3]);
     quad();
     gl.bindTexture(gl.TEXTURE_2D, dst.t); gl.generateMipmap(gl.TEXTURE_2D);
@@ -581,9 +585,10 @@ export function createSim({ low = false } = {}) {
     };
   }
 
+  const Qs = { prSim: 1.25, taps: low ? 36 : 64, scale: 1 };
   function sizeOf(v) {
     if (v.size) return v.size;
-    const dpr = Math.min(devicePixelRatio || 1, 1.5);
+    const dpr = Math.max(0.35, Math.min(devicePixelRatio || 1, Qs.prSim) * Qs.scale);
     const r = v.canvas.getBoundingClientRect();
     let w = Math.max(2, Math.round(r.width * dpr * v.scale)), h = Math.max(2, Math.round(r.height * dpr * v.scale));
     const cap = low ? Math.min(v.maxW, 760) : v.maxW;
@@ -633,6 +638,8 @@ export function createSim({ low = false } = {}) {
         continue;
       }
       v.hiddenSince = 0;
+      if (v.fpsCap && now - (v.lastRender || 0) < 1000 / v.fpsCap - 2) continue;    // e.g. the 3D camera's rear screen
+      v.lastRender = now;
       v.time = now / 1000 - v.t0;
       renderView(v, now);
     }
@@ -684,7 +691,10 @@ export function createSim({ low = false } = {}) {
     return { subject: st.subject + shift, center: st.center + shift, clip, shift };
   }
 
-  return { view, views, render, meter, stats, fx, gl, floatOK, SCENES, windowFor };
+  // Quality level: pixel ratio cap (times the live scale), and depth-of-field taps.
+  function setQuality(q, scale = 1) { Qs.prSim = q.prSim; Qs.taps = q.taps; Qs.scale = scale; }
+  const software = /swiftshader|llvmpipe|software/i.test((() => { const e = gl.getExtension("WEBGL_debug_renderer_info"); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : ""; })());
+  return { view, views, render, meter, stats, fx, gl, floatOK, SCENES, windowFor, setQuality, software };
 }
 
 // Used when the browser can't read float pixels back: the same numbers, measured on a Mac.

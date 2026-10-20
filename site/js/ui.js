@@ -1,5 +1,5 @@
 // Small UI kit for the site: camera dials, the AI's chat feed, sound (off until you turn it on),
-// cursor, magnetic buttons and toasts.
+// magnetic buttons and toasts.
 
 const html = document.documentElement;
 export const motion = html.classList.contains("motion");

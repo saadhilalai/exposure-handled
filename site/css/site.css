@@ -435,6 +435,10 @@ section.try, section.game, section.compare, section.real, section.safety, sectio
 .foot-links a { text-decoration: none; color: var(--ink-2); transition: color .3s; }
 @media (hover: hover) { .foot-links a:hover { color: var(--ink); } }
 
+/* ---------- Nerd mode: frame-rate counter ---------- */
+.fps-meter { position: fixed; left: 14px; bottom: 14px; z-index: 95; padding: 7px 10px 6px; border-radius: 8px; font: 700 10.5px/1 var(--wide); letter-spacing: .14em; text-transform: uppercase; color: #d8d6ff; background: rgba(28,25,60,.82); border: 1px solid rgba(150,140,255,.35); pointer-events: none; font-variant-numeric: tabular-nums; }
+.fps-meter.slow { color: #ffd0a8; border-color: rgba(255,106,26,.5); }
+
 /* ---------- toast, grain, cursor ---------- */
 .toast { position: fixed; left: 50%; bottom: 28px; z-index: 90; padding: 13px 18px 12px; border-radius: 14px; font: 700 12px/1 var(--wide); letter-spacing: .16em; text-transform: uppercase; background: rgba(12,12,13,.86); border: 1px solid var(--line-2); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transform: translate(-50%, 30px); opacity: 0; pointer-events: none; transition: opacity .35s, transform .5s var(--spring); }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }

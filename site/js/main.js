@@ -3,6 +3,7 @@
 import { createSim, SCENES, ISOS, SHUTTERS, FNUMS, KELVINS } from "./sim.js";
 import { $, $$, wait, clamp, motion, sound, toast, Dial, Feed, magnetic, grain, countUp, nearest } from "./ui.js";
 import { solve, score, turn, fmt, RANGES } from "./ai.js";
+import { createQuality } from "./quality.js";
 
 const html = document.documentElement;
 const low = html.classList.contains("low");
@@ -18,6 +19,8 @@ function kf(p, keys) {
 }
 
 let sim = null, cam3d = null, data = null;
+const quality = createQuality();
+window.__quality = () => quality.level + " " + quality.scale.toFixed(2);   // read by the speed tests
 const views = {};
 const prog = { hero: 0, inside: 0, try: 0, finale: 0 };
 
@@ -28,6 +31,11 @@ async function main() {
   ScrollTrigger.config({ ignoreMobileResize: true });
   data = await fetch("data/site.json").then((r) => r.json()).catch(() => null);
   try { sim = createSim({ low }); } catch (e) { console.warn("simulator off:", e); }
+  // No real graphics chip (software rendering): skip the 3D, and keep the camera pictures small and calm.
+  const software = !sim || sim.software;
+  if (software) { quality.set("low"); html.classList.add("no3d"); }
+  quality.onChange(applyQuality);
+  fpsMeter();
   nav(); toggles(); magnetic(); eggs(); lineWrap();
   let heroReady = Promise.resolve();
   if (sim) { simLoop(); heroReady = hero(); }
@@ -37,7 +45,7 @@ async function main() {
     heroReady.then(res); setTimeout(res, 8000);
     for (const ev of ["wheel", "touchmove", "keydown", "scroll"]) addEventListener(ev, res, { once: true, passive: true });
   });
-  await load3D();
+  if (!software) await load3D();
   heroPull();
   inside();
   if (sim) { tryIt(); game(); compare(); }
@@ -45,6 +53,27 @@ async function main() {
   if (/[?&]debug\b/.test(location.search)) window.__debug = { sim, cam3d, views };   // for testing only (?debug)
   await document.fonts.ready;
   ScrollTrigger.refresh();
+}
+
+// One quality level for everything heavy: the 3D camera and the camera pictures.
+function applyQuality(q) {
+  cam3d?.setQuality(q.settings, q.scale);
+  sim?.setQuality(sim.software ? { prSim: 0.45, taps: 12 } : q.settings, q.scale);
+  if (views.lcd) views.lcd.fpsCap = q.settings.lcdFps;
+  if (sim?.software) for (const v of sim.views) v.fpsCap = 24;
+  views.hero?.refit?.();
+}
+
+// Nerd mode: frame rate and quality level, so anyone can check on their own computer.
+function fpsMeter() {
+  const el = $("#fps-meter");
+  if (!el) return;
+  setInterval(() => {
+    if (!html.classList.contains("nerd-on")) return;
+    const pct = quality.scale < 0.999 ? " · " + Math.round(quality.scale * 100) + "%" : "";
+    el.textContent = `${quality.fps || "…"} fps · ${quality.level}${pct}${html.classList.contains("no3d") ? " · no 3D" : ""}`;
+    el.classList.toggle("slow", quality.fps && quality.fps < 45);
+  }, 500);
 }
 
 // wrap each headline line so it can rise out of its own mask
@@ -161,7 +190,8 @@ function hero() {
   sim.observe(v);
   // a fixed render size, so the picture doesn't reallocate while the frame shrinks into the camera
   let level = 1;
-  const fit = () => { const d = Math.min(devicePixelRatio || 1, 1.5), cap = (low ? 900 : 1440) * level; let w = Math.round(innerWidth * d), h = Math.round(innerHeight * d); if (w > cap) { h = Math.round(h * cap / w); w = cap; } v.size = [w, h]; };
+  const fit = () => { const d = Math.max(0.35, Math.min(devicePixelRatio || 1, quality.settings.prSim) * quality.scale), cap = (low ? 900 : 1440) * level; let w = Math.round(innerWidth * d), h = Math.round(innerHeight * d); if (w > cap) { h = Math.round(h * cap / w); w = cap; } v.size = [w, h]; };
+  v.refit = fit;
   fit(); addEventListener("resize", fit);
   v.setLevel = (l) => { if (l !== level) { level = l; fit(); } };
   Object.assign(v.a, { iso: 12800, shutter: 1 / 48, fnum: 2.8, wb: 6500 });
@@ -229,9 +259,11 @@ async function load3D() {
   if (!cam3d) { html.classList.add("no3d"); return; }
   if (motion) setTimeout(() => { if (prog.hero < 0.05 && !cam3d.running) cam3d.warmup(); }, 350);
   Object.assign(cam3d.state, HERO_POSE); cam3d.settle();
+  cam3d.setQuality(quality.settings, quality.scale);
   if (sim && views.hero) {
     const lv = (views.lcd = sim.view(cam3d.lcdCanvas, { scene: HERO_SCENE, size: [640, 360] }));
     lv.a = views.hero.a; lv.t0 = views.hero.t0; lv.visible = false;
+    lv.fpsCap = quality.settings.lcdFps; lv.onFrame = () => cam3d.lcdChanged();
   }
   if (!motion) {
     // still picture of the exploded camera behind the "inside" beats
