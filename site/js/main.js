@@ -441,7 +441,7 @@ function game() {
   [gv, yv, av].forEach((v) => sim.observe(v));
   let dials = null, sceneIdx = 0, start = null, timer = null, best = 0;
   try { best = +localStorage.getItem("best") || 0; } catch {}
-  const showBest = () => { const el = $("#g-best"); if (best) { el.hidden = false; el.textContent = "Your best · " + best; } };
+  const showBest = () => { const el = $("#g-best"); if (best) { el.hidden = false; el.textContent = "Best · " + best; } };
   showBest();
   const ring = $("#g-timer");
   gv.setScene(1); Object.assign(gv.a, { iso: 6400, shutter: 1 / 48, fnum: 2.8, wb: 9000 });
@@ -574,10 +574,11 @@ function buildChart(fig, t) {
     const x = X(c.t), y = Y(keyAt(c.t)), lab = i === 0 ? `ISO ${c.from.replace("ISO ", "")} → ${c.to.replace("ISO ", "")}` : i === ch.length - 1 ? `→ ${c.to.replace("ISO ", "")}` : "";
     return `<line class="tick-line" x1="${x}" x2="${x}" y1="${T}" y2="${H - B}"/><circle class="tick-dot" cx="${x}" cy="${y}" r="5"/>${lab ? `<text class="tick-lab" x="${x + 9}" y="${y - 10}">${lab}</text>` : ""}`;
   }).join("");
-  fig.innerHTML = `<div class="chart-head"><span class="label">Scene exposure, stops · first 15 s of auto</span><span class="label" style="color:var(--good)">Inside the window</span></div>
+  fig.innerHTML = `<div class="chart-head nerd"><span class="label">Scene exposure in stops · seconds after auto turned on</span></div>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Real test on Oct 19: the scene started ${ks[0] > 0 ? "+" : ""}${ks[0].toFixed(1)} stops over; five ISO changes brought it to ${ks[ks.length - 1].toFixed(1)} stops, inside the −1 to +1 window, in ${t.settle_s} seconds.">
       <rect class="band" x="${L}" y="${Y(w1)}" width="${W - L - R}" height="${Y(w0) - Y(w1)}"/>
       <line class="band-edge" x1="${L}" x2="${W - R}" y1="${Y(w1)}" y2="${Y(w1)}"/><line class="band-edge" x1="${L}" x2="${W - R}" y1="${Y(w0)}" y2="${Y(w0)}"/>
+      <text class="band-lab" x="${W - R - 8}" y="${Y(w0) - 10}" text-anchor="end">INSIDE THE WINDOW</text>
       <g class="grid axis">${g}</g><g class="axis">${xt}</g>
       ${marks}
       <path class="line" id="real-line" d="${d}"/>

@@ -180,8 +180,8 @@
       <div class="g-screen"><canvas id="g-canvas" aria-label="Your shot"></canvas><svg class="g-timer" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><circle class="t" id="g-timer" cx="20" cy="20" r="17"/></svg>
         <div class="g-intro">
           <button class="ai-btn big magnetic" id="g-start"><span>Play · 15 seconds</span></button>
-          <span class="best" id="g-best" hidden></span>
         </div>
+        <span class="chip best" id="g-best" hidden></span>
       </div>
       <div class="g-bar"><div class="dials" id="g-dials"></div><button class="ai-btn magnetic" id="g-lock"><span>Lock it in</span></button></div>
     </div>
@@ -222,10 +222,10 @@
   <div class="real-grid">
     <figure class="chart-card" id="real-chart"></figure>
     <div class="gauges">
-      <div class="g4" data-k="kill"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="50"/><circle class="fill" cx="60" cy="60" r="50"/></svg><b data-v></b><small>MS TO STOP</small></div>
-      <div class="g4" data-k="confirm"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="50"/><circle class="fill" cx="60" cy="60" r="50"/></svg><b data-v></b><small>CHANGES CONFIRMED</small></div>
-      <div class="g4" data-k="settle"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="50"/><circle class="fill" cx="60" cy="60" r="50"/></svg><b data-v></b><small>SEC TO SETTLE</small></div>
-      <div class="g4" data-k="hold"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="50"/><circle class="fill" cx="60" cy="60" r="50"/></svg><b data-v></b><small>CHANGES IN 60 S HOLD</small></div>
+      <div class="g4" data-k="kill"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="50"/><circle class="fill" cx="60" cy="60" r="50"/></svg><b data-v></b><svg class="ic" viewBox="0 0 24 24"><path d="M8.2 2h7.6L22 8.2v7.6L15.8 22H8.2L2 15.8V8.2z"/><path d="M8 12h8"/></svg><small class="nerd">MS TO STOP</small></div>
+      <div class="g4" data-k="confirm"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="50"/><circle class="fill" cx="60" cy="60" r="50"/></svg><b data-v></b><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9"/></svg><small class="nerd">CHANGES CONFIRMED</small></div>
+      <div class="g4" data-k="settle"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="50"/><circle class="fill" cx="60" cy="60" r="50"/></svg><b data-v></b><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M10 2h4M12 2v3"/></svg><small class="nerd">SEC TO SETTLE</small></div>
+      <div class="g4" data-k="hold"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="50"/><circle class="fill" cx="60" cy="60" r="50"/></svg><b data-v></b><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><small class="nerd">CHANGES IN 60 S HOLD</small></div>
     </div>
   </div>
   <aside class="nerd note wide"><b>Source:</b> the unattended live test on Oct 19 (Test 1, Cinematic look, scene window −1 to +1 stop). The chart is the agent's own metering log: scene exposure in stops, each ISO change marked. Across the session: 44 changes sent, 44 confirmed by the camera, 0 refused. Settled in 8.4 s, then no changes for the full 60 s hold. Kill switch: 33 ms.</aside>
