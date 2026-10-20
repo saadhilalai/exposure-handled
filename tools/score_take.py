@@ -110,11 +110,22 @@ def score(folder):
     }
 
 
+def is_rehearsal(folder):
+    """Rehearsal sessions live under sessions/REHEARSAL/ and carry a LABEL file: never Step 7 data."""
+    return (Path(folder) / "LABEL").exists() or "REHEARSAL" in Path(folder).resolve().parts
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("folders", nargs="+")
     ap.add_argument("--json")
     args = ap.parse_args()
+    labels = {is_rehearsal(f) for f in args.folders}
+    if len(labels) > 1:
+        sys.exit("Some of these folders are rehearsal takes and some aren't. Score them separately: rehearsal data "
+                 "never mixes with the Step 7 test.")
+    if True in labels:
+        print("REHEARSAL takes: not part of the Step 7 test.")
     results = [score(f) for f in args.folders]
     cols = ["take", "look", "seconds", "clipping_mean_pct", "clipping_over_limit_pct_time", "face_error_mean_st",
             "face_on_target_pct_time", "settle_s", "flickers"]

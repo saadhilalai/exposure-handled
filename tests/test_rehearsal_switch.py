@@ -100,3 +100,12 @@ def test_launcher_refuses_the_switch_without_rehearsal():
     out = subprocess.run([sys.executable, str(ROOT / "tools" / "run_agent.py"), "--fake", "--allow-exposure-while-recording",
                           "--seconds", "1"], capture_output=True, text=True, timeout=60)
     assert out.returncode != 0 and "rehearsals only" in out.stderr
+
+
+def test_scoring_never_mixes_rehearsal_and_step7_folders(tmp_path):
+    reh, step7 = tmp_path / "REHEARSAL" / "take1", tmp_path / "take2"
+    reh.mkdir(parents=True); step7.mkdir()
+    (reh / "LABEL").write_text("rehearsal\n")
+    out = subprocess.run([sys.executable, str(ROOT / "tools" / "score_take.py"), str(reh), str(step7)],
+                         capture_output=True, text=True, timeout=60)
+    assert out.returncode != 0 and "never mixes" in out.stderr
