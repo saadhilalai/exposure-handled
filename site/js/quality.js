@@ -14,6 +14,7 @@ const ORDER = ["high", "medium", "low"];
 export const GPU_LOAD = Math.max(1, +(/[?&]gpuload=([\d.]+)/.exec(location.search) || [0, 1])[1]);
 const SLOW_MS = 21;          // a frame longer than this on average = below ~48 fps
 const VERY_SLOW_MS = 40;     // under ~25 fps: skip the small steps, drop a whole level at once
+const CRAWL_MS = 66;         // under ~15 fps: straight to the lowest level
 const FAST_MS = 15.5;        // comfortably at 60
 const WINDOW_MS = 1000;      // judge over this long
 const MIN_SCALE = { high: 0.7, medium: 0.7, low: 0.45 }, STEP_DOWN = 0.85, STEP_UP = 1.06;
@@ -44,7 +45,7 @@ export function createQuality() {
   q.startLevel = q.level;
   const fixed = /[?&]quality=/.test(location.search);
   // Watch every frame (cheap): judge only while something heavy is on screen.
-  let last = performance.now(), acc = 0, n = 0, t0 = last, fastFor = 0, grace = performance.now() + 2500;
+  let last = performance.now(), acc = 0, n = 0, t0 = last, fastFor = 0, grace = performance.now() + 1000;
   (function tick(now) {
     const dt = now - last; last = now;
     if (dt < 250) { acc += dt; n++; }                 // ignore pauses (tab hidden, Mac asleep)
@@ -53,12 +54,15 @@ export function createQuality() {
       q.frameMs = avg; q.fps = Math.round(1000 / avg);
       if (!fixed && q.busy() && now > grace) {
         const lower = ORDER.indexOf(q.level) < ORDER.length - 1;
-        if (avg > VERY_SLOW_MS && lower) {
-          fastFor = 0; q.set(ORDER[ORDER.indexOf(q.level) + 1]); grace = now + 1000;
+        if (avg > CRAWL_MS && lower) {
+          fastFor = 0; q.set("low"); grace = now + 600;
+        } else if (avg > VERY_SLOW_MS && lower) {
+          fastFor = 0; q.set(ORDER[ORDER.indexOf(q.level) + 1]); grace = now + 600;
         } else if (avg > SLOW_MS) {
           fastFor = 0;
           const min = MIN_SCALE[q.level];
-          if (q.scale > min + 1e-3) { q.scale = Math.max(min, q.scale * STEP_DOWN); q.listeners.forEach((fn) => fn(q)); }
+          // the cost goes with the pixel count (scale squared), so one step lands near 60 fps
+          if (q.scale > min + 1e-3) { q.scale = Math.max(min, q.scale * Math.min(STEP_DOWN, 0.95 * Math.sqrt(16.7 / avg))); q.listeners.forEach((fn) => fn(q)); }
           else if (lower) { q.set(ORDER[ORDER.indexOf(q.level) + 1]); grace = now + 1500; }
         } else if (avg < FAST_MS && q.scale < 1) {
           fastFor += now - t0;
