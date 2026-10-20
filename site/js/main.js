@@ -33,7 +33,7 @@ async function main() {
   try { sim = createSim({ low }); } catch (e) { console.warn("simulator off:", e); }
   // No real graphics chip (software rendering): skip the 3D, and keep the camera pictures small and calm.
   const software = !sim || sim.software;
-  if (software) { quality.set("low"); html.classList.add("no3d"); }
+  if (software) { quality.set("low"); html.classList.add("no3d", "nogpu"); }
   quality.onChange(applyQuality);
   fpsMeter();
   nav(); toggles(); magnetic(); eggs(); lineWrap();

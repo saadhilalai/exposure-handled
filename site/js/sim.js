@@ -469,6 +469,7 @@ export function createSim({ low = false } = {}) {
   const gl = glc.getContext("webgl2", { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: "high-performance" });
   if (!gl) return null;
   const floatOK = !!gl.getExtension("EXT_color_buffer_float");
+  const software = /swiftshader|llvmpipe|software/i.test((() => { const e = gl.getExtension("WEBGL_debug_renderer_info"); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : ""; })());
   gl.getExtension("OES_texture_float_linear");
   const P = { scene: program(gl, SCENE_FS), tile: program(gl, TILE_FS), dof: program(gl, DOF_FS), cam: program(gl, CAM_FS) };
   const vb = gl.createBuffer();
@@ -639,6 +640,11 @@ export function createSim({ low = false } = {}) {
       }
       v.hiddenSince = 0;
       if (v.fpsCap && now - (v.lastRender || 0) < 1000 / v.fpsCap - 2) continue;    // e.g. the 3D camera's rear screen
+      if (software && !v.sceneTween) {                // no graphics chip: draw only when something changed
+        const key = JSON.stringify([v.a, v.b, v.split, fx, v.canvas.clientWidth, v.canvas.clientHeight]);
+        if (key === v.lastKey) continue;
+        v.lastKey = key;
+      }
       v.lastRender = now;
       v.time = now / 1000 - v.t0;
       renderView(v, now);
@@ -693,7 +699,6 @@ export function createSim({ low = false } = {}) {
 
   // Quality level: pixel ratio cap (times the live scale), and depth-of-field taps.
   function setQuality(q, scale = 1) { Qs.prSim = q.prSim; Qs.taps = q.taps; Qs.scale = scale; Qs.load = q.load || 1; }
-  const software = /swiftshader|llvmpipe|software/i.test((() => { const e = gl.getExtension("WEBGL_debug_renderer_info"); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : ""; })());
   return { view, views, render, meter, stats, fx, gl, floatOK, SCENES, windowFor, setQuality, software };
 }
 

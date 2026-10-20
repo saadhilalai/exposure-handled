@@ -538,3 +538,8 @@ html:not(.motion) .cam3d { opacity: .5; }
 .low .msg { background: rgba(14,14,16,.9); }
 .low .scenes { background: rgba(8,8,9,.85); }
 .low .note { background: rgba(28,25,60,.94); }
+
+/* ---------- no graphics chip (software rendering): every blur, glow and moving layer costs CPU; drop them ---------- */
+.nogpu *, .nogpu *::before, .nogpu *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; filter: none !important; animation: none !important; }
+.nogpu .grain { display: none; }
+.nogpu .msg, .nogpu .chip, .nogpu .scenes, .nogpu .note, .nogpu .nav.solid, .nogpu .toast { background-color: rgba(12,12,13,.94); }
