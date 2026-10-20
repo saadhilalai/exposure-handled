@@ -123,7 +123,8 @@ def share():
     server = ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Handler, directory=str(SITE)))
     threading.Thread(target=server.serve_forever, daemon=True).start()
     local = "http://127.0.0.1:%d" % server.server_address[1]
-    tunnel = subprocess.Popen([exe, "tunnel", "--no-autoupdate", "--url", local],
+    # http2 runs over TCP, which school Wi-Fi and phone hotspots let through; the default (QUIC, UDP) is often blocked
+    tunnel = subprocess.Popen([exe, "tunnel", "--no-autoupdate", "--protocol", "http2", "--url", local],
                               stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
     awake = subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())]) if shutil.which("caffeinate") else None
     try:
