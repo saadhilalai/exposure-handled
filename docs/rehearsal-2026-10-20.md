@@ -1,5 +1,11 @@
 # Shakedown rehearsal: sunset, 2026-10-20
 
+> **The one command, at the location** (camera plugged in, Terminal open):
+> ```
+> ~/camera-agent/tools/rehearsal.sh
+> ```
+> It makes the folder, starts the bridge, and starts the agent with the dashboard, which opens by itself. You type **LIVE**, then press **Auto** on the dashboard. **SPACE** is the kill switch, in that same window. Quit with **q**, and the bridge stops with it.
+
 **Not the Step 7 test.** Tonight's goal is to find everything that breaks in real light before the official shoot on Saturday.
 - Everything from tonight is labeled **rehearsal**.
 - The agent's data goes to `sessions/REHEARSAL/`, and take names start with `REH_`.
@@ -12,7 +18,7 @@ What runs tonight:
 - **Mini three-way comparison:** one or two shots, filmed by the agent, by the camera's Auto ISO, and by hand.
 - **Problems** get logged the moment they happen.
 
-> The frozen Step 7 plan is **ISO only** for Saturday, with FX2 Auto ISO for the camera takes. Tonight uses all four settings, as you asked. Saturday follows the frozen plan unless you decide to change it.
+> **Decided (2026-10-20):** Saturday stays **ISO only**, like the frozen Step 7 plan, with FX2 Auto ISO for the camera takes. Tonight's all-four-settings run is rehearsal only.
 
 ## Bring
 
@@ -42,39 +48,37 @@ What runs tonight:
    - **No phone app connected** to the camera.
    - ND set to something sensible for now. The agent will say if it needs changing.
 3. **Plug the USB-C cable** from the FX2 into the Mac. If the camera asks, choose **Remote Shoot/Trn.**
-4. **Terminal window 1: the bridge.** Copy-paste:
+4. **Run the one command** in Terminal:
    ```
-   mkdir -p ~/camera-agent/sessions/REHEARSAL/bridge-2026-10-20
-   cd ~/camera-agent/build/bridge && ./camera_bridge ~/camera-agent/run/bridge.sock ~/camera-agent/sessions/REHEARSAL/bridge-2026-10-20 --allow-exposure-while-recording
+   ~/camera-agent/tools/rehearsal.sh
    ```
-   It should say **Connected to ILME-FX2** and **REHEARSAL SWITCH ON**. Leave this window open.
-5. **Terminal window 2: the agent.** Copy-paste:
-   ```
-   cd ~/camera-agent && caffeinate -dims .venv/bin/python tools/run_agent.py --live --rehearsal --take REH_sunset_A_agent --allow-exposure-while-recording --dashboard --port 8770
-   ```
-   Type `LIVE` when asked. `caffeinate` keeps the Mac awake while the agent runs.
-6. **Dashboard:** open http://127.0.0.1:8770/ on the Mac. Check that the chips say **Rehearsal** and **Rec switch on: ISO, iris, shutter, WB**. Auto starts **off**: press **Auto**.
+   It shows the bridge's answer (**Connected to ILME-FX2** and **REHEARSAL SWITCH ON**), then asks you to type **LIVE**. The dashboard opens at http://127.0.0.1:8770/.
+5. **Dashboard:** check that the chips say **Rehearsal** and **Rec switch on: ISO, iris, shutter, WB**. Auto starts **off**: press **Auto**.
+6. If it says the bridge didn't connect: check the cable, USB Connection Mode, and that no phone app is connected, then run the command again.
 7. **Say "camera ready"** to your coding assistant. From then on it watches the logs (read-only) and logs anything it sees.
 8. **Face test:** when you're in frame and your face looks right on the dashboard, press **This face looks right** once.
 9. **The sunset run (agent):** hold up the REHEARSAL card and **press REC yourself** (the agent never starts or stops recording). Let it run as the light falls.
    - Press **m** (or Mark on the dashboard) when the light visibly changes: sun behind a cloud, sun touching the horizon.
-   - **Log problems the moment they happen:** press **x** in window 2, or type in the dashboard's **Problems** box and press Log.
-10. **Mini three-way comparison (one shot, two if the light allows).** Same framing, about 50 s each, back to back, and slate each one. To end a take, press **q** in window 2 (it offers to put your starting settings back). Then start the next with one of these:
-    - **A, agent:** `cd ~/camera-agent && .venv/bin/python tools/run_agent.py --live --rehearsal --take REH_cmp1_A_agent --allow-exposure-while-recording --dashboard --port 8770`, then press Auto, then REC.
-    - **B, camera Auto ISO:** turn the FX2's Auto ISO **on**, then `.venv/bin/python tools/run_agent.py --rehearsal --take REH_cmp1_B_auto --dashboard --port 8770` (no `--live`: it only watches and logs). REC, 50 s, stop. Turn Auto ISO back **off**.
-    - **C, by hand:** `.venv/bin/python tools/run_agent.py --rehearsal --take REH_cmp1_C_manual --dashboard --port 8770` (watches only). Expose by hand, REC, 50 s, stop.
+   - **Log problems the moment they happen:** press **x** in the Terminal window, or type in the dashboard's **Problems** box and press Log.
+10. **Mini three-way comparison (one shot, two if the light allows).** Same framing, about 50 s each, back to back, and slate each one. End each take with **q**, then run the next:
+    - **A, agent:** `~/camera-agent/tools/rehearsal.sh REH_cmp1_A_agent`, type LIVE, press Auto, then REC.
+    - **B, camera Auto ISO:** turn the FX2's Auto ISO **on**, then `~/camera-agent/tools/rehearsal.sh REH_cmp1_B_auto`. The agent only watches, and the bridge is read-only. REC, 50 s, stop, then turn Auto ISO back **off**.
+    - **C, by hand:** `~/camera-agent/tools/rehearsal.sh REH_cmp1_C_manual`. Watch only; expose by hand, REC, 50 s, stop.
 
-    The bridge stays as it is for all three. B and C never send anything to the camera.
-11. **When you're done:** press **q** in window 2, then **Ctrl-C** in window 1. Unplug the cable.
+    For a second shot, use `cmp2` in the names.
+11. **When you're done:** press **q**. The script stops the bridge too. Unplug the cable.
 12. **Footage:** when you copy the card, put tonight's clips in a folder called **REHEARSAL-2026-10-20**, never next to Step 7 footage. The slates mark them too.
 
 ## If something goes wrong
 
-- **Stop the agent:** press **SPACE** in window 2, or the dashboard's **Kill switch**, or unplug the USB cable. The camera keeps its last settings and is yours.
+- **Stop the agent:** press **SPACE** in the Terminal window, or the dashboard's **Kill switch**, or unplug the USB cable. The camera keeps its last settings and is yours.
 - **The internet drops:** nothing changes for the camera. The agent runs on the Mac by itself, and I catch up from the logs when you're back online.
 - **Hotspot data:** the agent and dashboard use none. Only the coding assistant's messages use a little.
-- **The agent says the bridge isn't there:** window 1 must say "Listening on …". If it says "No camera found over USB", check the cable and the USB mode, then run step 4 again.
+- **"The bridge didn't connect":** the script prints the bridge's own message. If it's "No camera found over USB", check the cable and the USB mode, then run the command again.
 
 ## Problems found tonight
 
 *(Filled in after the shoot, ranked by how much they matter for Saturday.)*
+
+Found before the shoot, on the fake camera:
+- While Auto is off, the status line flips every second between the suggestion and "Waiting for the last change to settle". This is cosmetic; it will be fixed this week.

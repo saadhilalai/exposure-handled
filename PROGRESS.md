@@ -12,7 +12,8 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
   - **`tools/watch_session.py`:** a read-only live summary and after-shoot report (flicker, slow reactions, fps, refusals, problems).
 - **Supervision:** the director runs the bridge and agent in their own Terminal, and the coding assistant watches the logs read-only. If the hotspot drops, the agent keeps running on the Mac.
 - **After the shoot:** a ranked list of what went wrong, fixed during the week before Saturday.
-- **Saturday follows the frozen Step 7 plan (ISO only)** unless the director changes it.
+- **One command at the location:** `tools/rehearsal.sh [REH_take]` makes the folder, starts the bridge in its own process group, and starts the agent with the dashboard. The director types LIVE, and SPACE stays theirs. The bridge stops when the agent quits. Agent takes get the rehearsal switch; watch-only takes get a read-only bridge.
+- **Decided (2026-10-20): Saturday stays ISO only**, like the frozen Step 7 plan. Tonight's all-four-settings run is rehearsal only.
 
 ## 🌙 Parked (2026-10-19, late night)
 
