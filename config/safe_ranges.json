@@ -36,7 +36,7 @@
     "WhiteBalance": {
       "change_allowed": true,
       "switch": "allow_exposure",
-      "approved_range": "AWB or ColorTemp mode only (Color Temp is needed to set Kelvin; AWB is how the camera was found)",
+      "approved_range": "AWB or ColorTemp mode only (Color Temp is needed to set Kelvin; AWB is how the camera was found); presets and Custom blocked, confirmed by the director 2026-10-19",
       "approved_on": "2026-10-19",
       "modes_raw": [0, 256]
     },

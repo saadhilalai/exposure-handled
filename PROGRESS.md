@@ -24,9 +24,9 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 - 89 tests pass.
 
 **Later the same evening (no camera): the director's four answers, built and committed.**
-- **Blind-test LUT: s709.**
-  - Sony's official s709 cube for S-Gamut3.Cine/S-Log3 (the FX2 records movies in S-Gamut3.Cine).
-  - The plan's LUT line says so. It's still the only line changed since the freeze.
+- **Blind-test LUT: Sony's LC-709TypeA** (`2_SGamut3CineSLog3_To_LC-709TypeA.cube`), found on this Mac. It replaces the first pick, s709, the same evening, before any grading.
+  - Sony's official LookProfile LUT for S-Gamut3.Cine/S-Log3 (the FX2 records movies in S-Gamut3.Cine).
+  - Copied into `luts/`, which stays out of the repo. The plan's LUT line names the file and its checksum. It's still the only line changed since the freeze.
 - **Rating page:**
   - **Only raters who finish every clip count.**
   - **It goes online** with `rater_server.py share`: a temporary HTTPS Cloudflare tunnel, anonymous codes only.
@@ -39,18 +39,15 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 8. ✅ Director: run the live tests unattended this time, without typing LIVE or watching. Card out; static wall and lamp.
 9. ✅ Director: after the ISO test passed, unlock aperture f/2.8–f/11, shutter 1/48–1/100 and WB 2800–7500K.
    - Built as a startup switch (`--allow-exposure`), off by default in all three layers, so ISO only stays the default (Step 7 uses ISO only).
-10. ⚠ My call, still to confirm: WB mode may switch only between **Auto and Color Temp**.
+10. ✅ Director (confirmed 2026-10-19): WB mode may switch only between **Auto and Color Temp**.
     - Color Temp is needed to set Kelvin; Auto is how the camera was found.
     - Presets and Custom WB stay blocked.
 
 **Needs Saad (later):**
 1. **Lighting changes, live:** a light switched on and off, a walk-by, a window. Only tested on a static scene so far.
 2. **Face tests, live:** "this face looks right" on the real camera, and skin tones (Step 7).
-3. **Download Sony's s709 cubes** (`s709Cubes.zip` from the [s709 Monitor Look page](https://pro.sony/ue_US/product-resources/knowledge-panel/s709-monitor-look-white-paper)).
-   - This accepts Sony's terms, so it's your click.
-   - Then write the S-Gamut3.Cine/S-Log3 `.cube` file's exact name on the plan's LUT line, before any grading.
-4. **When the ratings start:** run `rater_server.py share`, and keep the Mac on, on power and awake until they're in.
-5. Optional checks:
+3. **When the ratings start:** run `rater_server.py share`, and keep the Mac on, on power and awake until they're in.
+4. Optional checks:
    - shutter 1/50 ↔ 1/60 in daylight
    - the wall at f/8 and f/11
    - whether the lamp really is ≈ 2620K (below your 2800K floor)
@@ -176,8 +173,7 @@ Parked 2026-10-17, 19:40 (director stepped away)
   - ✅ Tools built (no camera): recording switch (all 3 layers, off by default, agent takes only), read-only Display LUT reader, printable run sheet (87 rows), private anonymous rating page + counting. [docs/step7-tools.md](docs/step7-tools.md).
   - ✅ Decided 2026-10-19, before any ratings (not in the frozen plan): **only raters who finish every clip count**; the page goes **online** (`rater_server.py share`, a temporary Cloudflare tunnel, anonymous codes only). Tested over the internet with test patterns. [docs/step7-tools.md](docs/step7-tools.md).
   - ✅ Display LUT read 2026-10-19 (read-only): **OFF, Base Look "S-Log3"** (no conversion).
-    - **The director picked s709** (Sony's official cube for S-Gamut3.Cine/S-Log3), now on the plan's LUT line.
-    - ❓ The exact `.cube` name gets filled in once the director downloads Sony's zip.
+    - ✅ **LUT: Sony's LC-709TypeA**, `2_SGamut3CineSLog3_To_LC-709TypeA.cube` (S-Gamut3.Cine/S-Log3), named with its checksum on the plan's LUT line. It was found on the director's Mac and replaces the first pick, s709. The copy in `luts/` stays out of the repo.
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
 - [~] **Step 9: Package it.** Started overnight: README rewritten (what it does, how it thinks, safety, skin tones, results so far with sources, setup, honest limits, "How this was built"); [INTERVIEW.md](INTERVIEW.md) drafted with 10 Q&As + 3 draft resume bullets (real numbers only). Waiting on Step 7 results and a demo video.
 

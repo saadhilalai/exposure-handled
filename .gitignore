@@ -3,6 +3,10 @@
 CrSDK_*.zip
 sdk/
 
+# Sony's LUT files: Sony's, not ours to publish. Only the note saying which file goes here is shared.
+luts/*
+!luts/README.md
+
 # Build output
 build/
 *.o

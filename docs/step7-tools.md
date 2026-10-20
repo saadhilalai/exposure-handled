@@ -31,11 +31,15 @@ It prints one line to copy into the plan, e.g. *"Base Look: … (User, value 0x0
 
 **Read on 2026-10-19:** Display LUT **OFF**, Base Look **"S-Log3"** (Preset, value 0x0001), which applies no conversion. The camera's other Base Looks are s709, 709(800%) and User1–16, all empty ("No Import"). So there was no LUT file to name.
 
-**Picked 2026-10-19: s709.** The director chose Sony's official s709 for the blind test. The plan's LUT line now says so.
-- **Where it comes from:** Sony's **"s709 cubes"** download (`s709Cubes.zip`, 483 KB) on the [s709 Monitor Look page](https://pro.sony/ue_US/product-resources/knowledge-panel/s709-monitor-look-white-paper) of Sony's LUT library.
-- **Which version:** the cube for **S-Gamut3.Cine/S-Log3**. The FX2 records movies in S-Gamut3.Cine: `MovieShootingModeColorGamut` = 1, read 2026-10-19. The other gamut setting, `LogShootingModeColorGamut`, is for stills.
-- **Still to do, by the director:** download the zip, which means accepting Sony's terms, so it's your click, not mine. Then write the exact `.cube` file name into the plan's LUT line, before any clip is graded.
-- The file stays out of the repo, like the SDK.
+**Picked 2026-10-19: Sony's LC-709TypeA.** The director first chose s709. The same evening, before any grading, they switched to the Sony LUT already on their Mac. The plan's LUT line names the exact file.
+- **The file:** `2_SGamut3CineSLog3_To_LC-709TypeA.cube`, from Sony's LookProfile LUTs for S-Log3/S-Gamut3.Cine.
+  - Its header reads "Sony LookProfile LUT, SLog3SGamut3.CineToLC_709TypeA full in full out v1.04.04".
+  - 33-point cube, SHA-256 `04066dc0…4c236d` (the full checksum is in the plan and in [luts/README.md](../luts/README.md)).
+- **Why this one:** the Mac had four Sony looks for S-Gamut3.Cine/S-Log3 (LC-709, LC-709TypeA, SLog2-709 and Cine+709), and no plain Rec.709 one. LC-709TypeA is the usual choice and gives an ordinary-looking finished picture, so raters judge exposure, not a style.
+- **Which gamut:** the FX2 records movies in **S-Gamut3.Cine** (`MovieShootingModeColorGamut` = 1, read 2026-10-19). The other gamut setting, `LogShootingModeColorGamut`, is for stills.
+- **Full in, full out:** it expects full-range RGB and returns full-range RGB. That's what Resolve and ffmpeg's `lut3d` give a LUT, so no level changes are needed.
+- **On the camera:** LC-709TypeA isn't one of the FX2's built-in Base Looks (s709, 709(800%)). The blind test doesn't need it there, since the clips get it afterwards.
+- **Where it lives:** a copy in `luts/`; the original stays where it was. `luts/` stays out of the repo, like the SDK, because it's Sony's file. Only `luts/README.md` is published.
 
 ## 3. The printable run sheet
 
