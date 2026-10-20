@@ -2,6 +2,18 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## 🎬 Tonight (2026-10-20): sunset shakedown rehearsal
+
+**Not the Step 7 test**: a rehearsal before the official shoot on Saturday, to find what breaks in real light. Checklist and step-by-step: [docs/rehearsal-2026-10-20.md](docs/rehearsal-2026-10-20.md).
+- **Rehearsal mode** (built today, 119+ tests pass):
+  - `--rehearsal` labels everything. Sessions go to `sessions/REHEARSAL/`, takes are named `REH_…`, and `score_take.py` refuses to mix them with Step 7 takes.
+  - **Rehearsal-only recording switch:** `--allow-exposure-while-recording` lets ISO, aperture, shutter and WB change while recording. It needs a live `REH_…_agent` take and the bridge started with the same flag. It can't be used in a Step 7 take, and the Step 7 ISO-only switch is unchanged.
+  - **Problem log:** the `x` key or the dashboard's Problems box writes to `problems.jsonl`, with what the agent saw.
+  - **`tools/watch_session.py`:** a read-only live summary and after-shoot report (flicker, slow reactions, fps, refusals, problems).
+- **Supervision:** the director runs the bridge and agent in their own Terminal, and the coding assistant watches the logs read-only. If the hotspot drops, the agent keeps running on the Mac.
+- **After the shoot:** a ranked list of what went wrong, fixed during the week before Saturday.
+- **Saturday follows the frozen Step 7 plan (ISO only)** unless the director changes it.
+
 ## 🌙 Parked (2026-10-19, late night)
 
 - **Nothing is running and the camera isn't connected.** Everything is committed.
