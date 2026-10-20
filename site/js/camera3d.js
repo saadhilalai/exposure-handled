@@ -380,6 +380,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   // ---------- the crew ----------
   const N = low ? 150 : 380;
   let active = N;                                   // how many are updated and drawn (quality level)
+  let sizeMul = 1;                                  // without glow, the crew is drawn a little larger
   const allSpots = parts.flatMap((p) => p.spots);
   const byKind = {};
   allSpots.forEach((s) => (byKind[s.kind] ||= []).push(s));
@@ -568,7 +569,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     W0 = w; H0 = h;
     renderer.setSize(w, h, false); composer.setPixelRatio(dpr); composer.setSize(w, h);
     cam.aspect = w / h; cam.updateProjectionMatrix();
-    agentMat.uniforms.uScale.value = h * dpr * 0.5;
+    agentMat.uniforms.uScale.value = h * dpr * 0.5 * sizeMul;
   }
 
   const clock = new THREE.Timer();
@@ -651,6 +652,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
       if (bokeh) bokeh.enabled = q.dof;
       bloom.enabled = q.bloom;
       agentMat.uniforms.uBoost.value = q.bloom ? 1 : 1.7;        // without glow, the crew burns a little brighter
+      sizeMul = q.bloom ? 1 : 1.4;
       active = Math.min(N, q.agents);
       for (let i = active; i < N; i++) size[i] = 0;
       agentGeo.attributes.aSize.needsUpdate = true;
