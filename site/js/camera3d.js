@@ -90,11 +90,11 @@ const extrude = (shape, depth, bevel = 0.02, seg = 3) =>
 
 // ---------- the camera ----------
 export function createCamera3D(canvas, { low = false } = {}) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !low, alpha: false, powerPreference: "high-performance" });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance" });
   renderer.setClearColor(0x050505, 1);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
-  const dpr = Math.min(window.devicePixelRatio || 1, low ? 1.25 : 1.6);
+  let dpr = Math.min(window.devicePixelRatio || 1, low ? 1.25 : 1.5);       // set again by setQuality()
   renderer.setPixelRatio(dpr);
 
   const scene = new THREE.Scene();
@@ -142,6 +142,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   };
   const lcdCanvas = document.createElement("canvas"); lcdCanvas.width = 640; lcdCanvas.height = 360;
   const lcdTex = new THREE.CanvasTexture(lcdCanvas); lcdTex.colorSpace = THREE.SRGBColorSpace;
+  let lcdDirty = true;
   M.lcd = new THREE.MeshBasicMaterial({ map: lcdTex, toneMapped: false });
 
   // ---- parts: each has an assembled pose, an exploded offset, a delay, and work spots for the agents ----
@@ -378,6 +379,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
 
   // ---------- the crew ----------
   const N = low ? 150 : 380;
+  let active = N;                                   // how many are updated and drawn (quality level)
   const allSpots = parts.flatMap((p) => p.spots);
   const byKind = {};
   allSpots.forEach((s) => (byKind[s.kind] ||= []).push(s));
@@ -387,15 +389,15 @@ export function createCamera3D(canvas, { low = false } = {}) {
   agentGeo.setAttribute("aSize", new THREE.BufferAttribute(size, 1));
   agentGeo.setAttribute("aHot", new THREE.BufferAttribute(hot, 1));
   const agentMat = new THREE.ShaderMaterial({
-    uniforms: { uScale: { value: 300 }, uAlpha: { value: 0 }, uFreeze: { value: 0 } },
+    uniforms: { uScale: { value: 300 }, uAlpha: { value: 0 }, uFreeze: { value: 0 }, uBoost: { value: 1 } },
     vertexShader: `attribute float aSize; attribute float aHot; uniform float uScale; varying float vHot;
       void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); gl_Position = projectionMatrix * mv; gl_PointSize = aSize * uScale / -mv.z; vHot = aHot; }`,
-    fragmentShader: `uniform float uAlpha, uFreeze; varying float vHot;
+    fragmentShader: `uniform float uAlpha, uFreeze, uBoost; varying float vHot;
       void main(){ vec2 d = gl_PointCoord - .5; float r = length(d); if (r > .5) discard;
         float core = smoothstep(.16, .0, r); float glow = exp(-r * r * 30.);
         vec3 col = mix(vec3(1., .38, .08), vec3(1., .86, .62), clamp(core * .7 + vHot * .5, 0., 1.)) * (glow * 1.6 + core * 4.5);
         col = mix(col, vec3(.95, .28, .22) * (glow * .9 + core * 1.6), uFreeze);
-        gl_FragColor = vec4(col * uAlpha, 1.); }`,
+        gl_FragColor = vec4(col * uAlpha * uBoost, 1.); }`,
     blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
   });
   const agentPts = new THREE.Points(agentGeo, agentMat); agentPts.frustumCulled = false; model.add(agentPts);
@@ -471,6 +473,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     const centroid = _c.set(0, 0, 0); let nc = 0;
     const mode = S.mode;
     A.forEach((a, i) => {
+      if (i >= active) return;
       if (!a.spot) {      // spawn from the AI core
         const core = byKind.core[i % byKind.core.length];
         a.p.copy(core.world); a.prev.copy(a.p); a.from = core; a.spot = pick(mode, a); a.state = 0; a.t = 0;
@@ -512,6 +515,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   function writeAgents(dt) {
     const fz = agentMat.uniforms.uFreeze.value;
     A.forEach((a, i) => {
+      if (i >= active) return;
       pos[i * 3] = a.p.x; pos[i * 3 + 1] = a.p.y; pos[i * 3 + 2] = a.p.z;
       size[i] = a.hidden ? 0 : a.size * (a.courier ? 1.5 : 1);
       hot[i] = a.courier ? 1 : 0;
@@ -531,7 +535,8 @@ export function createCamera3D(canvas, { low = false } = {}) {
   }
 
   // ---------- post: depth of field (rack focus to whatever the story is about) + bloom for the crew ----------
-  const composer = new EffectComposer(renderer);
+  const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: low ? 0 : 4 });
+  const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, cam));
   const bokeh = low ? null : new BokehPass(scene, cam, { focus: 6, aperture: 0.0016, maxblur: 0.0065 });
   if (bokeh) composer.addPass(bokeh);
@@ -561,7 +566,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
     if (w === W0 && h === H0) return;
     W0 = w; H0 = h;
-    renderer.setSize(w, h, false); composer.setSize(w, h);
+    renderer.setSize(w, h, false); composer.setPixelRatio(dpr); composer.setSize(w, h);
     cam.aspect = w / h; cam.updateProjectionMatrix();
     agentMat.uniforms.uScale.value = h * dpr * 0.5;
   }
@@ -620,7 +625,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
       bokeh.uniforms.aperture.value = 0.0006 + 0.0013 * Math.min(1, D.explode * 1.5);
     }
     sweep.intensity = Math.max(0, sweep.intensity - dt * 3);
-    lcdTex.needsUpdate = true;
+    if (lcdDirty) { lcdTex.needsUpdate = true; lcdDirty = false; }
   }
 
   // Screen rectangle of the rear screen (CSS pixels), for the "pull back from the viewfinder" move.
@@ -638,6 +643,24 @@ export function createCamera3D(canvas, { low = false } = {}) {
 
   return {
     state: S, lcdCanvas, anchor,
+    lcdChanged() { lcdDirty = true; },
+    // Quality level: pixel ratio (scaled down further when frames run long), depth of field, glow, agents, MSAA.
+    setQuality(q, scale = 1) {
+      dpr = Math.max(0.5, Math.min(window.devicePixelRatio || 1, q.pr3d) * scale);
+      renderer.setPixelRatio(dpr);
+      if (bokeh) bokeh.enabled = q.dof;
+      bloom.enabled = q.bloom;
+      agentMat.uniforms.uBoost.value = q.bloom ? 1 : 1.7;        // without glow, the crew burns a little brighter
+      active = Math.min(N, q.agents);
+      for (let i = active; i < N; i++) size[i] = 0;
+      agentGeo.attributes.aSize.needsUpdate = true;
+      agentGeo.setDrawRange(0, active); streakGeo.setDrawRange(0, active * 2);
+      if (target.samples !== q.msaa) {
+        for (const t of [composer.renderTarget1, composer.renderTarget2]) { t.samples = q.msaa; t.dispose(); }
+        target.samples = q.msaa;
+      }
+      W0 = -1; resize();
+    },
     start() { if (running) return; running = true; clock.update(); frame(); },
     stop() { running = false; cancelAnimationFrame(raf); },
     get running() { return running; },
