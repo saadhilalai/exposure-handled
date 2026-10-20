@@ -18,16 +18,20 @@
 //   - SetDeviceProperty appears once, inside guarded_set(), and is poisoned right after it,
 //     so no other line in this file can call it.
 //   - guarded_set() only accepts settings on kAllowList, inside the director's ranges, with a
-//     value the camera currently offers, never after "lock", and never while recording, with one
-//     exception the director approved for Step 7 agent takes only: started with
-//     --allow-iso-while-recording, ISO (and nothing else) may change while recording.
+//     value the camera currently offers, never after "lock", and never while recording, with two
+//     exceptions the director approved: started with --allow-iso-while-recording (Step 7 agent takes),
+//     ISO (and nothing else) may change while recording; started with --allow-exposure-while-recording
+//     (rehearsal shoots only, 2026-10-20), the allow-listed exposure settings may change while recording.
 //   - Commands (record, format, reset, ...) are poisoned for the whole file.
 //
-// Usage: camera_bridge <socket_path> <log_dir> [--read-only | --allow-iso-while-recording | --allow-exposure]
+// Usage: camera_bridge <socket_path> <log_dir>
+//          [--read-only | --allow-iso-while-recording | --allow-exposure | --allow-exposure-while-recording]
 //   --read-only: every "set" is refused for the whole run (used in Step 4).
 //   --allow-iso-while-recording: Step 7 agent takes only. Off unless given; can't be turned on later.
 //   --allow-exposure: aperture f/2.8-f/11, shutter 1/48-1/100 and WB (Auto or Color Temp 2800-7500K)
 //     may change too (director, 2026-10-19). Off unless given: ISO only.
+//   --allow-exposure-while-recording: rehearsal shoots only. Everything --allow-exposure allows, and it may
+//     change while recording too. Off unless given; can't be turned on later.
 
 #include <poll.h>
 #include <signal.h>
@@ -94,6 +98,7 @@ std::atomic<bool> g_locked{false};
 std::atomic<bool> g_read_only{false};  // set by --read-only at startup; cannot be turned off
 std::atomic<bool> g_iso_while_recording{false};  // --allow-iso-while-recording (Step 7); startup only
 std::atomic<bool> g_allow_exposure{false};       // --allow-exposure: aperture, shutter, WB too; startup only
+std::atomic<bool> g_exposure_while_recording{false};  // --allow-exposure-while-recording (rehearsal); startup only
 SDK::CrDeviceHandle g_handle = 0;
 std::mutex g_sdk_mutex;  // one SDK call at a time
 std::mutex g_set_mutex;  // one setting change at a time
@@ -206,7 +211,8 @@ std::string guarded_set(const std::string& name, long long raw) {
     auto props = read_props({rule->code, rec_code});
     if (!props[rec_code].found) return refuse(name, raw, "could not read recording state");
     const bool recording = props[rec_code].current != SDK::CrMovie_Recording_State_Not_Recording;
-    if (recording && !(g_iso_while_recording && rule->code == SDK::CrDeviceProperty_IsoSensitivity))
+    const bool iso_ok = g_iso_while_recording && rule->code == SDK::CrDeviceProperty_IsoSensitivity;
+    if (recording && !iso_ok && !g_exposure_while_recording)     // the allow-list holds exposure settings only
         return refuse(name, raw, "camera is recording");
     const PropInfo& target = props[rule->code];
     if (!target.found) return refuse(name, raw, "could not read current value");
@@ -403,6 +409,7 @@ std::string cmd_status() {
       << ", \"locked\": " << (g_locked ? "true" : "false")
       << ", \"read_only\": " << (g_read_only ? "true" : "false")
       << ", \"iso_while_recording\": " << (g_iso_while_recording ? "true" : "false")
+      << ", \"exposure_while_recording\": " << (g_exposure_while_recording ? "true" : "false")
       << ", \"allow_exposure\": " << (g_allow_exposure ? "true" : "false") << ", \"allow_list\": [";
     bool first = true;
     for (const auto& r : kAllowList) {
@@ -627,14 +634,16 @@ int main(int argc, char** argv) {
     if (argc == 2 && std::string(argv[1]) == "--check-rules") return check_rules();
     const std::string flag = argc == 4 ? argv[3] : "";
     if (argc < 3 || argc > 4 ||
-        (argc == 4 && flag != "--read-only" && flag != "--allow-iso-while-recording" && flag != "--allow-exposure")) {
+        (argc == 4 && flag != "--read-only" && flag != "--allow-iso-while-recording" && flag != "--allow-exposure" &&
+         flag != "--allow-exposure-while-recording")) {
         std::cerr << "usage: camera_bridge <socket_path> <log_dir> [--read-only | --allow-iso-while-recording | "
-                     "--allow-exposure]\n";
+                     "--allow-exposure | --allow-exposure-while-recording]\n";
         return 2;
     }
     g_read_only = (flag == "--read-only");
     g_iso_while_recording = (flag == "--allow-iso-while-recording");
-    g_allow_exposure = (flag == "--allow-exposure");
+    g_exposure_while_recording = (flag == "--allow-exposure-while-recording");
+    g_allow_exposure = (flag == "--allow-exposure" || g_exposure_while_recording);
     const std::string socket_path = argv[1];
     g_log.open(std::string(argv[2]) + "/bridge_log.jsonl", std::ios::app);
     ::signal(SIGPIPE, SIG_IGN);
@@ -678,13 +687,17 @@ int main(int argc, char** argv) {
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));  // let the settings list populate
     log_event("\"event\": \"connected\", \"model\": \"" + std::string(kExpectedModel) + "\", \"iso_while_recording\": " +
-              (g_iso_while_recording ? "true" : "false") + ", \"allow_exposure\": " + (g_allow_exposure ? "true" : "false"));
+              (g_iso_while_recording ? "true" : "false") + ", \"allow_exposure\": " + (g_allow_exposure ? "true" : "false") +
+              ", \"exposure_while_recording\": " + (g_exposure_while_recording ? "true" : "false"));
     std::cout << "Connected to " << kExpectedModel
               << (g_read_only        ? ". READ-ONLY: all changes refused.\n"
                   : g_allow_exposure ? ". Allow-list: ISO 800-12800, f/2.8-f/11, 1/48-1/100, WB Auto or 2800-7500K.\n"
                                      : ". Allow-list: IsoSensitivity 800-12800 only.\n");
     if (g_iso_while_recording)
         std::cout << "STEP 7 SWITCH ON: ISO (only) may change while the camera records. Restart without it after the take.\n";
+    if (g_exposure_while_recording)
+        std::cout << "REHEARSAL SWITCH ON: ISO, aperture, shutter and WB may change while the camera records. "
+                     "Restart without it afterwards.\n";
 
     // Private local socket: only programs on this Mac (this user) can connect.
     int server = ::socket(AF_UNIX, SOCK_STREAM, 0);
