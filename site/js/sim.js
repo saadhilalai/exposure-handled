@@ -626,7 +626,13 @@ export function createSim({ low = false } = {}) {
   function render(now = performance.now()) {
     frame++;
     for (const v of views) {
-      if (!v.visible || v.hold) continue;
+      if (!v.visible || v.hold) {
+        // a picture that has been off screen for a while gives its GPU memory back (phones are tight)
+        if (v.T && v.hiddenSince && now - v.hiddenSince > 15000) { free(v.T); v.T = null; }
+        if (!v.hiddenSince) v.hiddenSince = now;
+        continue;
+      }
+      v.hiddenSince = 0;
       v.time = now / 1000 - v.t0;
       renderView(v, now);
     }

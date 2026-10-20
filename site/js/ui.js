@@ -90,15 +90,16 @@ export function Dial(parent, { key, label, values, format, index = 0, ok, onChan
     onChange?.(values[i], i, source);
   }
   paint();
-  // drag: up or right turns it up; one detent every 9 px
+  // drag: up or right turns it up; one detent every 9 px (13 px with a finger)
   let start = null;
   knob.addEventListener("pointerdown", (e) => {
     if (locked) return;
-    knob.setPointerCapture(e.pointerId); start = { x: e.clientX, y: e.clientY, i }; el.classList.add("grab"); e.preventDefault();
+    try { knob.setPointerCapture(e.pointerId); } catch {}           // keeps the drag even when the finger leaves the knob
+    start = { x: e.clientX, y: e.clientY, i, px: e.pointerType === "touch" ? 13 : 9 }; el.classList.add("grab"); e.preventDefault();
   });
   knob.addEventListener("pointermove", (e) => {
     if (!start) return;
-    const d = (e.clientX - start.x - (e.clientY - start.y)) / 9;
+    const d = (e.clientX - start.x - (e.clientY - start.y)) / start.px;   // a finger gets bigger steps than a mouse
     set(start.i + d);
   });
   const end = () => { start = null; el.classList.remove("grab"); };

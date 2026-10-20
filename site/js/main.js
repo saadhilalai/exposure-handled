@@ -42,6 +42,7 @@ async function main() {
   inside();
   if (sim) { tryIt(); game(); compare(); }
   real(); safety(); dash(); finale(); heads();
+  if (/[?&]debug\b/.test(location.search)) window.__debug = { sim, cam3d, views };   // for testing only (?debug)
   await document.fonts.ready;
   ScrollTrigger.refresh();
 }
@@ -200,7 +201,8 @@ function hero() {
     await wait(1500);
     ready();
     await wait(1100);
-    [...$("#hero-feed").children].slice(0, -1).forEach((li, i) => gsap.to(li, { opacity: 0, y: -8, duration: 0.5, delay: i * 0.06, ease: "power2.in" }));
+    // keep the last line on a laptop; on a phone the chat would sit on the picture, so it all goes
+    [...$("#hero-feed").children].slice(0, mobile() ? undefined : -1).forEach((li, i) => gsap.to(li, { opacity: 0, y: -8, duration: 0.5, delay: i * 0.06, ease: "power2.in" }));
   };
   let ready;
   const readyP = new Promise((r) => (ready = r));
@@ -533,7 +535,7 @@ function compare() {
   const setSplit = (x) => { v.split = clamp(x, 0.02, 0.98); handle.style.left = v.split * 100 + "%"; handle.setAttribute("aria-valuenow", Math.round(v.split * 100)); };
   setSplit(0.5);
   let drag = false;
-  box.addEventListener("pointerdown", (e) => { drag = true; box.setPointerCapture(e.pointerId); const r = box.getBoundingClientRect(); setSplit((e.clientX - r.left) / r.width); });
+  box.addEventListener("pointerdown", (e) => { drag = true; try { box.setPointerCapture(e.pointerId); } catch {} const r = box.getBoundingClientRect(); setSplit((e.clientX - r.left) / r.width); });
   box.addEventListener("pointermove", (e) => { if (!drag) return; const r = box.getBoundingClientRect(); setSplit((e.clientX - r.left) / r.width); });
   box.addEventListener("pointerup", () => (drag = false)); box.addEventListener("pointercancel", () => (drag = false));
   handle.addEventListener("keydown", (e) => { const d = { ArrowLeft: -0.04, ArrowRight: 0.04 }[e.key]; if (d) { setSplit(v.split + d); e.preventDefault(); } });
