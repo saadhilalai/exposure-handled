@@ -38,3 +38,6 @@ models/
 # Local backups made by tools/calibrate_grey.py apply (git keeps the history)
 config/*.before-*.json
 config/face_refs.json
+
+# Local test pages for the website, never shipped
+site/_dev/

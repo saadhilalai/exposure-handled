@@ -14,11 +14,11 @@ export const SCENES = [
     skyTopK: 8000, skyTop: 2.2, skyBotK: 6800, skyBot: 3.6, bldgK: 6500, bldg: 0.55, sunK: 5500, sun: 0, sunY: 0.5,
     city: 0, lampK: 2900, lamp: 0, lampLight: 0, string: 0.35, patchK: 5600, patch: 0.22, hazeK: 6000, haze: 0.05,
     correct: { iso: 800, shutter: 1 / 48, fnum: 4 }, light: 5800 },
-  { id: "tungsten", name: "Tungsten", keyK: 3200, key: 0.4, keyDir: [0.9, 0.3], ambK: 4200, amb: 0.05,
-    skyTopK: 14000, skyTop: 0.07, skyBotK: 11000, skyBot: 0.13, bldgK: 9000, bldg: 0.02, sunK: 5500, sun: 0, sunY: 0.5,
+  { id: "tungsten", name: "Tungsten", keyK: 3200, key: 0.66, keyDir: [0.9, 0.3], ambK: 4000, amb: 0.08,
+    skyTopK: 11000, skyTop: 0.045, skyBotK: 8500, skyBot: 0.085, bldgK: 9000, bldg: 0.02, sunK: 5500, sun: 0, sunY: 0.5,
     city: 0.7, lampK: 2900, lamp: 2.4, lampLight: 1.0, string: 1.3, patchK: 5600, patch: 0, hazeK: 3200, haze: 0.0,
     correct: { iso: 3200, shutter: 1 / 48, fnum: 2.8 }, light: 3200 },
-  { id: "low", name: "Low light", keyK: 4300, key: 0.26, keyDir: [-0.8, 0.5], ambK: 5200, amb: 0.022,
+  { id: "low", name: "Low light", keyK: 4300, key: 0.5, keyDir: [-0.8, 0.5], ambK: 5200, amb: 0.04,
     skyTopK: 12000, skyTop: 0.008, skyBotK: 9000, skyBot: 0.022, bldgK: 8000, bldg: 0.005, sunK: 5500, sun: 0, sunY: 0.5,
     city: 2.2, lampK: 2900, lamp: 0, lampLight: 0, string: 0.95, patchK: 5600, patch: 0, hazeK: 4300, haze: 0.0,
     correct: { iso: 12800, shutter: 1 / 48, fnum: 2.8 }, light: 4300 },
@@ -134,10 +134,9 @@ vec3 reel(vec2 p, vec3 behind, out float cov){
     if (k >= K) break;
     float tt = uTime + uShutter * ((float(k) + .5) / float(K) - .5);
     float a = th - uReel * 6.2832 * tt;
-    float s = mod(a + 3.14159 / 5., 6.28318 / 5.) - 3.14159 / 5.;
-    float dA = (abs(s) - .36) * r, dR = max(.072 - r, r - .158);
-    float sd = length(max(vec2(dA, dR), 0.)) + min(max(dA, dR), 0.) - .012;
-    inHole += cover(-sd) * 0. + clamp(.5 - sd / PX, 0., 1.);
+    float s = mod(a + 3.14159 / 6., 6.28318 / 6.) - 3.14159 / 6.;
+    float sd = length(vec2(r * cos(s) - .108, r * sin(s))) - .043;
+    inHole += clamp(.5 - sd / PX, 0., 1.);
   }
   inHole /= float(K);
   vec3 through = r < fr ? film : behind;
@@ -181,8 +180,8 @@ void main(){
     float dd = DK / max(YH - p.y, 1e-3);
     vec2 w = vec2(p.x * dd, dd);
     float grain = .5 + .5 * sin(w.x * 38. + fbm(vec2(w.x * 6., w.y * 1.6)) * 7.);
-    vec3 alb = vec3(.14, .08, .045) * (.72 + .45 * grain * fbm(vec2(w.x * 30., w.y * .8)) + .1);
-    vec3 dl = uAmb * .9 + uKey * (.3 + .5 * clamp(-L.x * (p.x + .2) + .6, 0., 1.)) * .6;
+    vec3 alb = vec3(.26, .15, .085) * (.62 + .5 * grain * fbm(vec2(w.x * 30., w.y * .8)) + .12);
+    vec3 dl = uAmb * 1.1 + uKey * (.35 + .65 * clamp(-L.x * (p.x + .1) * 1.2 + .55, 0., 1.)) * .85;
     vec2 dlp = vec2(.62, -.24);
     dl += uLampLight * (.55 / (1. + 30. * dot((p - dlp) * vec2(1., 2.), (p - dlp) * vec2(1., 2.))));
     vec3 deskC = alb * dl;
@@ -192,13 +191,13 @@ void main(){
     deskC += (uSkyBot * .6 + uSkyTop * .2 + uSun.rgb * .002) * wr * .07 * smoothstep(-.9, -.2, p.y);
     deskC += uPatch * .05 * smoothstep(.05, -.05, sdBox(m - vec2(.4, .12), vec2(.22)));
     float edge = cover(abs(p.y + .182) - .003);
-    deskC = mix(deskC, (uKey + uAmb) * .25, edge * .6);
+    deskC = mix(deskC, (uKey + uAmb) * .5 + uLampLight * .08, edge * .8);
     // contact shadows
     deskC *= 1. - .6 * exp(-pow(length((p - vec2(-.13, -.384)) * vec2(1., 5.)) * 9., 2.));
     deskC *= 1. - .55 * exp(-pow(length((p - vec2(.31, -.347)) * vec2(1., 5.)) * 13., 2.));
     deskC *= 1. - .5 * exp(-pow(length((p - vec2(.62, -.217)) * vec2(1., 5.)) * 16., 2.));
     float dc = cover(-.18 - p.y);
-    col = mix(col, deskC, dc); if (dc > .5) dep = dd;
+    col = mix(col, deskC, dc); if (dc > .04) dep = dd;
   }
   // ---- lamp, on the desk at 2.6 m ----
   {
@@ -213,7 +212,7 @@ void main(){
     vec3 metal = vec3(.05) * (uAmb * 2. + uKey * .5) + uLampLight * .06;
     col = mix(col, metal, cover(stemSd)); col = mix(col, metal * 1.3, cover(baseSd * .012));
     col = mix(col, shadeC, sc);
-    if (max(cover(stemSd), max(sc, cover(baseSd * .012))) > .5) dep = 2.6;
+    if (max(cover(stemSd), max(sc, cover(baseSd * .012))) > .04) dep = 2.6;
     col += uLamp * .045 * exp(-length((p - vec2(.62, .08)) * vec2(1., 1.4)) * 7.);
   }
   // ---- reel stand + reel at 1.6 m ----
@@ -225,10 +224,10 @@ void main(){
     vec3 basec = vec3(.07) * (uAmb * 1.5 + uKey * (.6 + .6 * smoothstep(.5, -1., (p.y + .379) / .02)));
     float pc = cover(postSd), bc = cover(baseSd * .02);
     col = mix(col, post, pc); col = mix(col, basec, bc);
-    if (max(pc, bc) > .5) dep = 1.6;
+    if (max(pc, bc) > .04) dep = 1.6;
     float rc; vec3 before = col;
     col = reel(p, col, rc);
-    if (rc > .5) dep = 1.6;
+    if (rc > .04) dep = 1.6;
   }
   // ---- white mug at 1.75 m, with steam ----
   {
@@ -248,7 +247,7 @@ void main(){
     vec3 coffee = vec3(.035, .02, .012) * (uAmb + uKey * .3);
     float lip = smoothstep(-.25, 0., rimSd) * inside;
     col = mix(col, mix(coffee, vec3(.82) * (uAmb + uKey * .7), lip), inside);
-    if (max(mcov, inside) > .5) dep = 1.75;
+    if (max(mcov, inside) > .04) dep = 1.75;
     float sy = clamp((p.y + .19) / .3, 0., 1.);
     float swx = p.x - mc.x - .03 * sin(p.y * 13. + uTime * 1.3) * sy;
     float steam = fbm(vec2(swx * 16., p.y * 7. - uTime * .55)) * exp(-pow(swx / (.02 + .06 * sy), 2.)) * smoothstep(0., .06, sy) * (1. - sy);
@@ -278,7 +277,7 @@ void main(){
         leafC = vec3(.035, .075, .028) * (uAmb * 1.6 + uKey * (.35 + .4 * (1. - abs(v2) / max(wv, 1e-3)))) + vec3(.06, .14, .03) * uKey * .25 * vein; }
     }
     float lc = cover(best);
-    col = mix(col, leafC, lc); if (lc > .5) dep = .55;
+    col = mix(col, leafC, lc); if (lc > .04) dep = .55;
   }
   o = vec4(max(col, 0.), dep);
 }`;
@@ -308,7 +307,7 @@ void main(){
   float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(.06711056, .00583715))));
   float rot = ign * 6.2832;
   int n = int(clamp(R * R * .45, 12., float(uTaps)));
-  float w0 = 1. / max(r0 * r0, .5); vec3 acc = c0.rgb * w0; float wsum = w0;
+  vec3 acc = c0.rgb; float wsum = 1.;
   for (int i = 0; i < 128; i++) {
     if (i >= n) break;
     float fi = float(i) + .5;
@@ -317,7 +316,7 @@ void main(){
     vec4 s = texture(uSrc, vUv + off * px);
     float rs = coc(s.a);
     float reach = s.a < c0.a ? rs : min(rs, r0);
-    float w = clamp(reach - rr + .5, 0., 1.) / max(rs * rs, .5);
+    float w = clamp(reach - rr + .5, 0., 1.);
     acc += s.rgb * w; wsum += w;
   }
   o = vec4(acc / wsum, c0.a);
@@ -393,7 +392,7 @@ void main(){
   x *= vig;
   // veiling glare around very bright things
   vec3 g = textureLod(uSrc, vUv, 5.).rgb;
-  x += max(g - 1.2, 0.) * .045;
+  x += max(g - .9, 0.) * .07;
   x *= uExpo * uWB;
   // sensor noise: grows with ISO, strongest in the shadows
   float a = .011 * pow(uIso / 800., .55);
