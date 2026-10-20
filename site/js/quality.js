@@ -4,10 +4,10 @@
 // isn't enough, the level steps down. It never steps back up within a visit (no flip-flopping).
 
 export const LEVELS = {
-  //          3D pixel ratio · depth of field · glow · agents · picture pixel ratio · blur taps · rear-screen fps
-  high:   { pr3d: 1.5,  dof: true,  bloom: true,  agents: 380, prSim: 1.25, taps: 64, lcdFps: 30, msaa: 4 },
-  medium: { pr3d: 1.0,  dof: false, bloom: true,  agents: 220, prSim: 1.0,  taps: 40, lcdFps: 15, msaa: 4 },
-  low:    { pr3d: 0.75, dof: false, bloom: false, agents: 110, prSim: 0.7,  taps: 24, lcdFps: 8,  msaa: 0 },
+  //          3D pixel ratio · depth of field · glow · agents · picture pixel ratio · blur taps
+  high:   { pr3d: 1.5,  dof: true,  bloom: true,  agents: 380, prSim: 1.25, taps: 64, msaa: 4 },
+  medium: { pr3d: 1.0,  dof: false, bloom: true,  agents: 220, prSim: 1.0,  taps: 40, msaa: 4 },
+  low:    { pr3d: 0.75, dof: false, bloom: false, agents: 110, prSim: 0.7,  taps: 24, msaa: 0 },
 };
 const ORDER = ["high", "medium", "low"];
 const SLOW_MS = 21;          // a frame longer than this on average = below ~48 fps

@@ -59,7 +59,6 @@ async function main() {
 function applyQuality(q) {
   cam3d?.setQuality(q.settings, q.scale);
   sim?.setQuality(sim.software ? { prSim: 0.45, taps: 12 } : q.settings, q.scale);
-  if (views.lcd) views.lcd.fpsCap = q.settings.lcdFps;
   if (sim?.software) for (const v of sim.views) v.fpsCap = 24;
   views.hero?.refit?.();
 }
@@ -263,7 +262,8 @@ async function load3D() {
   if (sim && views.hero) {
     const lv = (views.lcd = sim.view(cam3d.lcdCanvas, { scene: HERO_SCENE, size: [640, 360] }));
     lv.a = views.hero.a; lv.t0 = views.hero.t0; lv.visible = false;
-    lv.fpsCap = quality.settings.lcdFps; lv.onFrame = () => cam3d.lcdChanged();
+    // The rear screen gets one still frame (copying a live picture between the two graphics contexts stalls a frame).
+    lv.onFrame = () => { cam3d.lcdChanged(); lv.visible = false; lv.snapped = true; };
   }
   if (!motion) {
     // still picture of the exploded camera behind the "inside" beats
@@ -282,7 +282,9 @@ function vis3D() {
   $("#cam3d").style.opacity = o;
   $(".cam3d-shade").style.opacity = prog.inside > 0.12 && prog.try === 0 ? smooth(0.12, 0.2, prog.inside) : 0;
   if (o > 0.005) cam3d.start(); else cam3d.stop();
-  if (views.lcd) views.lcd.visible = o > 0.005 && prog.inside < 0.3;
+  // one still frame for the rear screen, taken just before the viewfinder lands on it
+  if (views.lcd && !views.lcd.snapped && prog.hero > 0.45) views.lcd.visible = true;
+  if (views.lcd && prog.hero < 0.2) views.lcd.snapped = false;
 }
 
 // ============ pull back from the viewfinder to the camera's own screen ============
