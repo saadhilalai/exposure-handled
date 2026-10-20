@@ -8,6 +8,7 @@ Keys:  SPACE   kill switch: stop now, lock the bridge, the camera is yours
        p       Auto on / off (off = the agent only suggests)
        l       Lock: hold every setting now / unlock
        m       mark a scene event (e.g. the moment a light changes; used by the Step 7 test)
+       x       log a problem right now (flicker, slow, wrong call, confusing screen): saved to problems.jsonl
        1-5     look: 1 Cinematic, 2 Run and gun, 3 Interview, 4 Low light, 5 Photo portrait
        q       quit (offers to put your starting ISO back)
        Ctrl-C  kill switch + quit
@@ -48,12 +49,12 @@ from agent.runner import AgentRunner, RunnerError  # noqa: E402
 
 FAKE_SOCKET = ROOT / "run" / "fake_bridge.sock"
 LOOK_KEYS = dict(zip("12345", LOOKS))
-KEYS_HELP = "SPACE kill switch · p Auto on/off · l Lock · m mark · 1-5 look · q quit · h help"
+KEYS_HELP = "SPACE kill switch · p Auto on/off · l Lock · m mark · x problem · 1-5 look · q quit · h help"
 LABELS = {"start": ("START", "1"), "change": ("CHANGE", "32"), "would_change": ("WOULD", "36"),
           "advice": ("ADVICE", "33"), "kill": ("KILL", "1;31"), "error": ("ERROR", "1;31"),
           "pause": ("PAUSE", "35"), "refused": ("REFUSED", "35"), "look": ("LOOK", "1"),
           "end": ("END", "1"), "restore": ("RESTORE", "32"), "help": ("KEYS", "2"), "status": ("status", "2"),
-          "face": ("FACE", "1"), "dashboard": ("WEB", "1"), "mark": ("MARK", "1;36")}
+          "face": ("FACE", "1"), "dashboard": ("WEB", "1"), "mark": ("MARK", "1;36"), "problem": ("PROBLEM", "1;33")}
 
 
 class Console:
@@ -139,7 +140,9 @@ def start_fake(args, socket_path, session):
         cmd.append("--read-only")
     if args.allow_iso_while_recording:
         cmd.append("--allow-iso-while-recording")
-    if args.allow_exposure:
+    if args.allow_exposure_while_recording:
+        cmd.append("--allow-exposure-while-recording")
+    elif args.allow_exposure:
         cmd.append("--allow-exposure")
     # Own process group, so Ctrl-C reaches only the runner (which then stops the fake itself).
     proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=(session / "fake_bridge_errors.log").open("w"),
@@ -160,8 +163,12 @@ def confirm_live(args, status):
     if status.get("fake"):
         return
     print("\nLIVE on the real camera (%s)." % status.get("model"))
+    if args.rehearsal:
+        print("  REHEARSAL: everything from this session is labeled rehearsal and kept apart from Step 7.")
     if args.allow_exposure:
         print("  The agent may change: ISO 800-12800, f/2.8-f/11, shutter 1/48-1/100, WB Auto/2800-7500K.")
+    if args.allow_exposure_while_recording:
+        print("  REHEARSAL RECORDING SWITCH ON: those may change while the camera records, too.")
     else:
         print("  The agent may change: ISO, 800-12800 only. Shutter, aperture and WB are advice only.")
     print("  Kill switch: SPACE (or Ctrl-C, or tools/kill_switch.py from another terminal, or unplug USB).")
@@ -200,15 +207,29 @@ def main():
     step7.add_argument("--take", help="run-sheet name of this take, e.g. S1_R3_A_agent")
     step7.add_argument("--allow-iso-while-recording", action="store_true",
                        help="Step 7 agent takes only: the agent may change ISO while the camera records")
+    reh = ap.add_argument_group("rehearsal (never mixed with Step 7)")
+    reh.add_argument("--rehearsal", action="store_true",
+                     help="label everything 'rehearsal': sessions go to sessions/REHEARSAL/, takes are named REH_...")
+    reh.add_argument("--allow-exposure-while-recording", action="store_true",
+                     help="rehearsal agent takes only: ISO, aperture, shutter and WB may change while recording "
+                          "(turns on --allow-exposure; bridge needs the same flag)")
     ap.add_argument("--allow-exposure", action="store_true",
                     help="aperture, shutter and WB may change too (bridge must be started with --allow-exposure)")
     args = ap.parse_args()
+    if args.allow_exposure_while_recording:
+        if not args.rehearsal:
+            sys.exit("--allow-exposure-while-recording is for rehearsals only: add --rehearsal")
+        args.allow_exposure = True
+    if args.rehearsal and not args.face_refs:
+        args.face_refs = str(ROOT / "sessions" / "REHEARSAL" / "face_refs.json")   # tonight's faces stay with tonight
 
     socket_path = Path(args.socket) if args.socket else FAKE_SOCKET if args.fake else DEFAULT_SOCKET
-    session = ROOT / "sessions" / ("%s_%s%s" % (datetime.now().strftime("%Y-%m-%d_%H%M%S"),
+    session = ROOT / "sessions" / ("REHEARSAL" if args.rehearsal else "") / ("%s_%s%s" % (datetime.now().strftime("%Y-%m-%d_%H%M%S"),
                                                args.take or "runner-" + ("live" if args.live else "dry"),
                                                "-fake" if args.fake else ""))
     session.mkdir(parents=True)
+    if args.rehearsal:
+        (session / "LABEL").write_text("rehearsal: not part of the Step 7 test\n")
     fake_proc = start_fake(args, socket_path, session) if args.fake else None
     if not fake_proc and not socket_path.exists():
         sys.exit("No bridge at %s. Start the bridge first (PROGRESS.md, 'How to start things again')." % socket_path)
@@ -218,7 +239,8 @@ def main():
     runner = AgentRunner(socket_path, session, look=args.look, live=args.live, on_event=console.event,
                          auto=not args.dashboard, faces=FaceBook(args.face_refs) if args.face_refs else None,
                          iso_while_recording=args.allow_iso_while_recording, take=args.take,
-                         exposure=args.allow_exposure)
+                         exposure=args.allow_exposure, exposure_while_recording=args.allow_exposure_while_recording,
+                         label="rehearsal" if args.rehearsal else None)
     console.runner = runner
     keyboard = dashboard = None
     try:
@@ -229,6 +251,9 @@ def main():
         if args.allow_iso_while_recording:
             console.event("pause", "STEP 7 RECORDING SWITCH ON for take %s: the agent may change ISO (only) while "
                                    "the camera records. Kill switch: SPACE." % args.take)
+        if args.allow_exposure_while_recording:
+            console.event("pause", "REHEARSAL RECORDING SWITCH ON for take %s: ISO, aperture, shutter and WB may change "
+                                   "while the camera records. Kill switch: SPACE." % args.take)
         if args.dashboard:
             from agent.dashboard import Dashboard
             dashboard = Dashboard(runner, args.host, args.port).start()
@@ -244,6 +269,8 @@ def main():
                 runner.hold(not runner.held)
             elif ch in "mM":
                 runner.mark()
+            elif ch in "xX":
+                runner.problem()
             elif ch in LOOK_KEYS:
                 runner.set_look(LOOK_KEYS[ch])
             elif ch in "qQ":

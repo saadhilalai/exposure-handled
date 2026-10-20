@@ -17,7 +17,7 @@ Usage:
   python tools/fake_bridge.py --frame clean.jpg --iso 1600 --shutter 50 --fnumber 5.6
          [--light 20:-1 40:0.7]   from 20 s the room is 1 stop darker, from 40 s 0.7 stop brighter
          [--record 30:40]         the camera records from 30 s to 40 s
-         [--read-only | --allow-iso-while-recording | --allow-exposure] [--light-k 3200]
+         [--read-only | --allow-iso-while-recording | --allow-exposure | --allow-exposure-while-recording] [--light-k 3200]
          [--socket run/fake_bridge.sock] [--log-dir DIR]
 """
 import argparse
@@ -122,7 +122,7 @@ def made_up_scene(w, h, tm):
 class FakeCamera:
     def __init__(self, frame=None, size=(1024, 576), iso=None, shutter=None, fnumber=None, light=(), record=(),
                  read_only=False, realtime=True, fps=24.0, log_dir=None, scene_offset=0.0, iso_while_recording=False,
-                 allow_exposure=False, light_k=3200):
+                 allow_exposure=False, light_k=3200, exposure_while_recording=False):
         self.props = copy.deepcopy(json.loads(SETTINGS_FILE.read_text())["properties"])
         for name, raw in (("IsoSensitivity", iso), ("FNumber", fnumber and int(round(fnumber * 100))),
                           ("ShutterSpeed", shutter and (1 << 16) | int(shutter))):
@@ -150,7 +150,8 @@ class FakeCamera:
         self.recording = False                                          # tests can flip this directly
         self.read_only, self.realtime, self.fps = read_only, realtime, fps
         self.iso_while_recording = iso_while_recording and not read_only
-        self.allow_exposure = allow_exposure and not read_only and not iso_while_recording
+        self.exposure_while_recording = exposure_while_recording and not read_only and not iso_while_recording
+        self.allow_exposure = (allow_exposure or self.exposure_while_recording) and not read_only and not iso_while_recording
         self.locked = False
         self.sets = []                                                  # every set command received
         self.frame_no = 0
@@ -214,7 +215,8 @@ class FakeCamera:
             return "only ISO may change (bridge started without --allow-exposure)"
         if not rule_allows(name, raw):
             return "outside the approved range"
-        if self.is_recording(self.clock()) and not (self.iso_while_recording and name == "IsoSensitivity"):
+        iso_ok = self.iso_while_recording and name == "IsoSensitivity"
+        if self.is_recording(self.clock()) and not iso_ok and not self.exposure_while_recording:
             return "camera is recording"
         if not self.props[name]["can_set_now"]:
             return "camera says this setting can't be changed right now"
@@ -266,7 +268,7 @@ class FakeCamera:
         if cmd == "status":
             return {"ok": True, "model": "FAKE camera (no real camera)", "fake": True, "connected": True,
                     "locked": self.locked, "read_only": self.read_only, "iso_while_recording": self.iso_while_recording,
-                    "allow_exposure": self.allow_exposure,
+                    "allow_exposure": self.allow_exposure, "exposure_while_recording": self.exposure_while_recording,
                     "allow_list": [{"name": n, "min": lo, "max": hi} for n, (lo, hi, sw) in ALLOW_LIST.items()
                                    if self.allow_exposure or not sw]}, None
         if cmd == "settings":
@@ -336,17 +338,20 @@ def main():
     ap.add_argument("--read-only", action="store_true")
     ap.add_argument("--allow-iso-while-recording", action="store_true", help="Step 7 agent takes only")
     ap.add_argument("--allow-exposure", action="store_true", help="aperture, shutter and WB may change too")
+    ap.add_argument("--allow-exposure-while-recording", action="store_true",
+                    help="rehearsal shoots only: --allow-exposure, and it may change while recording too")
     ap.add_argument("--light-k", type=int, default=3200, help="the light's color temperature")
     ap.add_argument("--log-dir")
     args = ap.parse_args()
-    if sum((args.read_only, args.allow_iso_while_recording, args.allow_exposure)) > 1:
-        sys.exit("--read-only, --allow-iso-while-recording and --allow-exposure can't be combined (same as the real bridge)")
+    if sum((args.read_only, args.allow_iso_while_recording, args.allow_exposure, args.allow_exposure_while_recording)) > 1:
+        sys.exit("--read-only, --allow-iso-while-recording, --allow-exposure and --allow-exposure-while-recording "
+                 "can't be combined (same as the real bridge)")
 
     camera = FakeCamera(frame=args.frame, iso=args.iso, shutter=args.shutter, fnumber=args.fnumber,
                         light=parse_pairs(args.light), record=parse_pairs(args.record),
                         read_only=args.read_only, log_dir=args.log_dir,
                         iso_while_recording=args.allow_iso_while_recording, allow_exposure=args.allow_exposure,
-                        light_k=args.light_k)
+                        light_k=args.light_k, exposure_while_recording=args.allow_exposure_while_recording)
     server = serve(camera, args.socket)
     print("Fake camera ready on %s (no real camera). Ctrl-C or 'quit' stops it." % args.socket, flush=True)
     try:

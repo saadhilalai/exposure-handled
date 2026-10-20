@@ -5,8 +5,9 @@ camera is recording or after the kill switch, asks the bridge to make the
 change (the bridge checks again with its own compiled-in allow-list), and
 logs time, old value, new value, reason and timings to changes.jsonl.
 
-One exception, approved for Step 7 agent takes only: with iso_while_recording
-on (off by default), ISO, and nothing else, may change while recording.
+Two exceptions, each off by default: with iso_while_recording on (Step 7 agent takes), ISO and nothing else
+may change while recording; with exposure_while_recording on (rehearsal shoots only, director 2026-10-20),
+every approved exposure setting may.
 
 The exposure switch (exposure=True, off by default; approved 2026-10-19): aperture,
 shutter and white balance may change too, inside their ranges. Without it, only ISO.
@@ -47,9 +48,11 @@ def within_range(name, raw, rule):
 
 
 class SafetyGate:
-    def __init__(self, client, log_path, ranges=None, iso_while_recording=False, exposure=False):
+    def __init__(self, client, log_path, ranges=None, iso_while_recording=False, exposure=False,
+                 exposure_while_recording=False):
         self.client = client
         self.iso_while_recording = iso_while_recording   # Step 7 agent takes only; off by default
+        self.exposure_while_recording = exposure_while_recording and exposure   # rehearsals only; off by default
         self.exposure = exposure                         # aperture / shutter / WB too; off by default
         self.log_path = Path(log_path)
         self.ranges = ranges if ranges is not None else load_ranges()
@@ -91,7 +94,8 @@ class SafetyGate:
 
         before = self.client.get(name, "RecordingState")
         recording = before["RecordingState"]["current"] != NOT_RECORDING
-        if recording and not (self.iso_while_recording and name == "IsoSensitivity"):
+        iso_ok = self.iso_while_recording and name == "IsoSensitivity"
+        if recording and not iso_ok and not self.exposure_while_recording:
             return self._refuse(name, raw, reason, "camera is recording")
         old_raw = before[name]["current"]
 

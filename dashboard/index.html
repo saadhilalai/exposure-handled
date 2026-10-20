@@ -21,7 +21,8 @@
     <span class="chip" id="source">Connecting</span>
     <span class="chip" id="run-mode">—</span>
     <span class="chip rec" id="rec-chip" hidden>Rec</span>
-    <span class="chip switch-chip" id="switch-chip" hidden title="Step 7 recording switch: the agent may change ISO while the camera records">Rec switch on</span>
+    <span class="chip switch-chip" id="switch-chip" hidden title="Recording switch: the agent may change settings while the camera records">Rec switch on</span>
+    <span class="chip label-chip" id="label-chip" hidden title="Everything from this session is labeled rehearsal and kept apart from Step 7">Rehearsal</span>
     <span class="perf" id="perf"></span>
   </div>
 </header>
@@ -107,6 +108,16 @@
         </form>
         <p class="hint" id="face-hint"></p>
         <ul class="people" id="people"></ul>
+      </div>
+
+      <div class="block">
+        <span class="group-label">Problems</span>
+        <form class="problem-form" id="problem-form">
+          <label class="visually-hidden" for="problem-note">What went wrong</label>
+          <input id="problem-note" maxlength="300" placeholder="What went wrong? (optional)" autocomplete="off">
+          <button type="submit" class="btn">Log</button>
+        </form>
+        <p class="hint" id="problem-hint">Logs it right now, with what the agent saw. Key: x</p>
       </div>
 
       <div class="block">

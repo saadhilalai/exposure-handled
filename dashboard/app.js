@@ -95,8 +95,9 @@ function render() {
   $("run-mode").textContent = s.mode === "live" ? "Live" : "Dry run";
   $("run-mode").classList.toggle("live", s.mode === "live");
   $("rec-chip").hidden = !s.recording;
-  $("switch-chip").hidden = !s.iso_while_recording;
-  if (s.take) $("switch-chip").textContent = "Rec switch on · " + s.take;
+  $("switch-chip").hidden = !(s.iso_while_recording || s.exposure_while_recording);
+  if (s.take) $("switch-chip").textContent = (s.exposure_while_recording ? "Rec switch on: ISO, iris, shutter, WB · " : "Rec switch on: ISO · ") + s.take;
+  $("label-chip").hidden = s.label !== "rehearsal";
   $("perf").textContent = (s.fps ? s.fps.toFixed(0) + " fps" : "") + (s.eyes_ms ? " · eyes " + s.eyes_ms.toFixed(0) + " ms" : "");
 
   // state
@@ -462,7 +463,15 @@ document.addEventListener("keydown", (ev) => {
   else if (ev.key === "a") toggleAuto();
   else if (ev.key === "l") toggleLock();
   else if (ev.key === "m") post("mark", { label: "light change" });
+  else if (ev.key === "x") { ev.preventDefault(); $("problem-note").focus(); }
   else if (state && /^[1-5]$/.test(ev.key)) post("look", { key: state.looks[Number(ev.key) - 1].key });
+});
+$("problem-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const note = $("problem-note").value;
+  const reply = await post("problem", { note });
+  $("problem-note").value = ""; $("problem-note").blur();
+  $("problem-hint").textContent = reply.ok ? "Logged at " + new Date().toLocaleTimeString() + (note ? ": " + note : "") : "Not logged: " + reply.error;
 });
 window.addEventListener("resize", () => state && render());
 

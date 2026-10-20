@@ -10,6 +10,7 @@ Python's standard library only, so it runs the same on the Pi. Listens on 127.0.
   POST /api/auto  {"on": true|false}      POST /api/lock {"on": true|false}
   POST /api/look  {"key": "interview"}    POST /api/face {"name": "Saad"}   POST /api/forget {"id": "..."}
   POST /api/mark  {"label": "light change"}   (Step 7: marks a scene event)
+  POST /api/problem {"note": "..."}           (logs a problem right now, with what the agent saw)
 
 Every POST must carry the header "X-Camera-Agent: 1". A browser won't add a custom header
 for another website without asking this server first (and it never says yes), so a random
@@ -100,6 +101,8 @@ class Dashboard:
             return 200, {"ok": True, "person": {k: person[k] for k in ("id", "name", "target")}}
         elif action == "mark":
             r.mark(str(body.get("label") or "light change")[:40])
+        elif action == "problem":
+            r.problem(str(body.get("note") or "")[:300])
         elif action == "forget":
             r.forget_face(str(body.get("id", "")))
         else:

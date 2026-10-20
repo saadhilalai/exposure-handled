@@ -61,6 +61,7 @@ img { display: block; }
 .chip.rec { color: var(--black); background: var(--stop); border-color: var(--stop); }
 .chip.rec::before { content: "● "; }
 .chip.switch-chip { color: var(--caution); border-color: rgba(245, 184, 61, 0.45); }
+.chip.label-chip { color: var(--black); background: var(--caution); border-color: var(--caution); }
 .perf { font-size: 13px; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 /* ---- Layout -------------------------------------------------------------------- */
@@ -237,6 +238,8 @@ td { padding: 5px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); color
 .look-desc { margin: 12px 0 0; font-size: 13.5px; color: var(--grey); }
 
 .face-form { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; margin-top: 10px; }
+.problem-form { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.problem-form input { min-width: 0; padding: 11px 12px; background: var(--black); border: 1px solid var(--line-strong); border-radius: 3px; font-size: 14px; color: inherit; }
 .face-form input { min-width: 0; padding: 11px 12px; background: var(--black); border: 1px solid var(--line-strong); border-radius: 3px; font-size: 14px; }
 .people { list-style: none; margin: 12px 0 0; padding: 0; }
 .people li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 14px; }

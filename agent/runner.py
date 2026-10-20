@@ -20,6 +20,11 @@ and "this face looks right" (agent/faces.py).
 Step 7 recording switch (iso_while_recording, off by default): lets the agent change ISO,
 and only ISO, while the camera records. Only for a live Step 7 agent take (a take name
 like S1_R3_A_agent), and only if the bridge was also started with --allow-iso-while-recording.
+
+Rehearsal recording switch (exposure_while_recording, off by default; director, 2026-10-20): every
+approved exposure setting (ISO, aperture, shutter, WB) may change while the camera records. Only for a
+live rehearsal agent take (REH_..._agent, label "rehearsal"), with the exposure switch on, and only if
+the bridge was started with --allow-exposure-while-recording. It can never be used in a Step 7 take.
 """
 import json
 import re
@@ -48,6 +53,8 @@ SETTINGS_EVERY_S = 0.25      # re-read the camera's settings (catches recording 
 STATUS_EVERY_S = 1.0         # re-read the bridge status (catches a lock from another terminal)
 MAX_CHANGES_PER_MIN = 20     # runaway guard: a smooth agent needs far fewer
 AGENT_TAKE = re.compile(r"S[1-6]_\w+_agent")   # Step 7 run-sheet names, e.g. S1_R3_A_agent, S1_BONUS_A_agent
+REHEARSAL_TAKE = re.compile(r"REH_\w+")          # rehearsal takes, e.g. REH_sunset_A_agent; never Step 7 data
+REHEARSAL_AGENT_TAKE = re.compile(r"REH_\w+_agent")
 ADVICE_REPEAT_S = 10.0       # show the same advice again only after this long
 WOULD_REPEAT_S = 10.0
 HISTORY_EVERY_S = 0.25       # exposure history for the dashboard chart
@@ -67,10 +74,11 @@ def approved_settings(ranges, exposure=False):
 class AgentRunner:
     def __init__(self, socket_path, session_dir, look="cinematic", live=False, eyes=None, ranges=None,
                  clock=time.monotonic, on_event=None, auto=True, faces=None, iso_while_recording=False, take=None,
-                 exposure=False):
+                 exposure=False, exposure_while_recording=False, label=None):
         """auto=False starts a live session with Auto off: it suggests until the operator turns Auto on.
         iso_while_recording: the Step 7 switch (see above). take: the run-sheet name of this take.
-        exposure: aperture, shutter and WB may change too (needs a bridge started with --allow-exposure)."""
+        exposure: aperture, shutter and WB may change too (needs a bridge started with --allow-exposure).
+        exposure_while_recording: the rehearsal switch (see above). label: "rehearsal" keeps this data apart."""
         self.socket_path = socket_path
         self.client = BridgeClient(socket_path)
         self.kill_client = BridgeClient(socket_path)          # its own connection, for the kill switch
@@ -83,9 +91,12 @@ class AgentRunner:
         self.exposure = exposure
         self.allowed = approved_settings(self.ranges, exposure)
         self.iso_while_recording = iso_while_recording
+        self.exposure_while_recording = exposure_while_recording
         self.take = take
+        self.label = label
         self.gate = SafetyGate(self.client, self.session / "changes.jsonl", self.ranges,
-                               iso_while_recording=iso_while_recording, exposure=exposure)
+                               iso_while_recording=iso_while_recording, exposure=exposure,
+                               exposure_while_recording=exposure_while_recording)
         self.enums = load_enums()
         self.clock = clock
         self.on_event = on_event or (lambda kind, text: None)
@@ -95,6 +106,7 @@ class AgentRunner:
         self.held = False                       # Lock: hold every setting (operator)
         self.hold_status = "Locked by you: holding every setting"     # what the status line says while held
         self.stop_requested = False
+        self.problems = 0                       # problems logged by the operator this session
         self.book = faces if faces is not None else FaceBook()
         self.lock = threading.RLock()           # the dashboard reads state from other threads
         self.events = deque(maxlen=200)
@@ -142,6 +154,8 @@ class AgentRunner:
             raise RunnerError("the bridge is locked (kill switch was used): restart the bridge first")
         if self.live and status.get("read_only"):
             raise RunnerError("live mode needs a bridge started WITHOUT --read-only")
+        if self.iso_while_recording and self.exposure_while_recording:
+            raise RunnerError("use one recording switch, not both")
         if self.iso_while_recording:
             if not self.live:
                 raise RunnerError("the recording switch only makes sense in a live agent take")
@@ -150,6 +164,22 @@ class AgentRunner:
                                   "e.g. --take S1_R3_A_agent")
             if not status.get("iso_while_recording"):
                 raise RunnerError("the bridge wasn't started with --allow-iso-while-recording, so it would refuse "
+                                  "anyway (both switches must be on)")
+        if self.label == "rehearsal" and not (self.take and REHEARSAL_TAKE.fullmatch(self.take)):
+            raise RunnerError("rehearsal takes are named REH_..., e.g. --take REH_sunset_A_agent, so they never mix "
+                              "with Step 7 data")
+        if self.label != "rehearsal" and self.take and REHEARSAL_TAKE.fullmatch(self.take):
+            raise RunnerError("REH_ take names are for rehearsals: add --rehearsal")
+        if self.exposure_while_recording:
+            if not self.live:
+                raise RunnerError("the recording switch only makes sense in a live agent take")
+            if not self.exposure:
+                raise RunnerError("the rehearsal recording switch needs the exposure switch on too")
+            if not (self.label == "rehearsal" and self.take and REHEARSAL_AGENT_TAKE.fullmatch(self.take)):
+                raise RunnerError("the rehearsal recording switch is for rehearsal agent takes only: "
+                                  "--rehearsal --take REH_..._agent")
+            if not status.get("exposure_while_recording"):
+                raise RunnerError("the bridge wasn't started with --allow-exposure-while-recording, so it would refuse "
                                   "anyway (both switches must be on)")
         if self.exposure and self.live and not status.get("allow_exposure"):
             raise RunnerError("the bridge wasn't started with --allow-exposure, so it would refuse aperture, shutter "
@@ -166,10 +196,12 @@ class AgentRunner:
             mode, status.get("model", "?"), self.brain.look.name, ", ".join(sorted(self.allowed)) or "nothing",
             self.summary()), mode=mode, look=self.brain.look.key, allowed=sorted(self.allowed), bridge=status,
             take=self.take, iso_while_recording=self.iso_while_recording, exposure=self.exposure,
+            exposure_while_recording=self.exposure_while_recording, label=self.label,
             settings={n: self._text(n) for n in SUMMARY})
 
     def _new_brain(self, look):
-        return Brain(look, allowed=self.allowed, allow_while_recording=self.iso_while_recording)
+        return Brain(look, allowed=self.allowed,
+                     allow_while_recording=self.iso_while_recording or self.exposure_while_recording)
 
     def _rebuild(self):
         self.ctx = context_from_settings(self.props, self.enums)
@@ -389,7 +421,7 @@ class AgentRunner:
         if self.held:
             return "LOCKED"
         auto = self.live and not self.paused
-        if self.cam.recording and not (self.iso_while_recording and auto):
+        if self.cam.recording and not ((self.iso_while_recording or self.exposure_while_recording) and auto):
             return "RECORDING"
         return "AUTO" if auto else "SUGGESTING"
 
@@ -405,6 +437,8 @@ class AgentRunner:
                 "model": self.bridge.get("model"), "state": self.state(), "auto": self.live and not self.paused and not self.killed,
                 "held": self.held, "killed": self.killed, "kill_reason": self.kill_reason,
                 "recording": self.cam.recording, "iso_while_recording": self.iso_while_recording, "take": self.take,
+                "exposure_while_recording": self.exposure_while_recording, "label": self.label,
+                "problems": self.problems,
                 "approved": sorted(self.allowed), "changes": len(self.changes),
                 "look": {"key": look.key, "name": look.name, "description": look.description,
                          "aperture": look.aperture, "face_target": look.face_target, "max_clip_pct": look.max_clip_pct},
@@ -440,6 +474,24 @@ class AgentRunner:
     def mark(self, label="light change"):
         """The operator marks a scene event (Step 7: settle time is measured from here)."""
         self._event("mark", "Mark: %s" % label, label=label)
+
+    def problem(self, note=""):
+        """The operator logs a problem the moment it happens (flicker, slow, wrong call, confusing screen...).
+        Saved with what the agent saw and was doing, to problems.jsonl in the session folder."""
+        note = (note or "").strip()[:300]
+        with self.lock:
+            self.problems += 1
+            r, out = self.report, self.output
+            entry = {"time": datetime.now().isoformat(timespec="milliseconds"), "t": round(self.clock() - self.t0, 2),
+                     "note": note, "frame_no": self.frame_no, "state": self.state(), "look": self.brain.look.key,
+                     "camera": {n: self._text(n) for n in SUMMARY}, "recording": self.cam.recording,
+                     "status": out.status if out else None, "advice": list(out.advice) if out else [],
+                     "key_stops": round(r.key_stops, 2) if r else None,
+                     "faces": [round(f["stops"], 2) for f in r.faces] if r else [],
+                     "fps": self.fps, "recent_events": list(self.events)[-12:]}
+        with (self.session / "problems.jsonl").open("a") as f:
+            f.write(json.dumps(entry) + "\n")
+        self._event("problem", "Problem logged" + (": " + note if note else " (no note)"), note=note)
 
     # ---------------------------------------------------------------- end
     def finish(self):
