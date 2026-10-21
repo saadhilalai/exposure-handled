@@ -111,6 +111,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   const sweep = new THREE.DirectionalLight(0xffffff, 0); sweep.position.set(-6, 2, 3); scene.add(sweep);
 
   const model = new THREE.Group(); scene.add(model);
+  scene.matrixWorldAutoUpdate = false;                // updated once a frame in placeCamera(), not again by every pass
 
   // materials
   const rough = grainRough(), knurl = knurlNormal();
@@ -318,13 +319,14 @@ export function createCamera3D(canvas, { low = false } = {}) {
   const barrelProfile = [[0.27, 0], [0.31, 0], [0.31, 0.08], [0.365, 0.1], [0.365, 0.16], [0.385, 0.17], [0.385, 0.4], [0.37, 0.41], [0.37, 0.5],
     [0.385, 0.51], [0.385, 0.72], [0.37, 0.73], [0.37, 0.92], [0.395, 0.95], [0.395, 1.0], [0.33, 1.0], [0.33, 0.96], [0.3, 0.95]].map(([r, z]) => new THREE.Vector2(r, z));
   const ringProfile = (z0, z1) => [[0.388, z0], [0.392, z0 + 0.01], [0.392, z1 - 0.01], [0.388, z1]].map(([r, z]) => new THREE.Vector2(r, z));
+  const knurlRing = M.rubber.clone(); knurlRing.normalMap = knurl.clone(); knurlRing.normalMap.repeat.set(26, 1); knurlRing.normalMap.needsUpdate = true;
   for (const side of [0, 1]) {
     const p = part(side ? "barrelR" : "barrelL", { off: [side ? -0.85 : 0.85, 0.02, 2.55], rot: [0, side ? -0.3 : 0.3, 0], delay: 0.26 });
     const phi0 = side ? Math.PI : 0;
     const mk = (prof, mat) => { const g = new THREE.LatheGeometry(prof, 64, phi0, Math.PI); const m = add(p, g, mat, [LX, LY, lensZ0], [Math.PI / 2, 0, 0]); return m; };
     mk(barrelProfile, M.body);
     const k1 = mk(ringProfile(0.18, 0.39), M.rubber), k2 = mk(ringProfile(0.52, 0.71), M.rubber);
-    for (const k of [k1, k2]) { k.material = M.rubber.clone(); k.material.normalMap = knurl.clone(); k.material.normalMap.repeat.set(26, 1); k.material.normalMap.needsUpdate = true; }
+    for (const k of [k1, k2]) k.material = knurlRing;
     const ai = new THREE.LatheGeometry([new THREE.Vector2(0.398, 0.955), new THREE.Vector2(0.398, 0.965)], 64, phi0, Math.PI);
     add(p, ai, M.aiLine, [LX, LY, lensZ0], [Math.PI / 2, 0, 0]);
     spot(p, "lens", [LX + (side ? -0.39 : 0.39), LY, lensZ0 + 0.6]);
@@ -376,6 +378,40 @@ export function createCamera3D(canvas, { low = false } = {}) {
     });
   });
   parts.forEach((p) => { if (!p.homePos) p.homePos = new THREE.Vector3(); });
+
+  // ---- fewer draw calls: inside each part, pieces that never move on their own and share a material become one mesh.
+  // (Each draw call costs the CPU the same however small the piece; this roughly halves them, with the same look.)
+  const own = new Set([lcdMesh, pcbPart.core, pcbPart.chipDial, irisPart.lever, ...sensorPart.dials, ...chipTiles.map((t) => t.m)]);
+  function mergeGeos(list) {
+    const geos = list.map((m) => { m.updateMatrix(); return (m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone()).applyMatrix4(m.matrix); });
+    const n = geos.reduce((a, g) => a + g.attributes.position.count, 0);
+    const out = new THREE.BufferGeometry(), P = new Float32Array(n * 3), Nn = new Float32Array(n * 3), U = new Float32Array(n * 2);
+    let o = 0;
+    for (const g of geos) {
+      const c = g.attributes.position.count;
+      P.set(g.attributes.position.array, o * 3); Nn.set(g.attributes.normal.array, o * 3);
+      if (g.attributes.uv) U.set(g.attributes.uv.array, o * 2);
+      o += c; g.dispose();
+    }
+    out.setAttribute("position", new THREE.BufferAttribute(P, 3)); out.setAttribute("normal", new THREE.BufferAttribute(Nn, 3)); out.setAttribute("uv", new THREE.BufferAttribute(U, 2));
+    return out;
+  }
+  function mergeStatic(group) {
+    const byMat = new Map();
+    for (const m of group.children) {
+      if (!m.isMesh || own.has(m) || !m.visible || m.children.length || m.material.transparent) continue;
+      if (!byMat.has(m.material)) byMat.set(m.material, []);
+      byMat.get(m.material).push(m);
+    }
+    for (const [mat, list] of byMat) {
+      if (list.length < 2) continue;
+      const merged = new THREE.Mesh(mergeGeos(list), mat);
+      list.forEach((m) => group.remove(m));
+      group.add(merged);
+    }
+  }
+  parts.forEach((p) => mergeStatic(p.g));
+  mergeStatic(fanPart.rotor);
 
   // ---------- the crew ----------
   const N = low ? 150 : 380;
@@ -510,7 +546,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
       if (S.mode === "home" && a.spot.kind === "core" && a.state === 1) a.hidden = true; else a.hidden = false;
       centroid.add(a.p); nc++;
     });
-    swarmLight.position.copy(centroid.multiplyScalar(1 / Math.max(nc, 1))).applyMatrix4(model.matrixWorld);
+    swarmLight.position.copy(centroid.multiplyScalar(1 / Math.max(nc, 1))).applyMatrix4(model.matrixWorld); swarmLight.updateMatrixWorld();
     swarmLight.intensity = 1.8 * vis;
   }
   function writeAgents(dt) {
@@ -562,11 +598,14 @@ export function createCamera3D(canvas, { low = false } = {}) {
     return model.localToWorld(_f.copy(s ? s.world : p.g.position));
   }
 
-  let W0 = 1, H0 = 1;
+  let W0 = 1, H0 = 1, sizeDirty = true, sizeForce = false;
+  new ResizeObserver(() => (sizeDirty = true)).observe(canvas);
   function resize() {
+    if (!sizeDirty) return;
+    sizeDirty = false;
     const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
-    if (w === W0 && h === H0) return;
-    W0 = w; H0 = h;
+    if (w === W0 && h === H0 && !sizeForce) return;
+    W0 = w; H0 = h; sizeForce = false;
     renderer.setSize(w, h, false); composer.setPixelRatio(dpr); composer.setSize(w, h);
     cam.aspect = w / h; cam.updateProjectionMatrix();
     agentMat.uniforms.uScale.value = h * dpr * 0.5 * sizeMul;
@@ -592,6 +631,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     model.updateMatrixWorld(true);
     cam.updateMatrixWorld(true);
   }
+  scene.updateMatrixWorld(true);                      // the lights, once
   function step(dt) {
     resize();
     if (!frozen) time += dt;
@@ -632,7 +672,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   // Screen rectangle of the rear screen (CSS pixels), for the "pull back from the viewfinder" move.
   function lcdRect() {
     resize(); placeCamera();
-    const g = lcdMesh.geometry; g.computeBoundingBox();
+    const g = lcdMesh.geometry; if (!g.boundingBox) g.computeBoundingBox();
     const bb = g.boundingBox, pts = [];
     for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) {
       const v = new THREE.Vector3(x, y, 0).applyMatrix4(lcdMesh.matrixWorld).project(cam);
@@ -661,7 +701,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
         for (const t of [composer.renderTarget1, composer.renderTarget2]) { t.samples = q.msaa; t.dispose(); }
         target.samples = q.msaa;
       }
-      W0 = -1; resize();
+      sizeDirty = sizeForce = true; resize();
     },
     start() { if (running) return; running = true; clock.update(); frame(); },
     stop() { running = false; cancelAnimationFrame(raf); },
