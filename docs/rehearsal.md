@@ -58,7 +58,7 @@ What runs tonight:
 5. **Dashboard:** check that the chips say **Rehearsal** and **Rec switch on: ISO, iris, shutter, WB**. Auto starts **off**: press **Auto**.
 6. If it says the bridge didn't connect: check the cable, USB Connection Mode, and that no phone app is connected, then run the command again.
 7. **Say "camera ready"** to your coding assistant. From then on it watches the logs (read-only) and logs anything it sees.
-8. **Face test:** when you're in frame and your face looks right on the dashboard, press **This face looks right** once.
+8. **Face test:** when you're in frame and your face looks right on the dashboard, type **A** in the face box and press **This face looks right** once. That's exactly what you'll do on Saturday (the scoring finds each person's target by the name A or B). Tonight's faces are kept apart from Saturday's, so you'll do it again then.
 9. **The sunset run (agent):** hold up the REHEARSAL card and **press REC yourself** (the agent never starts or stops recording). Let it run as the light falls.
    - Press **m** (or Mark on the dashboard) when the light visibly changes: sun behind a cloud, sun touching the horizon.
    - **Log problems the moment they happen:** press **x** in the Terminal window, or type in the dashboard's **Problems** box and press Log.
@@ -83,4 +83,4 @@ What runs tonight:
 *(Filled in after the shoot, ranked by how much they matter for Saturday.)*
 
 Found before the shoot, on the fake camera:
-- While Auto is off, the status line flips every second between the suggestion and "Waiting for the last change to settle". This is cosmetic; it will be fixed this week.
+- ~~While Auto is off, the status line flips back and forth with the suggestion.~~ **Fixed 2026-10-21:** with Auto off it now shows the suggestion steadily.
