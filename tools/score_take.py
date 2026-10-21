@@ -15,6 +15,9 @@ Definitions (frozen in docs/step7-test-plan.md; changing them after the shoot br
              least 1/12 stop), ignoring moves that start in the 1.5 s after a mark (the light change)
 
 Usage: python tools/score_take.py <session folder> [<session folder> ...] [--json out.json]
+Folders that can't be scored (no data, or a session on the fake camera) are skipped and listed, so one bad
+folder never stops the batch. A take whose name and mode disagree (an _agent take that ran as a dry run) is
+scored but flagged.
 """
 import argparse
 import csv
@@ -110,6 +113,35 @@ def score(folder):
     }
 
 
+def unscorable(folder, allow_fake=False):
+    """Why this folder can't be scored as a take, or None."""
+    f = Path(folder)
+    if not (f / "metrics.csv").exists() or not (f / "runner_log.jsonl").exists():
+        return "no metrics.csv / runner_log.jsonl (not a runner session, or it stopped before it began)"
+    with (f / "metrics.csv").open() as fh:
+        if sum(1 for _ in fh) < 3:
+            return "fewer than 2 measurements (the take stopped almost at once)"
+    start = next((json.loads(line) for line in (f / "runner_log.jsonl").read_text().splitlines()
+                  if '"start"' in line and json.loads(line).get("event") == "start"), None)
+    if start is None:
+        return "no start in runner_log.jsonl"
+    if not allow_fake and (f.name.endswith("-fake") or (start.get("bridge") or {}).get("fake")):
+        return "recorded on the fake camera, not the FX2 (--allow-fake to score it anyway)"
+    return None
+
+
+def mismatch(folder):
+    """A take name that disagrees with how it ran, or None."""
+    log = [json.loads(line) for line in (Path(folder) / "runner_log.jsonl").read_text().splitlines()]
+    start = next((e for e in log if e.get("event") == "start"), {})
+    take, mode = start.get("take") or Path(folder).name, start.get("mode")
+    if take.endswith("_agent") and mode != "live":
+        return "an agent take that ran as a %s" % mode
+    if take.endswith(("_fx2auto", "_manual")) and mode == "live":
+        return "a camera take that ran live (the agent could change settings)"
+    return None
+
+
 def is_rehearsal(folder):
     """Rehearsal sessions live under sessions/REHEARSAL/ and carry a LABEL file: never Step 7 data."""
     return (Path(folder) / "LABEL").exists() or "REHEARSAL" in Path(folder).resolve().parts
@@ -119,7 +151,19 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("folders", nargs="+")
     ap.add_argument("--json")
+    ap.add_argument("--allow-fake", action="store_true", help="score sessions recorded on the fake camera too")
     args = ap.parse_args()
+    skipped = [(f, unscorable(f, args.allow_fake)) for f in args.folders]
+    for f, why in skipped:
+        if why:
+            print("SKIPPED %s: %s" % (f, why))
+    args.folders = [f for f, why in skipped if not why]
+    if not args.folders:
+        sys.exit("Nothing to score.")
+    for f in args.folders:
+        why = mismatch(f)
+        if why:
+            print("CHECK %s: %s" % (f, why))
     labels = {is_rehearsal(f) for f in args.folders}
     if len(labels) > 1:
         sys.exit("Some of these folders are rehearsal takes and some aren't. Score them separately: rehearsal data "

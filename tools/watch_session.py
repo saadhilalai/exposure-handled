@@ -2,7 +2,7 @@
 It only reads the session's log files on this Mac: no camera, no bridge, no internet.
 
 Usage:
-  python tools/watch_session.py                 # newest session under sessions/REHEARSAL/ (else sessions/), every 15 s
+  python tools/watch_session.py                 # the newest session (rehearsal or Step 7), every 15 s
   python tools/watch_session.py --once          # one summary of the last 2 minutes
   python tools/watch_session.py --report        # the whole session: every flag, for the after-shoot list
   python tools/watch_session.py <folder> [...]
@@ -29,11 +29,12 @@ FLICKER_WINDOW_S, SLOW_S, MIN_FPS, MAX_EYES_MS, STALE_S = 20.0, 10.0, 15.0, 60.0
 
 
 def newest_session():
-    for base in (ROOT / "sessions" / "REHEARSAL", ROOT / "sessions"):
-        folders = [p for p in base.glob("*") if p.is_dir() and (p / "runner_log.jsonl").exists()]
-        if folders:
-            return max(folders, key=lambda p: (p / "runner_log.jsonl").stat().st_mtime)
-    sys.exit("No session with a runner log yet.")
+    """The session whose log changed last, rehearsal or not (so after the rehearsal it follows Step 7)."""
+    folders = [p for base in (ROOT / "sessions" / "REHEARSAL", ROOT / "sessions") for p in base.glob("*")
+               if p.is_dir() and (p / "runner_log.jsonl").exists()]
+    if not folders:
+        sys.exit("No session with a runner log yet.")
+    return max(folders, key=lambda p: (p / "runner_log.jsonl").stat().st_mtime)
 
 
 def read_jsonl(path):

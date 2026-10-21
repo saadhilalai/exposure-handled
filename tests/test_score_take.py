@@ -61,3 +61,31 @@ def test_scores_a_fake_camera_take_end_to_end(fake, tmp_path):
     result = score(tmp_path / "session")
     assert result["marks"] == 1 and result["settle_s"][0] is not None and result["settle_s"][0] < 10
     assert result["flickers"] == 0 and result["clipping_mean_pct"] == 0.0
+
+
+def test_bad_and_fake_folders_are_skipped_not_fatal(tmp_path, capsys):
+    import sys
+    from tools import score_take
+    good = take(tmp_path, [row(t / 4) for t in range(40)])
+    empty = tmp_path / "S1_R1_A_manual"
+    empty.mkdir()
+    fake_take = tmp_path / "2026-10-18_220854_S1_R1_A_agent-fake"
+    fake_take.mkdir()
+    for name in ("metrics.csv", "runner_log.jsonl"):
+        (fake_take / name).write_text((good / name).read_text())
+    assert score_take.unscorable(good) is None
+    assert "no metrics.csv" in score_take.unscorable(empty)
+    assert "fake camera" in score_take.unscorable(fake_take)
+    assert score_take.unscorable(fake_take, allow_fake=True) is None
+    sys.argv = ["score_take.py", str(empty), str(fake_take), str(good)]
+    score_take.main()
+    out = capsys.readouterr().out
+    assert out.count("SKIPPED") == 2 and "take | cinematic" in out
+
+
+def test_a_name_that_disagrees_with_the_mode_is_flagged(tmp_path):
+    from tools.score_take import mismatch
+    folder = take(tmp_path, [row(t / 4) for t in range(8)])
+    log = folder / "runner_log.jsonl"
+    log.write_text(log.read_text().replace('"mode": "live"', '"mode": "dry run", "take": "S1_R1_A_agent"'))
+    assert "agent take" in mismatch(folder)
