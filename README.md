@@ -132,6 +132,10 @@ sh tools/fetch_models.sh          # YuNet (MIT) and SFace (Apache 2.0), checked 
 
 # Live (bridge started without --read-only): type LIVE, then press Auto twice on the page
 .venv/bin/python tools/run_agent.py --live --dashboard
+
+# The Step 7 test day (docs/step7-day.md): the bridge once, then each take by its run-sheet name
+tools/step7.sh bridge
+tools/step7.sh S1_R1_A_agent
 ```
 
 Keys: **Space** kill switch · `p` Auto on/off · `l` Lock · `m` mark an event · `1`–`5` look · `q` quit (offers to restore ISO).
@@ -143,9 +147,11 @@ Keys: **Space** kill switch · `p` Auto on/off · `l` Lock · `m` mark an event 
 | `bridge/` | C++ bridge to Sony's SDK (the only code that can change the camera), and a read-only probe |
 | `agent/` | `eyes.py` (measuring), `brain.py` (deciding), `safety.py` (the one change function), `runner.py` (the loop), `dashboard.py`, `faces.py` |
 | `dashboard/` | The web page (S4D style) |
-| `tools/` | Run the agent, fake camera, kill switch, calibration, simulator, screenshots, Step 7 scoring |
+| `tools/` | Run the agent, fake camera, kill switch, calibration, simulator, screenshots; for Step 7: the day's start (`step7.sh`), scoring, the blind-test cut list and rating page, the rehearsal (`rehearsal.sh`) |
 | `config/` | Approved ranges, live-view calibration |
 | `docs/` | One write-up per step, screenshots, results |
+| `site/` | The project website, a draft ([site/README.md](site/README.md)) |
+| `video/` | The brag film's storyboard and composition (footage, music and renders stay out of git) |
 
 ## Honest limits
 
