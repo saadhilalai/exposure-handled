@@ -280,10 +280,19 @@ class Brain:
         return out
 
     def _commit(self, p, t, sign):
+        self._before_commit = (self.last_change_t, self.last_change_sign, self.pending)
         self.last_change_t = t
         self.last_change_sign = sign
         self.pending = None
         return Output(p, [], p.reason)
+
+    def not_applied(self):
+        """The runner didn't make the last proposed change (dry run, Auto off, not approved): forget it was
+        made, so the brain doesn't wait for it to settle and the status doesn't flip every second."""
+        before = getattr(self, "_before_commit", None)
+        if before:
+            self.last_change_t, self.last_change_sign, self.pending = before
+            self._before_commit = None
 
     # ------------------------------------------------------------ 1. shutter
     def _shutter_target(self, cam):

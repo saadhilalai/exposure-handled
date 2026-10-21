@@ -278,6 +278,7 @@ class AgentRunner:
         if self.killed:
             return
         if not self.live or self.paused or p.setting not in self.allowed:
+            self.brain.not_applied()
             why = "dry run" if not self.live else "paused" if self.paused else "not approved"
             if (p.setting, p.raw) != self.last_would[0] or t - self.last_would[1] >= WOULD_REPEAT_S:
                 self.last_would = ((p.setting, p.raw), t)

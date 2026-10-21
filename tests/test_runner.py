@@ -192,3 +192,18 @@ def test_rec_start_and_stop_are_logged(fake, tmp_path):
     recs = [e for e in log(tmp_path, "runner_log.jsonl") if e["event"] == "rec"]
     assert [e["recording"] for e in recs] == [True, False]
     assert recs[0]["t"] < recs[1]["t"]
+
+
+
+def test_with_auto_off_the_status_holds_steady(fake, tmp_path):
+    # Rehearsal prep (found 2026-10-20): while it only suggests, the status used to flip every 1.5 s between the
+    # suggestion and "waiting to be sure", because the brain thought it had made the change and started over.
+    cam, path = fake(scene_offset=TOO_DARK)
+    r = runner_for(cam, path, tmp_path, live=False)
+    seen = []
+    for _ in range(24 * 8):
+        assert r.step()
+        seen.append((r.clock() - r.t0, r.output.status))
+    after = {s for t, s in seen if t > 2.0}
+    assert len(after) == 1 and "ISO" in after.pop()
+    assert cam.sets == []
