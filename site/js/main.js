@@ -201,7 +201,7 @@ function hero() {
   fit(); addEventListener("resize", fit);
   v.setLevel = (l) => { if (l !== level) { level = l; fit(); } };
   Object.assign(v.a, { iso: 12800, shutter: 1 / 48, fnum: 2.8, wb: 6500 });
-  const feed = Feed($("#hero-feed"), { max: 4 });
+  const feed = Feed($("#hero-feed"), { max: mobile() ? 3 : 4 });     // a phone shows fewer, so the picture stays visible
   const hud = { iso: $("#h-iso"), shutter: $("#h-sh"), fnum: $("#h-f"), wb: $("#h-wb") };
   const hf = { iso: (x) => x, shutter: (x) => "1/" + Math.round(1 / x), fnum: (x) => "F" + x, wb: (x) => Math.round(x) + "K" };
   const setHud = (k, val, flash) => {
