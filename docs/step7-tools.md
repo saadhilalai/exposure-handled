@@ -16,6 +16,14 @@ tools/step7.sh S1_R1_A_agent     # window 2, each take: that take's exact run-sh
 - **Watching from a third window:** `python tools/watch_session.py` follows the newest session.
 - **Scoring afterwards:** `python tools/score_take.py sessions/*_S1_R1_*` (any list of take folders; `--json out.json` saves it). Folders with no data, or recorded on the fake camera, are skipped and listed. A take whose name and mode disagree (an `_agent` take that ran as a dry run) is flagged `CHECK`.
 
+### Write on the printed run sheet (by hand; the sheet itself stays as printed)
+
+- **Front:** Manual takes keep the **iris fixed** at the look's f-stop (Clarification 1).
+- **At each person's first take** (S1_R1_A_agent, S1_R2_B_agent): press **"this face looks right"** and name them **A** or **B** in the face box (Clarification 2 finds their target by that name).
+- **S5 rows:** each is a 2-minute block.
+- **S6 rows:** don't press m.
+- **Every take:** write the camera's clip number in the notes column. Before the first take, check the FX2's clock against the Mac's.
+
 ## 1. The recording switch (agent takes only, off by default)
 
 The agent normally changes nothing while the camera records. For Step 7 agent takes only, you approved one exception: **ISO, and nothing else, may change while recording.** All three layers must agree, and each refuses on its own:

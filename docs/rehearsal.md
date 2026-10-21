@@ -1,6 +1,6 @@
-# Shakedown rehearsal: sunset, an evening before Saturday
+# Shakedown rehearsal: Thursday 2026-10-22, at sunset
 
-> **Moved (2026-10-20):** the rehearsal didn't happen on the 20th. It moves to another evening before Saturday 2026-10-24, and the director will name the day. Everything below stays ready as it is. "Tonight" means that evening.
+> **Set (2026-10-21): Thursday 2026-10-22 at sunset.** It was moved from the 20th, and everything below stayed ready. "Tonight" means Thursday evening.
 
 > **The one command, at the location** (camera plugged in, Terminal open):
 > ```
@@ -69,7 +69,7 @@ What runs tonight:
 
     For a second shot, use `cmp2` in the names.
 11. **When you're done:** press **q**. The script stops the bridge too. Unplug the cable.
-12. **Footage:** when you copy the card, put tonight's clips in a folder called **REHEARSAL-** plus that evening's date (for example REHEARSAL-2026-10-22), never next to Step 7 footage. The slates mark them too.
+12. **Footage:** when you copy the card, put tonight's clips in a folder called **REHEARSAL-** plus the date: **REHEARSAL-2026-10-22**, never next to Step 7 footage. The slates mark them too.
 
 ## If something goes wrong
 

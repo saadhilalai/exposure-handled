@@ -33,9 +33,9 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
   - New dashboard screenshots show the site's own scene, not a grey test pattern.
 - **Brag video:** the storyboard and a placeholder build are in `video/` (kept out of git), in the robot film's style. Swap steps are in video/STORYBOARD.md.
 
-## 🎬 Next: sunset shakedown rehearsal (an evening before Saturday; day to be set)
+## 🎬 Next: sunset shakedown rehearsal, Thursday 2026-10-22
 
-**Moved (2026-10-20):** not done on the 20th. It's on another evening before Saturday 2026-10-24, and the director will say which. Everything is ready and unchanged: the start script, the rehearsal switch, the checklist. Don't connect to the camera until "camera ready".
+**Set (2026-10-21): Thursday 2026-10-22 at sunset** (moved from the 20th). Everything is ready and unchanged: the start script, the rehearsal switch, the checklist. Don't connect to the camera until "camera ready".
 
 **Not the Step 7 test**: a rehearsal before the official shoot on Saturday, to find what breaks in real light. Checklist and step-by-step: [docs/rehearsal.md](docs/rehearsal.md).
 - **Rehearsal mode** (built today, 119+ tests pass):
@@ -226,6 +226,7 @@ Parked 2026-10-17, 19:40 (director stepped away)
   - Ready, no camera needed: `metrics.csv` logging + `m` mark key, `tools/score_take.py` (measurement definitions fixed in code, 4 tests), balanced take order from a fixed seed (`tools/make_test_order.py`).
   - ✅ All 8 questions answered 2026-10-18 and written into the plan (63 scored takes + 6 bonus + sunset, ~3.5–4 h, two sessions).
   - ✅ **Approved as FINAL 2026-10-18; frozen at commit c652757 (tag `step7-plan-final`).**
+  - ✅ **Two clarifications, 2026-10-21, before any shooting** (director): Manual keeps the iris fixed; unrecognized faces are scored against the take's person. They're at commit 6cea834 (tag `step7-plan-clarified`). The plan's SHA-256, emailed by the director to themselves: `7b2a9e69b190f4d055f87d4acb2e536deaababe3bf262d4b0d93d8ffea2a303b`.
   - ✅ Tools built (no camera): recording switch (all 3 layers, off by default, agent takes only), read-only Display LUT reader, printable run sheet (87 rows), private anonymous rating page + counting. [docs/step7-tools.md](docs/step7-tools.md).
   - ✅ Decided 2026-10-19, before any ratings (not in the frozen plan): **only raters who finish every clip count**; the page goes **online** (`rater_server.py share`, a temporary Cloudflare tunnel, anonymous codes only). Tested over the internet with test patterns. [docs/step7-tools.md](docs/step7-tools.md).
   - ✅ Display LUT read 2026-10-19 (read-only): **OFF, Base Look "S-Log3"** (no conversion).
