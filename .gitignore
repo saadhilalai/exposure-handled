@@ -51,3 +51,15 @@ video/**/*.mp4
 
 # Narration audio (AI voice): generated, never in git
 video/composition/assets/voice/
+
+# Narrated film: the composition, cue sheet and made-from-the-logs data are shared; rendered shots, copies of the
+# site's media, music, voice, renders and the tool's cache never are (video/tools/build_film.py all + capture_film.py)
+video/film/assets/3d/
+video/film/assets/real/
+video/film/assets/dash/
+video/film/assets/stills/
+video/film/assets/music/
+video/film/assets/audio/
+video/film/assets/voice/
+video/film/renders/
+video/film/.hyperframes/

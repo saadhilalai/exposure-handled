@@ -1,0 +1,23 @@
+{
+  "note": "The narration, one entry per line: t = film time (s) it starts, text = the subtitle, say = what the voice is given (numbers spelled for speech). Source of truth for the voice takes, the burned-in subtitles, captions.vtt and the music ducking. Lines and sources: video/SCRIPT.md.",
+  "lines": [
+    {"id": "01", "t": 0.8,  "text": "I'm your camera's assistant.", "say": "I'm your camera's assistant."},
+    {"id": "02", "t": 3.6,  "text": "You frame the shot. I'll handle the exposure.", "say": "You frame the shot. [short pause] I'll handle the exposure."},
+    {"id": "03", "t": 11.6, "text": "Twenty-four times a second, I read the picture. In stops. Like a DP.", "say": "Twenty-four times a second, I read the picture. In stops. Like a DP."},
+    {"id": "04a", "t": 16.2, "text": "Sensor.", "say": "Sensor."},
+    {"id": "04b", "t": 17.5, "text": "Iris.", "say": "Iris."},
+    {"id": "04c", "t": 18.8, "text": "Color.", "say": "Color."},
+    {"id": "05", "t": 19.6, "text": "Only inside the ranges you approve.", "say": "Only inside the ranges you approve."},
+    {"id": "06", "t": 22.0, "text": "October 19. A real FX2.", "say": "October nineteenth. A real F X 2."},
+    {"id": "07", "t": 24.0, "text": "Two and a half stops hot. Coming down a third.", "say": "Two and a half stops hot. Coming down a third."},
+    {"id": "08", "t": 33.0, "text": "Exposure good. Holding.", "say": "Exposure good. Holding."},
+    {"id": "09", "t": 35.6, "text": "Interview look. Shutter, 1/48. Iris, f/4. White balance, 2800.", "say": "Interview look. Shutter, one forty-eighth. Iris, f four. White balance, twenty-eight hundred."},
+    {"id": "10", "t": 42.6, "text": "Every change is logged. Old value, new value, and why.", "say": "Every change is logged. Old value, new value, and why."},
+    {"id": "11", "t": 47.2, "text": "Want it back? One key.", "say": "Want it back? One key."},
+    {"id": "12", "t": 49.8, "text": "Stopped. 33 milliseconds. It's yours.", "say": "Stopped. Thirty-three milliseconds. It's yours."},
+    {"id": "13", "t": 53.4, "text": "Next: a blind test. Me, the camera's own auto, and a human.", "say": "Next: a blind test. Me, the camera's own auto, and a human."},
+    {"id": "14", "t": 62.6, "text": "Exposure… handled.", "say": "Exposure… handled.", "nosub": true}
+  ],
+  "duration": 70.0,
+  "kill_dropout": [49.0, 50.4]
+}

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Film capture</title>
+<!-- The film's 3D shots, rendered by the website's own camera (site/js/camera3d.js) one frame at a time, so every
+     move is scripted on the film's timeline. Driven by video/tools/capture_film.py; served from the repo root. -->
+<style>
+  html, body { margin: 0; background: #050505; overflow: hidden; }
+  #c { position: fixed; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+</style>
+<script type="importmap">{ "imports": { "three": "/site/vendor/three/three.module.min.js", "three/addons/": "/site/vendor/three/addons/" } }</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import { createCamera3D } from "/site/js/camera3d.js";
+import { createSim } from "/site/js/sim.js";
+
+const smooth = (x) => x * x * (3 - 2 * x);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+// keyframes [[t, v], ...] with eased segments (ease-in-out between keys, flat at each key)
+function kf(t, keys) {
+  if (t <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) {
+    const [t1, v1] = keys[i], [t0, v0] = keys[i - 1];
+    if (t <= t1) return v0 + (v1 - v0) * smooth((t - t0) / (t1 - t0 || 1));
+  }
+  return keys[keys.length - 1][1];
+}
+const between = (t, a, b) => t >= a && t < b;
+
+let cam3d, sim, S, A;
+const HERO = { x: -0.13, y: -0.02, z: -0.47 };            // the rear screen, camera assembled (the site's HERO_POSE)
+
+// Each shot: film-time range, pre-roll (seconds rendered before the first saved frame so the crew has spread out),
+// and state(t) for any film time t. Times match video/SCRIPT.md.
+const SHOTS = {
+  // 6.4–21.6: from the rear screen, pull back; at 11.0 the body comes apart; the crew switches on; then the crew
+  // swarms the sensor (ISO), the iris and the colour chip; at the end a push into the sensor.
+  inside: {
+    from: 6.4, to: 21.6, preroll: 0,
+    state(t) {
+      const sen = A.sensor, iri = A.iris, chp = A.chip, mid = A.mid, mid0 = A.mid0;
+      const pick = (k) => kf(t, [[6.4, HERO[k]], [10.6, HERO[k]], [11.2, mid0[k]], [13.0, mid[k]], [15.6, mid[k]], [16.3, sen[k]],
+        [17.25, sen[k]], [17.55, iri[k]], [18.6, iri[k]], [18.9, chp[k]], [19.85, chp[k]], [20.3, sen[k]], [21.6, sen[k]]]);
+      return {
+        tx: pick("x"), ty: pick("y"), tz: pick("z"),
+        yaw: kf(t, [[6.4, Math.PI], [7.2, Math.PI], [10.8, 2.35], [13.0, 1.05], [15.6, 0.82], [16.3, 1.02], [17.25, 1.1], [17.55, 0.98], [18.6, 1.06], [18.9, 0.55], [19.85, 0.62], [20.3, 1.02], [21.6, 1.04]]),
+        pitch: kf(t, [[6.4, 0.04], [7.2, 0.04], [10.8, 0.12], [13.0, 0.22], [15.6, 0.24], [16.3, 0.26], [17.25, 0.26], [17.55, 0.18], [18.6, 0.18], [18.9, 0.3], [19.85, 0.3], [20.3, 0.26], [21.6, 0.26]]),
+        dist: kf(t, [[6.4, 1.32], [7.2, 1.32], [10.8, 5.2], [13.0, 10.6], [15.6, 9.8], [16.3, 2.75], [17.25, 2.55], [17.55, 2.7], [18.6, 2.55], [18.9, 3.1], [19.85, 2.95], [20.3, 2.6], [21.6, 0.62]]),
+        explode: kf(t, [[10.9, 0], [12.6, 1]]),
+        agents: kf(t, [[11.5, 0], [12.6, 1]]),
+        frameX: kf(t, [[12.4, 0], [13.6, 0.16], [15.6, 0.16], [16.3, 0]]),
+        frameY: 0, lift: 0,
+        mode: between(t, 16.1, 17.4) ? "iso" : between(t, 17.4, 18.75) ? "iris" : between(t, 18.75, 20.1) ? "wb" : t >= 20.1 ? "iso" : "idle",
+        focus: t < 10.4 ? "lcd" : between(t, 16.1, 17.4) || t >= 20.1 ? "sensor" : between(t, 17.4, 18.75) ? "iris" : between(t, 18.75, 20.1) ? "chip" : "body",
+        sensorGain: kf(t, [[15.8, 0], [16.4, 1], [17.4, 1], [17.8, 0.3], [20.1, 0.3], [20.6, 1.4]]),
+        fnum: kf(t, [[17.5, 2.8], [18.5, 8], [18.8, 8], [19.6, 2.8]]),
+        chipGoal: kf(t, [[18.85, 0], [19.8, 1]]),
+        turntable: 0, snap: 0,
+      };
+    },
+  },
+  // 46.4–53.6: the exploded camera at work; at 49.0 the kill switch: the crew freezes and turns red. A slow push in.
+  kill: {
+    from: 46.4, to: 53.6, preroll: 3,
+    state(t) {
+      const mid = A.mid;
+      return {
+        tx: mid.x, ty: mid.y, tz: mid.z, explode: 1, agents: 1, mode: "idle", focus: "body",
+        yaw: kf(t, [[43.4, 0.98], [53.6, 0.74]]), pitch: kf(t, [[43.4, 0.2], [53.6, 0.27]]),
+        dist: kf(t, [[43.4, 11.6], [49.0, 10.4], [53.6, 8.6]]),
+        frameX: 0, frameY: 0, lift: 0, sensorGain: 0.4, fnum: 2.8, chipGoal: 0.5, turntable: 0, snap: 0,
+        freeze: t >= 49.0,
+      };
+    },
+  },
+  // 55.6–70: exploded and drifting; at 58.0 it snaps back together, a light sweep, then a slow turntable under the title.
+  snap: {
+    from: 55.6, to: 70.0, preroll: 3,
+    state(t) {
+      const mid = A.mid;
+      const SNAP = 58.0;
+      const e = t < SNAP - 0.5 ? 1 : t < SNAP ? 1 - Math.pow((t - (SNAP - 0.5)) / 0.5, 4) : 0;   // power4.in over 0.5 s
+      const after = t >= SNAP;
+      return {
+        explode: e, snap: 1, agents: t < SNAP - 0.5 ? 1 : 0, mode: t > 56.6 ? "home" : "idle", focus: "body",
+        tx: after ? 0 : mid.x, ty: after ? 0.06 : mid.y, tz: after ? 0.25 : mid.z,
+        yaw: after ? kf(t, [[SNAP, 1.25], [70, 1.25]]) : kf(t, [[52.6, 0.85], [SNAP, 1.2]]),
+        pitch: after ? 0.16 : 0.24,
+        dist: after ? kf(t, [[SNAP, 6.4], [61.0, 5.2], [70, 4.9]]) : kf(t, [[52.6, 11.4], [SNAP, 10.6]]),
+        frameX: 0, frameY: after ? kf(t, [[SNAP, -0.06], [61.0, -0.1]]) : -0.06, lift: 0,
+        turntable: after ? 1 : 0, sensorGain: 0, fnum: 2.8, chipGoal: 0.5,
+        sweep: after && t - 1 / 30 < SNAP,
+      };
+    },
+  },
+};
+
+const DAMPED = ["explode", "yaw", "pitch", "dist", "frameX", "frameY", "lift", "tx", "ty", "tz", "fnum", "agents", "sensorGain"];
+function apply(st, first) {
+  for (const k of ["tx", "ty", "tz", "yaw", "pitch", "dist", "explode", "agents", "frameX", "frameY", "lift", "fnum", "sensorGain", "chipGoal", "mode", "focus", "turntable", "snap"])
+    if (st[k] !== undefined) S[k] = st[k];
+  if (first) cam3d.settle();
+  if (st.freeze !== undefined && st.freeze !== cam3d.frozen) cam3d.freeze(st.freeze);
+  if (st.sweep) cam3d.flashSweep();
+}
+
+window.setup = async (scale) => {
+  const canvas = document.getElementById("c");
+  cam3d = await createCamera3D(canvas, { low: false });
+  cam3d.setQuality({ pr3d: scale, dof: true, bloom: true, agents: 380, msaa: 4, load: 1 }, 1);
+  S = cam3d.state;
+  A = { sensor: cam3d.anchor("sensor"), iris: cam3d.anchor("iris"), chip: cam3d.anchor("chip"), mid: cam3d.anchor("center", 1), mid0: cam3d.anchor("center", 0.25) };
+  // the rear screen: the simulator's finished picture of the tungsten scene (the same still the site uses)
+  sim = createSim({ low: false });
+  const lv = sim.view(cam3d.lcdCanvas, { scene: 1, size: [1280, 720] });
+  lv.a = { iso: 3200, shutter: 1 / 48, fnum: 2.8, wb: 3500, mode: "normal" }; lv.b = null; lv.visible = true; lv.t0 = 0;
+  sim.render(2400); lv.visible = false; cam3d.lcdChanged();
+  await cam3d.precompile();
+  return true;
+};
+
+// The opening viewfinder (film 0–7.4 s), drawn by the site's simulator: the shot starts too bright and too cold
+// (ISO 12800, 6500 K); on "I'll handle the exposure" the agent's third-stop ISO steps and a white-balance glide
+// bring it to ISO 3200, 3500 K. An illustration. The composition's HUD uses the same steps (VF_STEPS in index.html).
+const VF_STEPS = [[0, 12800], [4.9, 10000], [5.15, 8000], [5.4, 6400], [5.65, 5000], [5.9, 4000], [6.15, 3200]];
+const vfIso = (t) => VF_STEPS.filter(([at]) => t >= at).pop()[1];
+const vfWb = (t) => Math.round(6500 + (3500 - 6500) * smooth(clamp((t - 4.9) / 1.4, 0, 1)));
+let vfView = null;
+window.setupVF = () => {
+  const c = document.createElement("canvas"); c.style.cssText = "position:fixed;left:0;top:0;width:1920px;height:1080px";
+  document.getElementById("c").replaceWith(c); c.id = "c";
+  sim = createSim({ low: false });
+  vfView = sim.view(c, { scene: 1, size: [3840, 2160] });
+  vfView.b = null; vfView.visible = true; vfView.t0 = 0;
+  SHOTS.viewfinder = { from: 0, to: 7.4, preroll: 0 };
+  return true;
+};
+window.vfFrame = (i, fps, quality) => {
+  const t = i / fps;
+  vfView.a = { iso: vfIso(t), shutter: 1 / 48, fnum: 2.8, wb: vfWb(t), mode: "normal" };
+  sim.render(t * 1000);
+  return vfView.canvas.toDataURL("image/jpeg", quality);
+};
+
+let shot, frameT;
+window.begin = (name, fps) => {
+  shot = SHOTS[name];
+  const t0 = shot.from - shot.preroll;
+  apply(shot.state(t0), true);
+  frameT = t0;
+  // pre-roll: run the crew without saving frames
+  const n = Math.round(shot.preroll * fps);
+  for (let i = 0; i < n; i++) { frameT += 1 / fps; apply(shot.state(frameT), false); cam3d.renderOnce(1 / fps); }
+  return { from: shot.from, to: shot.to };
+};
+// one frame at film time shot.from + i / fps, as a JPEG data URL
+window.frame = (i, fps, quality) => {
+  const t = shot.from + i / fps;
+  apply(shot.state(t), i === 0 && shot.preroll === 0);
+  cam3d.renderOnce(1 / fps);
+  return document.getElementById("c").toDataURL("image/jpeg", quality);
+};
+window.ready = true;
+</script>
+</body>
+</html>

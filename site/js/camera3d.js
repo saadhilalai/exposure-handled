@@ -717,7 +717,7 @@ export async function createCamera3D(canvas, { low = false } = {}) {
     start() { if (running) return; running = true; clock.update(); raf = requestAnimationFrame(frame); },   // never inside a scroll handler
     stop() { running = false; cancelAnimationFrame(raf); },
     get running() { return running; },
-    renderOnce() { resize(); step(1 / 60); composer.render(); },
+    renderOnce(dt = 1 / 60) { resize(); step(dt); composer.render(); },     // dt: the film capture steps 1/30 s a frame
     // Compile the scene's shaders in the background (the browser's parallel shader compile), for the render target
     // they're really drawn into, so the first real frame doesn't stall on them.
     async precompile() {
