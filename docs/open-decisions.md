@@ -20,6 +20,24 @@
 
 None of 3, 5, 6, 8, 9 or 12 changes the frozen plan.
 
+## New (2026-10-21, evening): the narrated film
+
+**14. Approve the script.** `video/SCRIPT.md`: 14 lines, about 38 s of talking in a 70 s film. Every number comes from the Oct 19 logs, and the source is beside each line. Change any line you like. Nothing gets voiced until you approve them.
+
+**15. Which voice?** There are three auditions of lines 7, 8, 11 and 12 (sent, and in `video/composition/assets/voice/auditions/`, not in git):
+- **Dior:** a crisp, neutral male voice, made for tech launch films.
+- **Marie:** a cool American female voice (2 takes).
+- **Recommended:** whichever sounds more like *your* assistant. If I had to pick blind: Dior, because "crisp with an edge" is the brief's "a little cool".
+
+**16. Where the final voice comes from.** The ElevenLabs connection is a free account. It made these auditions, then refused the next request: *"Unusual activity has been detected on your account, so Free Tier access has been disabled… Please upgrade to a paid subscription."* I haven't retried. The options:
+- **A (recommended if you like Dior or Marie): upgrade ElevenLabs** to its cheapest paid plan. It unlocks the account, keeps the exact voice you picked, and paid plans include a commercial license.
+- **B: Higgsfield,** your paid plan (1,057 credits). It runs the same Eleven v4 engine, but with its own preset voices, not Dior or Marie. I'd audition 2–3 of those first, which costs a few credits.
+- **C: a free voice that runs on this Mac** (open-source Kokoro, Apache license). It's less expressive than the two above, but not robotic.
+
+Until you answer, I'm building the film's visuals timed to the script, with the music in. The voice drops in last.
+
+---
+
 ## New (2026-10-21, afternoon)
 
 **13. Is Saturday both sessions, or session 1 only?** *(Answered: session 1 only.)* The plan has two:
