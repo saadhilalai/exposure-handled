@@ -2,6 +2,20 @@
 
 The plan itself is frozen ([step7-test-plan.md](step7-test-plan.md), tag `step7-plan-final`). These are the tools it needs on the day and afterwards. None of them needed the camera to build; all were tried on the fake camera or with stand-in clips.
 
+## 0. On the day: two Terminal windows
+
+```
+tools/step7.sh bridge            # window 1, once: the bridge with the Step 7 switch; keeps the Mac awake
+tools/step7.sh S1_R1_A_agent     # window 2, each take: that take's exact run-sheet command
+```
+
+- **Window 1** removes an old socket, starts the bridge with `--allow-iso-while-recording` and waits until the camera answers. Leave it open all day; Ctrl-C at the end stops the bridge.
+- **Window 2** looks the take up on the run sheet and runs its command: the look, live or dry run, and the switch, with the dashboard on port 8770 (8765 is robot-walker's). A name that isn't on the sheet is refused with the closest matches. `--print` only shows the command.
+- **The runner now also logs** when the camera starts and stops recording (a `rec` event), so the blind-test clips can be cut from the mark.
+- **Safe to retype:** a take whose bridge isn't answering, or whose dashboard port is taken, stops before it makes a folder. FX2-auto and manual takes never offer to put ISO back.
+- **Watching from a third window:** `python tools/watch_session.py` follows the newest session.
+- **Scoring afterwards:** `python tools/score_take.py sessions/*_S1_R1_*` (any list of take folders; `--json out.json` saves it). Folders with no data, or recorded on the fake camera, are skipped and listed. A take whose name and mode disagree (an `_agent` take that ran as a dry run) is flagged `CHECK`.
+
 ## 1. The recording switch (agent takes only, off by default)
 
 The agent normally changes nothing while the camera records. For Step 7 agent takes only, you approved one exception: **ISO, and nothing else, may change while recording.** All three layers must agree, and each refuses on its own:

@@ -6,9 +6,9 @@ An S4D project, directed by Saad Hilal. Code written with an AI coding assistant
 
 ![The dashboard on the fake camera](docs/screenshots/step6_03_desktop_auto.png)
 
-**Status (2026-10-17):**
-- Steps 1–6 and 8 are built.
-- The live closed-loop ISO test on the real FX2 and the real-world comparison (Step 7) are next.
+**Status (2026-10-21):**
+- Steps 1–6 and 8 are built, and the live closed-loop ISO test on the real FX2 passed (2026-10-19).
+- The real-world comparison (Step 7) is planned and frozen, and is shot on Saturday 2026-10-24.
 - Every result below is labeled with where it came from: **real camera**, **recorded frames**, **simulator** or **fake camera**.
 - Day-by-day log: [PROGRESS.md](PROGRESS.md).
 
@@ -80,8 +80,8 @@ The agent is designed to expose correctly across skin tones.
 | Smoothness | 14 simulated situations (sunset, walk-bys, shade → sun, tungsten…): 0 back-and-forth | simulator |
 | A pumping bug | found on your real frame through the fake camera (6400 ↔ 5000), fixed, and kept as a test | fake camera |
 | Face recognition | same face matched across 2.3 stops of exposure change: 0.97 similarity (threshold 0.36) | recorded frame |
-| Automated tests | 62 passing | — |
-| **Agent vs FX2 auto vs manual, blind test** | **not done yet**: plan written before shooting ([docs/step7-test-plan.md](docs/step7-test-plan.md), draft) | — |
+| Automated tests | 1 passing | — |
+| **Agent vs FX2 auto vs manual, blind test** | **not done yet**: plan written and frozen before shooting ([docs/step7-test-plan.md](docs/step7-test-plan.md)) | — |
 
 Demo video: coming after Step 7.
 
