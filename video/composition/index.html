@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Camera Agent</title>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      /* Geist + Geist Mono, SIL OFL 1.1. Variable weight axis. */
+      @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Variable.woff2") format("woff2"); font-weight: 100 900; }
+      @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-Variable.woff2") format("woff2"); font-weight: 100 900; }
+
+      :root {
+        --bg: #0b0b0c;
+        --ink: #f3f2ee;     /* primary text */
+        --ink-2: #9b9a95;   /* secondary text */
+        --ink-3: #7f7e7a;   /* footnotes */
+        --accent: #ff6a1a;  /* the one accent: "the agent" (the site's AI orange) */
+        --ph: #ffd23a;      /* PLACEHOLDER tags only: never in the final film */
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+      #root {
+        position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--bg);
+        color: var(--ink); font-family: "Geist", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased;
+      }
+      .clip { position: absolute; inset: 0; }
+      .w { display: inline-block; }   /* one word, for the soft word-by-word build */
+
+      /* Centred type screens */
+      .screen { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      .display { font-size: 112px; line-height: 1.04; font-weight: 500; letter-spacing: -0.035em; white-space: nowrap; }
+      .mono-label { font-family: "Geist Mono", monospace; font-size: 28px; letter-spacing: 0.02em; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+      /* PLACEHOLDER tag: every stand-in carries one, so nothing slips into the final film */
+      .ph { position: absolute; z-index: 5; padding: 9px 14px 8px; border-radius: 6px; background: var(--ph); color: #111;
+        font-family: "Geist Mono", monospace; font-size: 22px; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
+      .ph-text { color: var(--ph); }
+      .ph-box { outline: 3px dashed var(--ph); outline-offset: 4px; border-radius: 8px; }
+
+      /* The product window: one shot, the light changes and the agent brings the face back, then it grows */
+      #frame { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden;
+        transform-origin: 50% 50%; opacity: 0; border-radius: 36.7px; background: #1a1714; }
+      .layer { position: absolute; inset: 0; }
+      .media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+      /* Slate: a stand-in room (a lamp, a person) whose brightness follows the story. Not footage. */
+      .slate { position: absolute; inset: 0; overflow: hidden; background: #2a231c; }
+      .slate .room { position: absolute; inset: 0;
+        background: radial-gradient(1200px 900px at 78% 30%, rgba(255, 190, 120, 0.55), rgba(255, 190, 120, 0) 70%),
+                    linear-gradient(180deg, #3a2f25 0%, #241d17 62%, #17130f 100%); }
+      .slate .lamp { position: absolute; left: 1380px; top: 170px; width: 220px; height: 220px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 236, 200, 0.95) 0%, rgba(255, 200, 130, 0.5) 35%, rgba(255, 170, 90, 0) 70%); }
+      .slate .head { position: absolute; left: 820px; top: 300px; width: 280px; height: 350px; border-radius: 50% 50% 46% 46%;
+        background: radial-gradient(260px 300px at 70% 35%, #c9a184 0%, #8a6650 55%, #4a372b 100%); }
+      .slate .body { position: absolute; left: 640px; top: 620px; width: 640px; height: 520px; border-radius: 220px 220px 0 0;
+        background: linear-gradient(90deg, #1c1a1a 0%, #2f2a28 60%, #3a3330 100%); }
+      .slate .slot { position: absolute; left: 0; right: 0; bottom: 64px; text-align: center; font-family: "Geist Mono", monospace;
+        font-size: 30px; color: rgba(255, 255, 255, 0.55); white-space: nowrap; }
+
+      /* Captions under the small window */
+      .cap { display: flex; flex-direction: column; align-items: center; text-align: center; }
+      .cap-label { position: absolute; left: 0; right: 0; top: 830px; font-family: "Geist Mono", monospace;
+        font-size: 28px; letter-spacing: 0.02em; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .cap-text { position: absolute; left: 0; right: 0; top: 874px; font-size: 60px; line-height: 1.1;
+        font-weight: 500; letter-spacing: -0.03em; white-space: nowrap; }
+
+      /* Three ways, same scene, same moment */
+      #trio { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 50% 50%; opacity: 0; }
+      .pane { position: absolute; top: 366px; width: 616px; height: 347px; overflow: hidden; border-radius: 14px; background: #1a1714; }
+      .pane .slate .head { left: 248px; top: 92px; width: 100px; height: 124px; }
+      .pane .slate .body { left: 182px; top: 206px; width: 232px; height: 190px; border-radius: 80px 80px 0 0; }
+      .pane .slate .lamp { left: 430px; top: 50px; width: 90px; height: 90px; }
+      .pane .slate .slot { bottom: 18px; font-size: 18px; }
+      .pane .ph { left: 12px; top: 12px; font-size: 15px; padding: 6px 9px 5px; }
+      #p1 { left: 16px; } #p2 { left: 652px; } #p3 { left: 1288px; }
+      .pane-label { position: absolute; top: 302px; font-size: 34px; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; opacity: 0; }
+      #lab1 { left: 20px; } #lab2 { left: 656px; } #lab3 { left: 1292px; }
+      .who { font-family: "Geist Mono", monospace; font-weight: 400; color: var(--ink-2); margin-right: 14px; }
+      .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); margin-right: 14px; vertical-align: 4px; }
+      .status { position: absolute; top: 744px; font-size: 34px; font-weight: 500; letter-spacing: -0.02em; white-space: nowrap; opacity: 0; }
+      #st1 { left: 20px; } #st2 { left: 656px; } #st3 { left: 1292px; }
+      #trionote .t { position: absolute; left: 0; right: 0; top: 900px; text-align: center; font-size: 28px; white-space: nowrap; }
+
+      /* The result */
+      #s6 .kicker { font-size: 32px; font-weight: 500; color: var(--accent); letter-spacing: -0.01em; white-space: nowrap; }
+      #s6 .big { margin-top: 6px; font-size: 280px; line-height: 1; font-weight: 500; letter-spacing: -0.05em; white-space: nowrap; }
+      #s6 .what { margin-top: 2px; font-size: 68px; line-height: 1.1; font-weight: 500; letter-spacing: -0.03em; white-space: nowrap; }
+      #s6 .rule { margin-top: 46px; width: 120px; height: 2px; background: rgba(243, 242, 238, 0.22); transform-origin: 50% 50%; }
+      #s6 .line { margin-top: 38px; font-size: 36px; letter-spacing: -0.01em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+      #s6 .foot { margin-top: 70px; font-size: 28px; white-space: nowrap; }
+
+      /* Trust beat */
+      #s7 .mono-label { margin-bottom: 30px; }
+
+      /* End card */
+      #s8 .title { font-size: 120px; line-height: 1.04; font-weight: 500; letter-spacing: -0.04em; white-space: nowrap; }
+      #s8 .credit { margin-top: 34px; font-size: 38px; color: var(--ink-2); letter-spacing: -0.01em; white-space: nowrap; }
+      #s8 .link { margin-top: 20px; font-family: "Geist Mono", monospace; font-size: 30px; color: var(--ink-2); white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="40" data-width="1920" data-height="1080">
+
+      <!-- 1. Black. One line. -->
+      <div id="s1" class="clip screen" data-start="0" data-duration="3" data-track-index="1">
+        <div class="display"><span class="w">The</span> <span class="w">light</span> <span class="w">changed.</span></div>
+      </div>
+
+      <!-- 2-3. The product window: one real take. The mark (lamp off) is at 6.0 s: the clip starts 3 s before it. -->
+      <div id="frame">
+        <div id="LA" class="layer">
+          <!-- SWAP CLIP A (S3 agent take, exported from 3 s before the lamp-off mark): put it at assets/video/clipA.mp4,
+               uncomment the next line and delete the slate below it.
+          <video id="vA" class="clip media" src="assets/video/clipA.mp4" data-start="3" data-duration="11.4" data-media-start="0" data-track-index="2" muted playsinline></video>
+          -->
+          <div id="slateA" class="clip slate" data-start="3" data-duration="11.4" data-track-index="2">
+            <div class="room"></div><div class="lamp"></div><div class="body"></div><div class="head"></div>
+            <div class="slot">stand-in: S3 · tungsten · one lamp off, agent take</div>
+          </div>
+        </div>
+        <div class="ph" style="left: 36px; top: 36px; font-size: 34px; padding: 14px 20px 12px;">PLACEHOLDER · CLIP A · S3 agent take, from 3 s before the mark</div>
+      </div>
+
+      <div id="c2" class="clip cap" data-start="3.4" data-duration="5.0" data-track-index="6">
+        <div class="cap-label">S3 · tungsten · one lamp off</div>
+        <div class="cap-text"><span class="w">The</span> <span class="w">face</span> <span class="w">went</span> <span class="w">dark.</span></div>
+      </div>
+      <div id="c3" class="clip cap" data-start="8.4" data-duration="3.8" data-track-index="6">
+        <div class="cap-label ph-text">[PLACEHOLDER: the agent's own log line for this moment]</div>
+        <div class="cap-text"><span class="w">It</span> <span class="w">brought</span> <span class="w">it</span> <span class="w">back.</span></div>
+      </div>
+
+      <!-- 4. The turn -->
+      <div id="s4" class="clip screen" data-start="14.4" data-duration="2.8" data-track-index="1">
+        <div class="display" style="font-size: 100px"><span class="w">Then</span> <span class="w">we</span> <span class="w">tested</span> <span class="w">it</span> <span class="w">blind.</span></div>
+      </div>
+
+      <!-- 5. Three ways, same scene, same moment (one example) -->
+      <div id="trio">
+        <div id="lab1" class="pane-label"><span class="who">A</span>Camera auto</div>
+        <div id="lab2" class="pane-label"><span class="who">B</span>By hand</div>
+        <div id="lab3" class="pane-label"><span class="dot"></span><span class="who">C</span>The agent</div>
+        <div id="p1" class="pane" data-layout-allow-overflow>
+          <!-- SWAP CLIP B1 (camera Auto ISO take): assets/video/clipB1.mp4, from 3 s before the mark.
+          <video id="vB1" class="clip media" src="assets/video/clipB1.mp4" data-start="17.2" data-duration="8.4" data-media-start="0" data-track-index="7" muted playsinline></video>
+          -->
+          <div id="slateB1" class="clip slate" data-start="17.2" data-duration="8.4" data-track-index="7"><div class="room"></div><div class="lamp"></div><div class="body"></div><div class="head"></div><div class="slot">stand-in: camera auto</div></div>
+          <div class="ph">PLACEHOLDER · B1</div>
+        </div>
+        <div id="p2" class="pane" data-layout-allow-overflow>
+          <!-- SWAP CLIP B2 (manual take): assets/video/clipB2.mp4, from 3 s before the mark.
+          <video id="vB2" class="clip media" src="assets/video/clipB2.mp4" data-start="17.2" data-duration="8.4" data-media-start="0" data-track-index="8" muted playsinline></video>
+          -->
+          <div id="slateB2" class="clip slate" data-start="17.2" data-duration="8.4" data-track-index="8"><div class="room"></div><div class="lamp"></div><div class="body"></div><div class="head"></div><div class="slot">stand-in: by hand</div></div>
+          <div class="ph">PLACEHOLDER · B2</div>
+        </div>
+        <div id="p3" class="pane" data-layout-allow-overflow>
+          <!-- SWAP CLIP B3 (agent take): assets/video/clipB3.mp4, from 3 s before the mark.
+          <video id="vB3" class="clip media" src="assets/video/clipB3.mp4" data-start="17.2" data-duration="8.4" data-media-start="0" data-track-index="9" muted playsinline></video>
+          -->
+          <div id="slateB3" class="clip slate" data-start="17.2" data-duration="8.4" data-track-index="9"><div class="room"></div><div class="lamp"></div><div class="body"></div><div class="head"></div><div class="slot">stand-in: the agent</div></div>
+          <div class="ph">PLACEHOLDER · B3</div>
+        </div>
+        <div id="st1" class="status ph-text">[what A did]</div>
+        <div id="st2" class="status ph-text">[what B did]</div>
+        <div id="st3" class="status ph-text">[what C did]</div>
+      </div>
+      <div id="trionote" class="clip" data-start="17.2" data-duration="8.4" data-track-index="12">
+        <div class="t ph-text">[PLACEHOLDER: One example: scene ?, round ?. Not the typical result.]</div>
+      </div>
+
+      <!-- 6. The result (every number from score_take.py and the rating page) -->
+      <div id="s6" class="clip screen" data-start="25.6" data-duration="6.8" data-track-index="1">
+        <div class="ph" style="left: 36px; top: 36px;">PLACEHOLDER · Step 7 result</div>
+        <div class="kicker"><span class="dot"></span>The agent</div>
+        <div class="big ph-text ph-box">N×</div>
+        <div class="what ph-text"><span class="w">[what</span> <span class="w">the</span> <span class="w">number</span> <span class="w">means]</span></div>
+        <div class="rule"></div>
+        <div class="line ph-text">[a vs b · 63 takes · N raters, blind]</div>
+        <div class="foot ph-text">[the honest caveat]</div>
+      </div>
+
+      <!-- 7. Trust: the real kill-switch time from the Oct 19 live test on the FX2 -->
+      <div id="s7" class="clip screen" data-start="32.4" data-duration="3.6" data-track-index="1">
+        <div class="mono-label">kill switch · 33 ms · real FX2, Oct 19</div>
+        <div class="display" style="font-size: 100px"><span class="w">One</span> <span class="w">key</span> <span class="w">takes</span> <span class="w">it</span> <span class="w">back.</span></div>
+      </div>
+
+      <!-- 8. End card -->
+      <div id="s8" class="clip screen" data-start="36" data-duration="4" data-track-index="1">
+        <div class="title"><span class="w">Camera</span> <span class="w">Agent</span></div>
+        <div class="credit">Saad Hilal · S4D</div>
+        <div class="link">github.com/saadhilalai <span class="ph-text">[repo link once public]</span></div>
+      </div>
+
+      <!-- Music: "Penumbra" by Scott Buckley, CC BY 4.0 (www.scottbuckley.com.au). The asset is 0:10.4-0:54.4 of the track,
+           raised 7 dB (no compression); playback starts 2 s in (0:12.4), so its strings swell (0:24.6) lands on the window
+           growing full screen (12.2 s). -->
+      <audio id="bgm" src="assets/music/penumbra-scott-buckley-excerpt.m4a" data-start="0" data-duration="40" data-media-start="2" data-track-index="10" data-volume="0.9"></audio>
+    </div>
+
+    <script>
+      (function () {
+        var tl = gsap.timeline({ paused: true });
+
+        // A soft word-by-word build: rise, unblur, fade in. Calm, never snappy.
+        function build(sel, at, opts) {
+          opts = opts || {};
+          tl.fromTo(sel,
+            { opacity: 0, y: opts.y || 34, filter: "blur(" + (opts.blur || 10) + "px)" },
+            { opacity: 1, y: 0, filter: "blur(0px)", duration: opts.dur || 1.3, ease: opts.ease || "power3.out", stagger: opts.stagger || 0.1 },
+            at);
+        }
+        function fadeIn(sel, at, dur, y, ease) {
+          tl.fromTo(sel, { opacity: 0, y: y || 0 }, { opacity: 1, y: 0, duration: dur || 0.9, ease: ease || "sine.out" }, at);
+        }
+        // Exits are fromTo with immediateRender off, so seeking never writes a later start state early.
+        function fadeOut(sel, at, dur) {
+          tl.fromTo(sel, { opacity: 1, y: 0 }, { opacity: 0, y: -8, duration: dur || 0.45, ease: "power1.in", immediateRender: false }, at);
+        }
+        function later(sel, from, to, at) {
+          to.immediateRender = false;
+          tl.fromTo(sel, from, to, at);
+        }
+
+        // 1. "The light changed."
+        build("#s1 .w", 0.35);
+        fadeOut("#s1 .display", 2.45);
+
+        // 2. The window appears, small and centred, with a slow push
+        tl.fromTo("#frame", { opacity: 0, scale: 0.57, y: -70 }, { opacity: 1, scale: 0.6, y: -70, duration: 1.4, ease: "power2.out" }, 3.0);
+        later("#frame", { scale: 0.6 }, { scale: 0.612, duration: 7.8, ease: "none" }, 4.4);
+        // stand-in only: the lamp goes off at the mark (6.0 s), and the agent's ISO move brings the face back
+        tl.fromTo("#slateA .lamp", { opacity: 1 }, { opacity: 0.08, duration: 0.25, ease: "power1.in" }, 6.0);
+        tl.fromTo("#slateA", { filter: "brightness(1)" }, { filter: "brightness(0.42)", duration: 0.25, ease: "power1.in" }, 6.0);
+        later("#slateA", { filter: "brightness(0.42)" }, { filter: "brightness(0.95)", duration: 1.6, ease: "power2.inOut" }, 7.4);
+
+        build("#c2 .cap-label", 3.9, { y: 12, blur: 6, dur: 1.0 });
+        build("#c2 .w", 6.35, { y: 20, blur: 8, dur: 1.1, stagger: 0.08 });
+        fadeOut("#c2 .cap-label, #c2 .cap-text", 7.95, 0.4);
+
+        // 3. It brought it back
+        build("#c3 .cap-label", 8.6, { y: 12, blur: 6, dur: 1.0 });
+        build("#c3 .w", 8.85, { y: 20, blur: 8, dur: 1.1, stagger: 0.08 });
+        fadeOut("#c3 .cap-label, #c3 .cap-text", 11.75, 0.4);
+        // key moment: the window grows to full screen (time the music's swell here)
+        later("#frame", { scale: 0.612, y: -70, borderRadius: 36.7 }, { scale: 1, y: 0, borderRadius: 0, duration: 1.8, ease: "power2.inOut" }, 12.2);
+        later("#frame", { opacity: 1 }, { opacity: 0, duration: 0.4, ease: "power1.in" }, 14.0);
+
+        // 4. "Then we tested it blind."
+        build("#s4 .w", 14.7, { stagger: 0.09 });
+        fadeOut("#s4 .display", 16.7);
+
+        // 5. Three ways, same moment
+        tl.fromTo("#trio", { opacity: 0, scale: 0.78 }, { opacity: 1, scale: 0.8, duration: 1.0, ease: "power2.out" }, 17.2);
+        fadeIn("#lab1", 17.6, 0.9, 10, "power3.out");
+        fadeIn("#lab2", 17.75, 0.9, 10, "power3.out");
+        fadeIn("#lab3", 17.9, 0.9, 10, "power3.out");
+        fadeIn("#trionote .t", 18.3, 1.0);
+        later("#trio", { scale: 0.8 }, { scale: 1, duration: 1.6, ease: "power2.inOut" }, 21.4);
+        build("#st1", 22.0, { y: 14, blur: 6, dur: 1.0 });
+        build("#st2", 22.45, { y: 14, blur: 6, dur: 1.0 });
+        build("#st3", 22.9, { y: 14, blur: 6, dur: 1.0 });
+        later("#trio", { opacity: 1 }, { opacity: 0, duration: 0.6, ease: "power1.in" }, 25.0);
+        fadeOut("#trionote .t", 25.0, 0.6);
+
+        // 6. The result, one idea at a time
+        fadeIn("#s6 .kicker", 25.95, 1.0, 12, "power3.out");
+        tl.fromTo("#s6 .big", { opacity: 0, y: 40, filter: "blur(14px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.6, ease: "expo.out" }, 26.15);
+        build("#s6 .what .w", 26.55, { y: 24, blur: 8, dur: 1.2, stagger: 0.08 });
+        tl.fromTo("#s6 .rule", { scaleX: 0 }, { scaleX: 1, duration: 1.0, ease: "power2.inOut" }, 27.0);
+        fadeIn("#s6 .line", 27.3, 1.0, 12, "power3.out");
+        fadeIn("#s6 .foot", 27.9, 1.0, 8);
+        fadeOut("#s6 .kicker, #s6 .big, #s6 .what, #s6 .rule, #s6 .line, #s6 .foot", 31.8, 0.5);
+
+        // 7. One key takes it back
+        fadeIn("#s7 .mono-label", 32.7, 1.0, 10, "power3.out");
+        build("#s7 .w", 32.95, { stagger: 0.09 });
+        fadeOut("#s7 .mono-label, #s7 .display", 35.5, 0.45);
+
+        // 8. End card
+        build("#s8 .title .w", 36.3, { stagger: 0.09, dur: 1.4 });
+        fadeIn("#s8 .credit", 36.95, 1.0, 10, "power3.out");
+        fadeIn("#s8 .link", 37.25, 1.0, 8);
+
+        // Music: gentle fade in from silence, long fade out under the end card
+        tl.fromTo("#bgm", { volume: 0 }, { volume: 0.9, duration: 2.2, ease: "sine.out" }, 0);
+        tl.fromTo("#bgm", { volume: 0.9 }, { volume: 0, duration: 3.4, ease: "sine.in", immediateRender: false }, 36.6);
+
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>
