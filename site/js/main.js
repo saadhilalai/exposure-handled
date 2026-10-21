@@ -39,6 +39,10 @@ async function main() {
   fpsMeter();
   nav(); toggles(); magnetic(); lockFrame(); eggs(); lineWrap();
   scrollHints(".scenes, .compare .modes, .dash .modes");
+  // Sections off screen pause their CSS animations (blinking dots, pulsing rings): a hidden animation still costs
+  // the browser style and layer work every frame, which the 3D needs on slower computers.
+  const still = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("still", !e.isIntersecting)));
+  $$("section").forEach((sec) => still.observe(sec));
   let heroReady = Promise.resolve();
   if (sim) { simLoop(); heroReady = hero(); }
   // build the 3D camera once the opening is over, or as soon as someone scrolls, whichever comes first
@@ -299,7 +303,7 @@ function heroPull() {
     trigger: ".hero", start: "top top", end: "bottom bottom", scrub: true,
     onUpdate: (s) => {
       const p = (prog.hero = s.progress);
-      fade.forEach((el) => (el.style.opacity = 1 - smooth(0, 0.12, p)));
+      fade.forEach((el) => { el.style.opacity = 1 - smooth(0, 0.12, p); el.classList.toggle("still", p > 0.12); });
       title.style.transform = `translateY(${-p * 160}px)`; title.style.opacity = 1 - smooth(0.02, 0.22, p);
       if (cam3d) {
         Object.assign(cam3d.state, HERO_POSE); cam3d.settle();
@@ -362,6 +366,7 @@ function inside() {
       const al = clamp(Math.min((p - a) / 0.035, (b - p) / 0.035), 0, 1);
       if (al > 0.5) active = name;
       el.style.opacity = al; el.style.visibility = al > 0.001 ? "visible" : "hidden";
+      el.classList.toggle("still", al <= 0.001);      // hidden beats pause their CSS animations
       const base = mob ? "" : "translateY(-50%) ";
       const out = 1 - al;
       el.style.transform = base + ({ crew: `translateY(${out * 50}px)`, iso: `translateX(${-out * 60}px)`, iris: `scale(${0.94 + 0.06 * al})`, wb: `translateY(${-out * 40}px)`, kill: `translateY(${out * 70}px) scale(${0.96 + 0.04 * al})` })[name];

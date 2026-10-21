@@ -187,8 +187,8 @@ main, .foot { position: relative; z-index: 1; }
 .hero-title { position: absolute; z-index: 3; left: var(--gutter); bottom: clamp(108px, 17vh, 170px); font-size: clamp(64px, 10.5vw, 188px); text-shadow: 0 4px 60px rgba(0,0,0,.45); pointer-events: none; }
 .hero-title .line { overflow: hidden; padding-bottom: .06em; }
 .scroll-cue { position: absolute; z-index: 3; left: 50%; bottom: 14px; width: 1px; height: 46px; background: rgba(255,255,255,.18); overflow: hidden; }
-.scroll-cue i { position: absolute; left: 0; top: -40%; width: 1px; height: 40%; background: #fff; animation: cue 2s var(--ease-io) infinite; }
-@keyframes cue { to { top: 110%; } }
+.scroll-cue i { position: absolute; left: 0; top: 0; width: 1px; height: 40%; background: #fff; transform: translateY(-100%); animation: cue 2s var(--ease-io) infinite; }
+@keyframes cue { to { transform: translateY(275%); } }      /* transform, not top: no layout every frame */
 .hero .note { position: absolute; right: clamp(18px, 3vw, 44px); bottom: clamp(96px, 14vh, 130px); z-index: 4; max-width: 380px; }
 
 /* ---------- chat feed ---------- */
@@ -444,6 +444,9 @@ section.try, section.game, section.compare, section.real, section.safety, sectio
 /* ---------- Nerd mode: frame-rate counter ---------- */
 .fps-meter { position: fixed; left: 14px; bottom: 14px; z-index: 95; padding: 7px 10px 6px; border-radius: 8px; font: 700 10.5px/1 var(--wide); letter-spacing: .14em; text-transform: uppercase; color: #d8d6ff; background: rgba(28,25,60,.82); border: 1px solid rgba(150,140,255,.35); pointer-events: none; font-variant-numeric: tabular-nums; }
 .fps-meter.slow { color: #ffd0a8; border-color: rgba(255,106,26,.5); }
+
+/* Off-screen sections, hidden beats and faded HUD bits pause their animations (js/main.js) */
+.still, .still *, .still *::before, .still *::after { animation-play-state: paused !important; }
 
 /* ---------- toast, grain, cursor ---------- */
 /* Focus brackets (js/ui.js lockFrame): four orange corners that snap around what's under the pointer. */
