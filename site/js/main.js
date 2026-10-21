@@ -698,7 +698,7 @@ function dash() {
   $$("#dash-modes button").forEach((b) => b.addEventListener("click", () => {
     $$("#dash-modes button").forEach((x) => x.setAttribute("aria-checked", x === b));
     img.style.opacity = 0; sound.tick();
-    setTimeout(() => { img.src = `media/screens/${b.dataset.shot}.png`; img.onload = () => (img.style.opacity = 1); }, 180);
+    setTimeout(() => { img.src = `media/screens/${b.dataset.shot}.jpg`; img.onload = () => (img.style.opacity = 1); }, 180);
   }));
   if (html.classList.contains("fine") && motion) {
     dev.addEventListener("pointermove", (e) => {

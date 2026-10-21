@@ -38,7 +38,7 @@ You're holding a cinema camera, and the AI is your assistant inside it. People l
 |---|---|---|
 | The Oct 19 chart, gauges, ISO sequence, 33 ms kill switch | **Real** (teal tag) | `data/site.json`, exported from the session logs by `tools/export_site_data.py` |
 | Approved ranges and locked settings | **Real** | `config/safe_ranges.json` and the agent's safety rules |
-| Dashboard screenshots | **Placeholder** (amber tag) | `media/screens/`, the real dashboard running on the fake camera; to be replaced by a recording on the FX2 |
+| Dashboard screenshots | **Placeholder** (amber tag) | `media/screens/`, the real dashboard running on the fake camera, playing a still of the site's illustrated scene; to be replaced by a recording on the FX2 |
 | The camera picture in the viewfinder, simulator, game and slider | **Illustration** (tagged in Nerd mode) | Rendered live in the browser by `js/sim.js`; not footage |
 | The 3D camera and its crew | Illustration | `js/camera3d.js`; an original design inspired by the FX2, with no maker's name |
 
