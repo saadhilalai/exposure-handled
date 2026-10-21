@@ -48,3 +48,6 @@ video/composition/assets/music/
 video/composition/renders/
 video/composition/.hyperframes/
 video/**/*.mp4
+
+# Narration audio (AI voice): generated, never in git
+video/composition/assets/voice/
