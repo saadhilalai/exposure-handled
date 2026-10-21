@@ -18,7 +18,7 @@ It's measured by numbers, then judged blind by people who don't know which clip 
 |---|---|---|
 | **Agent** | The agent, live, Auto on. It may change **ISO only** (800–12800). | Drives |
 | **FX2 auto** | The camera's own **Auto ISO only**, range set to 800–12800. | Measures only (dry run, sends nothing) |
-| **Manual** | You, by hand, as on a job (ISO, ND, iris if you want). You watch the camera's own monitor and zebras, not the agent's dashboard. | Measures only (dry run, sends nothing) |
+| **Manual** | You, by hand, as on a job (ISO, ND, iris if you want; *see Clarification 1: the iris stays fixed*). You watch the camera's own monitor and zebras, not the agent's dashboard. | Measures only (dry run, sends nothing) |
 
 **The same for all three in a scene:**
 - 23.98p, S-Log3 (Flexible ISO)
@@ -79,7 +79,7 @@ S5 Sunset, 2-minute blocks: Manual, Agent, FX2 auto / FX2 auto, Manual, Agent / 
 | Measure | Definition |
 |---|---|
 | **Clipped highlights** | Mean % of the frame clipped in *important* areas (not small practicals), and % of the take's time over the look's limit (0.5–2%). |
-| **Face brightness** | Mean distance from that person's target, in stops, and % of the time within ⅓ stop. Rows with a face only. |
+| **Face brightness** | Mean distance from that person's target, in stops, and % of the time within ⅓ stop. Rows with a face only. *See Clarification 2 for frames with no recognized face.* |
 | **Time to settle** | After each mark: seconds until the face (no face: the scene key) is on target and **stays there 2 s**. On target means within ⅓ stop of the person's target; for the key, within ⅓ stop of the look's window. That's the same tolerance as the agent's dead band, applied to all three methods. Capped at 30 s ("didn't settle"). |
 | **Flickers** | Times the picture's overall brightness reverses direction within 5 s, with each move at least 1/12 stop. Moves in the 1.5 s after a mark are ignored (that's the light change itself). Measured from the picture, so it works for all three methods. |
 
@@ -160,6 +160,13 @@ All camera safety rules stay:
 - kill switch at hand: Space, the dashboard button, or `tools/kill_switch.py`
 - settings snapshot and restore every session
 - the agent never starts or stops recording, and never touches format, codec, frame rate or media
+
+## Clarifications (director, 2026-10-21, before any shooting and before any results)
+
+These settle two places where the plan was ambiguous. The original text above is unchanged, and each place it applies is marked.
+
+1. **Manual takes: the iris stays fixed at the look's f-stop.** Manual means ISO and ND only. "Iris if you want" (The three methods) gives way to "the look's f-stop, set by hand" (The same for all three in a scene). **Why:** moving the iris changes depth of field, which raters could spot, and that would unblind the test.
+2. **Face scoring when no face is recognized:** a frame whose face isn't matched to a known person is scored against **the target of the person named in the take** (for example, person A in `S1_R1_A_agent`), not the look's default. Frames where a person is recognized are scored as logged. Takes whose name has no person (S5 and S6) are scored as logged. **Why:** the plan scores "that person's target", and recognition is most likely to miss in backlit S1 and dim S4. **On the day:** name each person **A** or **B** in the dashboard's face box when pressing "this face looks right", so the scoring can find their target.
 
 ## Deviations
 
