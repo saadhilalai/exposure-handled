@@ -21,6 +21,7 @@ function kf(p, keys) {
 let sim = null, cam3d = null, data = null;
 const quality = createQuality();
 quality.cpuMs = () => (cam3d ? cam3d.cpuMs : 0);
+if (/[?&]debug\b/.test(location.search)) quality.onChange((q) => (window.__qlog ||= []).push([Math.round(performance.now()), q.level, +q.scale.toFixed(2)]));   // testing only
 window.__quality = () => quality.level + " " + quality.scale.toFixed(2) + " cpu " + quality.cpuMs().toFixed(1);   // read by the speed tests
 const views = {};
 const prog = { hero: 0, inside: 0, try: 0, finale: 0 };

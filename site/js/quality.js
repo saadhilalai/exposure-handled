@@ -1,8 +1,10 @@
 // Automatic quality, so the page stays smooth on ordinary computers, not just fast ones.
 // Three levels (high, medium, low). A first guess comes from the graphics chip, CPU cores and memory; then the
 // real frame rate decides. When frames run long, the render resolution comes down a little at a time; if that
-// isn't enough, the level steps down. If the computer was only busy for a while (another app, a download), it
-// tries one level back up after 8 calm seconds; if that runs slow again, it goes back down and stays there.
+// isn't enough, the level steps down. The resolution never climbs back within a level: every change rebuilds the
+// 3D's buffers, which on a weak computer is a visible hitch, so a slightly softer picture is the better trade.
+// If the computer was only busy for a while (another app, the page itself loading), it tries one level back up
+// after 12 calm seconds, once per visit; if that runs slow, it goes back down and stays there.
 // If the frames are slow because the CPU is busy (not the graphics chip), fewer pixels wouldn't help, so the level
 // steps down straight away: medium skips the depth-of-field pass, which halves the 3D's draw calls.
 
@@ -20,7 +22,7 @@ const VERY_SLOW_MS = 40;     // under ~25 fps: skip the small steps, drop a whol
 const CRAWL_MS = 66;         // under ~15 fps: straight to the lowest level
 const FAST_MS = 17.2;        // at the screen's refresh rate (a 60 Hz screen never gets frames under 16.7 ms)
 const WINDOW_MS = 1000;      // judge over this long
-const MIN_SCALE = { high: 0.7, medium: 0.7, low: 0.45 }, STEP_DOWN = 0.85, STEP_UP = 1.06;
+const MIN_SCALE = { high: 0.7, medium: 0.7, low: 0.45 }, STEP_DOWN = 0.85;
 
 function guess() {
   const forced = /[?&]quality=(high|medium|low)\b/.exec(location.search);
@@ -49,12 +51,8 @@ export function createQuality() {
   const fixed = /[?&]quality=/.test(location.search);
   // Watch every frame (cheap): judge only while something heavy is on screen.
   let last = performance.now(), acc = 0, n = 0, t0 = last, fastFor = 0, grace = performance.now() + 1000;
-  let upAt = -1e9, settled = false;                  // when it last stepped up; settled = a step up failed, stay put
-  let scaleCap = 1;                                  // the highest resolution scale that hasn't run slow on this level
-  const down = (level, now, wait) => {
-    if (now - upAt < 5000) settled = true;         // the step up didn't hold
-    fastFor = 0; scaleCap = 1; q.set(level); grace = now + wait;
-  };
+  let tried = false;                                 // the one step back up per visit has been used
+  const down = (level, now, wait) => { fastFor = 0; q.set(level); grace = now + wait; };
   (function tick(now) {
     const dt = now - last; last = now;
     if (dt < 250) { acc += dt; n++; }                 // ignore pauses (tab hidden, Mac asleep)
@@ -73,19 +71,13 @@ export function createQuality() {
           fastFor = 0;
           const min = MIN_SCALE[q.level];
           // the cost goes with the pixel count (scale squared), so one step lands near 60 fps
-          if (q.scale > min + 1e-3) {
-            scaleCap = Math.min(scaleCap, q.scale * 0.97);    // never climb back to a resolution that ran slow
-            q.scale = Math.max(min, q.scale * Math.min(STEP_DOWN, 0.95 * Math.sqrt(16.7 / avg))); q.listeners.forEach((fn) => fn(q));
-          }
+          if (q.scale > min + 1e-3) { q.scale = Math.max(min, q.scale * Math.min(STEP_DOWN, 0.95 * Math.sqrt(16.7 / avg))); q.listeners.forEach((fn) => fn(q)); }
           else if (lower) down(ORDER[ORDER.indexOf(q.level) + 1], now, 1500);
         } else if (avg < FAST_MS) {
           fastFor += now - t0;
           const above = ORDER.indexOf(q.level) - 1;
-          if (q.scale < scaleCap - 1e-3 && fastFor > 4000) {
-            q.scale = Math.min(scaleCap, q.scale * (avg < 12 ? 1.15 : STEP_UP)); fastFor = 0; q.listeners.forEach((fn) => fn(q));
-          }
-          else if (!settled && above >= ORDER.indexOf(q.startLevel) && q.scale >= scaleCap - 1e-3 && fastFor > 8000 && q.cpuMs() < 6) {
-            q.level = ORDER[above]; q.scale = 0.85; scaleCap = 1; upAt = now; fastFor = 0; grace = now + 1500;   // try one level up
+          if (!tried && above >= ORDER.indexOf(q.startLevel) && fastFor > 12000 && q.cpuMs() < 5) {
+            tried = true; q.level = ORDER[above]; q.scale = 0.85; fastFor = 0; grace = now + 1500;   // one level up, once
             q.listeners.forEach((fn) => fn(q));
           }
         }
