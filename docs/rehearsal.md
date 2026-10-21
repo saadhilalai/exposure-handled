@@ -1,4 +1,6 @@
-# Shakedown rehearsal: sunset, 2026-10-20
+# Shakedown rehearsal: sunset, an evening before Saturday
+
+> **Moved (2026-10-20):** the rehearsal didn't happen on the 20th. It moves to another evening before Saturday 2026-10-24, and the director will name the day. Everything below stays ready as it is. "Tonight" means that evening.
 
 > **The one command, at the location** (camera plugged in, Terminal open):
 > ```
@@ -34,7 +36,7 @@ What runs tonight:
 
 ## Before you leave
 
-- [ ] Say **"done testing"** so I take the website link down. It saves hotspot data.
+- [x] The website's private link is down ("done testing", 2026-10-20), so it uses no hotspot data.
 - [ ] If the robot is training on this Mac, pause it for the shoot, so the agent gets the CPU.
 - [ ] Keep the Mac's lid **open** at the location. If it closes, the Mac sleeps and the agent stops. The camera keeps its last settings, so that's safe, just not useful.
 
@@ -67,7 +69,7 @@ What runs tonight:
 
     For a second shot, use `cmp2` in the names.
 11. **When you're done:** press **q**. The script stops the bridge too. Unplug the cable.
-12. **Footage:** when you copy the card, put tonight's clips in a folder called **REHEARSAL-2026-10-20**, never next to Step 7 footage. The slates mark them too.
+12. **Footage:** when you copy the card, put tonight's clips in a folder called **REHEARSAL-** plus that evening's date (for example REHEARSAL-2026-10-22), never next to Step 7 footage. The slates mark them too.
 
 ## If something goes wrong
 

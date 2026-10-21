@@ -2,9 +2,11 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
-## 🎬 Tonight (2026-10-20): sunset shakedown rehearsal
+## 🎬 Next: sunset shakedown rehearsal (an evening before Saturday; day to be set)
 
-**Not the Step 7 test**: a rehearsal before the official shoot on Saturday, to find what breaks in real light. Checklist and step-by-step: [docs/rehearsal-2026-10-20.md](docs/rehearsal-2026-10-20.md).
+**Moved (2026-10-20):** not done on the 20th. It's on another evening before Saturday 2026-10-24, and the director will say which. Everything is ready and unchanged: the start script, the rehearsal switch, the checklist. Don't connect to the camera until "camera ready".
+
+**Not the Step 7 test**: a rehearsal before the official shoot on Saturday, to find what breaks in real light. Checklist and step-by-step: [docs/rehearsal.md](docs/rehearsal.md).
 - **Rehearsal mode** (built today, 119+ tests pass):
   - `--rehearsal` labels everything. Sessions go to `sessions/REHEARSAL/`, takes are named `REH_…`, and `score_take.py` refuses to mix them with Step 7 takes.
   - **Rehearsal-only recording switch:** `--allow-exposure-while-recording` lets ISO, aperture, shutter and WB change while recording. It needs a live `REH_…_agent` take and the bridge started with the same flag. It can't be used in a Step 7 take, and the Step 7 ISO-only switch is unchanged.
@@ -13,7 +15,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 - **Supervision:** the director runs the bridge and agent in their own Terminal, and the coding assistant watches the logs read-only. If the hotspot drops, the agent keeps running on the Mac.
 - **After the shoot:** a ranked list of what went wrong, fixed during the week before Saturday.
 - **One command at the location:** `tools/rehearsal.sh [REH_take]` makes the folder, starts the bridge in its own process group, and starts the agent with the dashboard. The director types LIVE, and SPACE stays theirs. The bridge stops when the agent quits. Agent takes get the rehearsal switch; watch-only takes get a read-only bridge.
-- **Decided (2026-10-20): Saturday stays ISO only**, like the frozen Step 7 plan. Tonight's all-four-settings run is rehearsal only.
+- **Decided (2026-10-20): Saturday stays ISO only**, like the frozen Step 7 plan. The rehearsal's all-four-settings run is rehearsal only.
 
 ## 🌙 Parked (2026-10-19, late night)
 
