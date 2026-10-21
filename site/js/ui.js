@@ -1,5 +1,5 @@
 // Small UI kit for the site: camera dials, the AI's chat feed, sound (off until you turn it on),
-// magnetic buttons and toasts.
+// magnetic buttons, the focus brackets and toasts.
 
 const html = document.documentElement;
 export const motion = html.classList.contains("motion");
@@ -168,6 +168,63 @@ export function magnetic() {
     });
     b.addEventListener("pointerleave", () => { b.style.transform = ""; });
   });
+}
+
+// ---------- focus brackets: over anything you can use, orange brackets snap around it, like an AF lock ----------
+// They follow the element (read once a frame while it's locked), never the mouse, so they can't lag behind it.
+export function lockFrame() {
+  if (!html.classList.contains("fine")) return;
+  const SEL = "a, button, [role=slider], .key", OUT = 7, PRESS = 3.5, GONE = 12, ARM = 8;
+  const f = document.createElement("div");
+  f.className = "lockframe"; f.setAttribute("aria-hidden", "true");
+  f.innerHTML = "<i></i><i></i><i></i><i></i>";
+  document.body.append(f);
+  const c = [...f.children], dpr = window.devicePixelRatio || 1, px = (v) => Math.round(v * dpr) / dpr;
+  let target = null, pressed = false, last = null, s = { x: 0, y: 0, w: 0, h: 0, o: GONE, a: 0 };
+  let from = s, t0 = 0, dur = 1, raf = 0, mx = -1, my = -1, scrollT = 0;
+  const box = (t) => {
+    const r = t.getBoundingClientRect();
+    return r.width && r.height && r.width < 420 && r.height < 300 ? r : null;
+  };
+  const goal = () => {
+    const r = target && target.isConnected && box(target);
+    if (target && !r) { release(); return goal(); }
+    if (r) last = { x: r.left, y: r.top, w: r.width, h: r.height };
+    return { ...(last || s), o: target ? (pressed ? PRESS : OUT) : GONE, a: target ? 1 : 0 };
+  };
+  const animate = (ms) => { from = { ...s }; t0 = performance.now(); dur = motion ? ms : 0; if (!raf) raf = requestAnimationFrame(draw); };
+  function draw(now) {
+    const g = goal(), k = dur ? Math.min(1, (now - t0) / dur) : 1, e = 1 - (1 - k) ** 4;
+    for (const key in s) s[key] = from[key] + (g[key] - from[key]) * e;
+    const { x, y, w, h, o } = s, r = x + w + o - ARM, b = y + h + o - ARM;
+    [[x - o, y - o], [r, y - o], [x - o, b], [r, b]].forEach(([u, v], i) => (c[i].style.transform = `translate(${px(u)}px, ${px(v)}px)`));
+    f.style.opacity = s.a.toFixed(3);
+    raf = target || k < 1 ? requestAnimationFrame(draw) : 0;
+  }
+  function lock(t) {
+    if (t === target) return;
+    if (!t || !box(t)) return release();
+    const moving = target && s.a > 0.5;           // already locked on a neighbour: jump across
+    target = t; pressed = false;
+    if (!moving) { const r = box(t); s = { x: r.left, y: r.top, w: r.width, h: r.height, o: 13, a: 0 }; }
+    animate(moving ? 120 : 110);
+  }
+  function release() {
+    if (!target) return;
+    target = null; pressed = false; animate(120);
+  }
+  addEventListener("pointerover", (e) => { mx = e.clientX; my = e.clientY; lock(e.target.closest?.(SEL)); }, { passive: true });
+  addEventListener("pointermove", (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
+  html.addEventListener("pointerleave", release);
+  addEventListener("blur", release);
+  addEventListener("pointerdown", () => { if (target) { pressed = true; animate(60); } }, { passive: true });
+  addEventListener("pointerup", () => { if (pressed) { pressed = false; animate(140); } }, { passive: true });
+  // while the page scrolls the brackets step aside, and lock again on whatever is under the pointer once it stops
+  addEventListener("scroll", () => {
+    if (target) { target = null; animate(70); }
+    clearTimeout(scrollT);
+    scrollT = setTimeout(() => { const t = mx >= 0 && document.elementFromPoint(mx, my); t && lock(t.closest(SEL)); }, 140);
+  }, { passive: true });
 }
 
 // ---------- film grain: a small noise tile drawn once ----------

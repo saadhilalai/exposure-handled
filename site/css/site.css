@@ -55,8 +55,10 @@ kbd { padding: 2px 6px; border: 1px solid var(--line-2); border-radius: 5px; }
 .skip { position: absolute; left: 12px; top: -60px; z-index: 200; padding: 10px 14px; background: var(--ink); color: var(--bg); border-radius: 8px; text-decoration: none; }
 .skip:focus { top: 12px; }
 /* The focus-reticle cursor, drawn by the system (not the page), so it tracks the mouse exactly and costs nothing. */
-.fine body { cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='32'%20height='32'%20viewBox='0%200%2032%2032'%3E%3Cpath%20d='M6%2013V6H13%20M19%206H26V13%20M6%2019V26H13%20M19%2026H26V19'%20fill='none'%20stroke='rgba%280%2C0%2C0%2C.55%29'%20stroke-width='3.2'%20stroke-linecap='square'/%3E%3Cpath%20d='M6%2013V6H13%20M19%206H26V13%20M6%2019V26H13%20M19%2026H26V19'%20fill='none'%20stroke='#ffffff'%20stroke-width='1.6'%20stroke-linecap='square'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='2.2'%20fill='rgba%280%2C0%2C0%2C.55%29'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='1.3'%20fill='#ffffff'/%3E%3C/svg%3E") 16 16, crosshair; }
-.fine a, .fine button, .fine [role=slider], .fine .key, .fine .ba { cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='32'%20height='32'%20viewBox='0%200%2032%2032'%3E%3Cpath%20d='M8%2012.5V8H12.5%20M19.5%208H24V12.5%20M8%2019.5V24H12.5%20M19.5%2024H24V19.5'%20fill='none'%20stroke='rgba%280%2C0%2C0%2C.55%29'%20stroke-width='3.2'%20stroke-linecap='square'/%3E%3Cpath%20d='M8%2012.5V8H12.5%20M19.5%208H24V12.5%20M8%2019.5V24H12.5%20M19.5%2024H24V19.5'%20fill='none'%20stroke='#ff6a1a'%20stroke-width='1.6'%20stroke-linecap='square'/%3E%3C/svg%3E") 16 16, pointer; }
+.fine body { cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='32'%20height='32'%20viewBox='0%200%2032%2032'%3E%3Cpath%20d='M6%2013V6H13%20M19%206H26V13%20M6%2019V26H13%20M19%2026H26V19'%20fill='none'%20stroke='rgba%280%2C0%2C0%2C.55%29'%20stroke-width='3.2'%20stroke-linecap='square'/%3E%3Cpath%20d='M6%2013V6H13%20M19%206H26V13%20M6%2019V26H13%20M19%2026H26V19'%20fill='none'%20stroke='%23ffffff'%20stroke-width='1.6'%20stroke-linecap='square'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='2.2'%20fill='rgba%280%2C0%2C0%2C.55%29'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='1.3'%20fill='%23ffffff'/%3E%3C/svg%3E") 16 16, crosshair; }
+/* Over anything you can use, the orange brackets frame the element itself (js/ui.js lockFrame) and the pointer becomes a dot. */
+.fine a, .fine button, .fine [role=slider], .fine .key { cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='32'%20height='32'%20viewBox='0%200%2032%2032'%3E%3Ccircle%20cx='16'%20cy='16'%20r='4.2'%20fill='rgba%280%2C0%2C0%2C.55%29'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='2.6'%20fill='%23ff6a1a'/%3E%3C/svg%3E") 16 16, pointer; }
+.fine .ba { cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='32'%20height='32'%20viewBox='0%200%2032%2032'%3E%3Cpath%20d='M8%2012.5V8H12.5%20M19.5%208H24V12.5%20M8%2019.5V24H12.5%20M19.5%2024H24V19.5'%20fill='none'%20stroke='rgba%280%2C0%2C0%2C.55%29'%20stroke-width='3.2'%20stroke-linecap='square'/%3E%3Cpath%20d='M8%2012.5V8H12.5%20M19.5%208H24V12.5%20M8%2019.5V24H12.5%20M19.5%2024H24V19.5'%20fill='none'%20stroke='%23ff6a1a'%20stroke-width='1.6'%20stroke-linecap='square'/%3E%3C/svg%3E") 16 16, pointer; }
 .fine .dial.grab .dial-knob { cursor: grabbing; }
 
 /* ---------- type ---------- */
@@ -440,6 +442,11 @@ section.try, section.game, section.compare, section.real, section.safety, sectio
 .fps-meter.slow { color: #ffd0a8; border-color: rgba(255,106,26,.5); }
 
 /* ---------- toast, grain, cursor ---------- */
+/* Focus brackets (js/ui.js lockFrame): four orange corners that snap around what's under the pointer. */
+.lockframe { position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; opacity: 0; }
+.lockframe i { position: absolute; left: 0; top: 0; width: 8px; height: 8px; border: 0 solid var(--ai); will-change: transform; }
+.lockframe i:nth-child(1) { border-width: 1.6px 0 0 1.6px; } .lockframe i:nth-child(2) { border-width: 1.6px 1.6px 0 0; }
+.lockframe i:nth-child(3) { border-width: 0 0 1.6px 1.6px; } .lockframe i:nth-child(4) { border-width: 0 1.6px 1.6px 0; }
 .toast { position: fixed; left: 50%; bottom: 28px; z-index: 90; padding: 13px 18px 12px; border-radius: 14px; font: 700 12px/1 var(--wide); letter-spacing: .16em; text-transform: uppercase; background: rgba(12,12,13,.86); border: 1px solid var(--line-2); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); transform: translate(-50%, 30px); opacity: 0; pointer-events: none; transition: opacity .35s, transform .5s var(--spring); }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
 .toast.bad { color: #ffb4ad; border-color: rgba(255,75,62,.5); }
