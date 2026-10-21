@@ -2,6 +2,12 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## 📅 Step 7 dates (director, 2026-10-21)
+
+- **Saturday 2026-10-24: session 1 only.** Indoors: S1, S3, S4, S6, with both people. That's 54 scored takes and 5 bonus. Day sheet: [docs/step7-day.md](docs/step7-day.md).
+- **Session 2, the next clear day:** S2 around midday, then S5 at sunset.
+- **The blind test's rating page goes out after session 2,** because its seven sets include S2 and S5.
+
 ## 🧰 2026-10-21, afternoon (director at school; no camera)
 
 - **Decisions applied:**

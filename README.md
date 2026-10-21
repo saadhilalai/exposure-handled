@@ -8,7 +8,7 @@ An S4D project, directed by Saad Hilal. Code written with an AI coding assistant
 
 **Status (2026-10-21):**
 - Steps 1–6 and 8 are built, and the live closed-loop ISO test on the real FX2 passed (2026-10-19).
-- The real-world comparison (Step 7) is planned and frozen, and is shot on Saturday 2026-10-24.
+- The real-world comparison (Step 7) is planned and frozen. Session 1 (indoors) is shot on Saturday 2026-10-24, and session 2 on the next clear day.
 - Every result below is labeled with where it came from: **real camera**, **recorded frames**, **simulator** or **fake camera**.
 - Day-by-day log: [PROGRESS.md](PROGRESS.md).
 

@@ -1,4 +1,4 @@
-# Step 7 day sheet: Saturday 2026-10-24
+# Step 7 day sheet: Saturday 2026-10-24, session 1 (indoors)
 
 > **Two Terminal windows, that's all:**
 > ```
@@ -9,9 +9,15 @@
 
 **This is the real test, not a rehearsal.** The printed run sheet is the plan, and this page is only how to run it. Sessions go to `sessions/`, named after the take.
 
+**Saturday is session 1 only** (director, 2026-10-21):
+- **Scenes:** S1 window-backlit face, S3 tungsten, S4 low light and S6 static control, with **both people (A and B)**.
+- **Takes:** 54 scored and 5 bonus, 59 in all. Allow about 2.5–3 hours.
+- **On the printed sheet** these are the first pages, under "Session 1 · daytime, indoors". The session 2 pages (S2, S5) come after a page break: leave them for the next clear day.
+- **Shoot S1 while there's daylight in the window,** since its event is opening the blind.
+
 ## Bring
 
-- [ ] FX2, with 3+ charged batteries (about 3.5–4 hours of shooting), and enough card space for about 2 hours of footage at your codec
+- [ ] FX2, with 3+ charged batteries, and enough card space for about 1.5 hours of footage at your codec
 - [ ] Lens, **variable ND**, tripod
 - [ ] **USB-C data cable** (the one from Oct 19)
 - [ ] MacBook and its **charger**, plus an outlet nearby: it's a long day
@@ -20,11 +26,11 @@
   - S1: a blind on the window.
   - S3: two tungsten lamps.
   - S4: a dim practical on a dimmer.
-  - S2: a marked line between shade and sun.
+- [ ] Both people, A and B, with their consent page signed
 
 ## Before you start (at home)
 
-- [ ] Write on the printout: the list in docs/step7-tools.md, section 0. It covers the fixed iris, naming faces A and B, S5's 2-minute blocks, no m in S6, and clip numbers.
+- [ ] Write on the printout: the list in docs/step7-tools.md, section 0. It covers the fixed iris, naming faces A and B, no m in S6, and clip numbers. (The S5 note is for session 2.)
 - [ ] Check the FX2's clock against the Mac's.
 - [ ] If the robot is training on this Mac, pause it.
 - [ ] You emailed yourself the plan's fingerprint (`7b2a9e69…a2303b`).
@@ -51,8 +57,7 @@
 | **Manual** | The dashboard isn't visible to you | Expose by hand (ISO, ND; the iris stays put) → Rec → event + m → stop | q |
 
 - **S6:** don't press m.
-- **S5:** 2-minute blocks; press m at each block's start.
-- **Bonus takes:** follow the agent's advice.
+- **Bonus takes** (after a person's scored rounds in a scene): follow the agent's advice.
 
 ## If something goes wrong
 
@@ -65,4 +70,12 @@
 
 1. Ctrl-C in window 1: the bridge stops, and the Mac may sleep again.
 2. Copy the card into a folder called **STEP7-2026-10-24**, never next to rehearsal footage.
-3. Tell your coding assistant. It runs the scoring (`tools/score_take.py`) and the blind-test cut list (`tools/blind_clips.py`). You export the 21 clips with the same LUT, then the rating page goes out (docs/step7-tools.md, sections 4–5).
+3. Tell your coding assistant. It scores session 1's takes (`tools/score_take.py`) and lists the cut points for the 15 blind-test clips shot today (`tools/blind_clips.py`).
+4. **The rating page waits for session 2.** Two of the blind test's seven sets (S2 and S5) are shot then, and raters see all 21 clips together.
+
+## Session 2: the next clear day
+
+- **Scenes:** S2 around midday (person A, shade to sun), then S5 starting about 25 minutes before sunset (2-minute blocks; press m at each block's start). These are the sheet's session 2 pages.
+- **Bring** a marked line on the ground between the shade and the sun.
+- **Same two windows** as Saturday: `tools/step7.sh bridge`, then each take by name.
+- This page gets its own session 2 section before that day.

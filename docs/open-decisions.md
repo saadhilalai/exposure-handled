@@ -16,12 +16,13 @@
 | 10 | End-card title | **Exposure, Handled.** It's on the end card, the website's title and the README. |
 | 11 | Music | **"Penumbra" by Scott Buckley** (CC BY 4.0): a different track, same calm cinematic feel. |
 | 12 | Commit the video source | **Yes**, the storyboard and composition. Footage, music and renders stay out (as recommended). |
+| 13 | Saturday's sessions | **Session 1 only** (indoors: S1, S3, S4, S6, both people). Session 2 (S2 midday, S5 sunset) goes on the next clear day. |
 
 None of 3, 5, 6, 8, 9 or 12 changes the frozen plan.
 
 ## New (2026-10-21, afternoon)
 
-**13. Is Saturday both sessions, or session 1 only?** The plan has two:
+**13. Is Saturday both sessions, or session 1 only?** *(Answered: session 1 only.)* The plan has two:
 - Session 1: daytime, indoors, S1/S3/S4/S6, with both people.
 - Session 2: a clear day, S2 around midday, then S5 at sunset.
 
