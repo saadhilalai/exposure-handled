@@ -235,12 +235,20 @@ function hero() {
     await wait(1100);
     await runAI(v, HERO_SCENE, { feed, tally: $("#ai-tally"), onSet: (k, val) => setHud(k, val, true), speed: 0.85 });
     af.classList.add("lock");
+    // a short laptop window puts the headline where the chat is: anything in its way leaves as it rises
+    const top = $("#hero-title").getBoundingClientRect().top - 12;
+    const inWay = (li) => li.getBoundingClientRect().bottom > top;
+    const leave = (li, i = 0) => gsap.to(li, { opacity: 0, y: -8, duration: 0.45, delay: i * 0.06, ease: "power2.in", overwrite: "auto" });
+    const blocked = [...$("#hero-feed").children].filter(inWay);
+    blocked.forEach(leave);
     reveal();
     await wait(1500);
     ready();
     await wait(1100);
-    // keep the last line on a laptop; on a phone the chat would sit on the picture, so it all goes
-    [...$("#hero-feed").children].slice(0, mobile() ? undefined : -1).forEach((li, i) => gsap.to(li, { opacity: 0, y: -8, duration: 0.5, delay: i * 0.06, ease: "power2.in" }));
+    // keep the closing line on a laptop if it's clear of the headline; otherwise (and on a phone, where the chat
+    // would sit on the picture) it all goes
+    const rest = [...$("#hero-feed").children].filter((li) => !blocked.includes(li));
+    rest.slice(0, mobile() || blocked.length ? undefined : -1).forEach(leave);
   };
   let ready;
   const readyP = new Promise((r) => (ready = r));
