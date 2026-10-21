@@ -2,6 +2,32 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## 🧰 2026-10-20 night → 10-21: unattended work (no camera connected at any point)
+
+**Decisions waiting for the director:** [docs/open-decisions.md](docs/open-decisions.md) (Step 7 clarifications, rehearsal day, website, video).
+
+- **Saturday (Step 7) prep.** An audit of the run sheet, start, rating page and scoring found these, now fixed and tested (126 tests pass):
+  - **Dashboard port:** it defaulted to 8765, robot-walker's port, and the run sheet's commands don't pass `--port`. It now defaults to 8770. The port is checked before anything starts, so a busy port stops the take with a clear message.
+  - **Dry-run takes** (FX2 auto and manual) could offer to "put ISO back" at the end, which would have sent a change. They no longer do.
+  - **Bridge checks:** an old socket from a stopped bridge now gives a clear message instead of a traceback, and no empty take folder is left behind.
+  - **Take names** that aren't on the run sheet are refused, with the closest matches suggested.
+  - **The runner logs** when the camera starts and stops recording, needed to cut the blind-test clips from the mark.
+  - **`score_take.py`** skips folders it can't score (no data, fake camera) instead of stopping the batch, and flags a take whose name and mode disagree.
+  - **`watch_session.py`** follows the newest session, rehearsal or not.
+  - **New `tools/step7.sh`:** `bridge` starts the day's bridge, keeps the Mac awake and waits for the camera; `<take>` runs that take's exact run-sheet command. Instructions are in docs/step7-tools.md, section 0.
+- **Website speed** (see site/README.md, Speed):
+  - The 3D camera merges pieces that never move on their own, which cuts about a third of its draw calls.
+  - Matrices update once a frame.
+  - The canvas size is read only when it changes; it used to force a page layout every frame.
+  - When the processor is the bottleneck, the quality level steps down (depth of field off) instead of the resolution.
+  - The quality recovers after a busy spell.
+  - Off-screen CSS animations pause.
+- **Website polish:**
+  - Orange focus brackets snap around buttons.
+  - The reticle cursor now really shows; a broken image had left a plain crosshair.
+  - Phone button rows fade on the side that has more.
+- **Brag video:** the storyboard and a placeholder build are in `video/` (kept out of git), in the robot film's style. Swap steps are in video/STORYBOARD.md.
+
 ## 🎬 Next: sunset shakedown rehearsal (an evening before Saturday; day to be set)
 
 **Moved (2026-10-20):** not done on the 20th. It's on another evening before Saturday 2026-10-24, and the director will say which. Everything is ready and unchanged: the start script, the rehearsal switch, the checklist. Don't connect to the camera until "camera ready".
