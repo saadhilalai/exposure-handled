@@ -2,6 +2,19 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## 🎬 The narrated film (2026-10-21, evening)
+
+- **Asked for:** a narrated brag film in which the agent talks you through it, with the website's 3D camera, real numbers and the kill switch. The script comes first for approval, then the render.
+- **Script v1:** `video/SCRIPT.md`, sent for approval. It has 14 lines, about 38 s of talking in 70 s, with every number sourced to the Oct 19 logs.
+- **Voice:** auditions of Dior and Marie (ElevenLabs) were sent. The free voice account then locked itself ("unusual activity… upgrade to continue"). The options are written down in docs/open-decisions.md (14–16).
+- **Built:** `video/film/`.
+  - The site's own 3D camera and simulator are rendered frame by frame at 4K (`video/tools/capture_film.py` + `capture.html`, about 0.25 s a frame).
+  - Every logged number comes from `site/data/site.json` through `data.js`, never typed by hand.
+  - Subtitles and `captions.vtt` come from `cues.json`.
+  - `build_film.py mix` ducks the music under the voice and drops it for a beat at the kill switch.
+  - Every shot is tagged Real, Illustration, Placeholder or Stand-in.
+- **Next:** your OK on the lines and the voice, then the voice takes, the mix, a 4K render, the film at the top of the website, and a redeploy.
+
 ## 🚀 Public (2026-10-21, evening)
 
 - **Website:** https://s4dai-exposure-handled.static.hf.space, a free static Hugging Face Space (`s4dAi/exposure-handled`, the same account as LANDFALL and the robot). Republish with `python tools/make_space.py --push s4dAi/exposure-handled`.
