@@ -2,6 +2,28 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## 🧰 2026-10-21, afternoon (director at school; no camera)
+
+- **Decisions applied:**
+  - The plan's two clarifications, and the fingerprint the director emailed.
+  - Rehearsal on Thursday.
+  - Music "Penumbra" (Scott Buckley, CC BY 4.0).
+  - The brand **Exposure, Handled.** on the film's end card, the site's title and the README. "Camera Agent" stays the tool's name.
+- **Thursday:**
+  - The status flicker with Auto off is fixed (the brain forgets a suggestion that wasn't applied).
+  - The face test now rehearses Saturday's naming (A).
+- **Saturday:**
+  - `tools/blind_clips.py` works out the 21 blind-test cut points from the logs.
+  - `docs/step7-day.md` is a one-page day sheet.
+  - A full fake take went end to end: Rec, mark, scoring, cut points.
+  - Open question 13: which sessions Saturday covers.
+- **Website:**
+  - On short laptop windows the opening chat no longer covers the headline.
+  - Link-preview tags and image.
+  - One Nerd note corrected: the loop runs about 24 times a second, not 6.
+  - Accessibility audit: 0 violations.
+- **Brag video:** stand-in clips rendered from the site's simulator, with the same names as the real clips, so Saturday is a file swap. The draft was sent to the director.
+
 ## 🧰 2026-10-20 night → 10-21: unattended work (no camera connected at any point)
 
 **Decisions waiting for the director:** [docs/open-decisions.md](docs/open-decisions.md) (Step 7 clarifications, rehearsal day, website, video).
