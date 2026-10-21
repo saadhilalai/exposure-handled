@@ -89,7 +89,9 @@ const extrude = (shape, depth, bevel = 0.02, seg = 3) =>
   new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel, bevelSegments: seg, curveSegments: 18 });
 
 // ---------- the camera ----------
-export function createCamera3D(canvas, { low = false } = {}) {
+// Built in a few slices (it yields between them), so a visitor who is already scrolling never meets one long freeze.
+export async function createCamera3D(canvas, { low = false } = {}) {
+  const pause = () => new Promise((r) => setTimeout(r, 0));
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance" });
   renderer.setClearColor(0x050505, 1);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -100,6 +102,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   const scene = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  await pause();
   scene.environmentIntensity = 0.6;
 
   const cam = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
@@ -146,6 +149,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   let lcdDirty = true;
   M.lcd = new THREE.MeshBasicMaterial({ map: lcdTex, toneMapped: false });
 
+  await pause();
   // ---- parts: each has an assembled pose, an exploded offset, a delay, and work spots for the agents ----
   const parts = [];
   function part(name, { off = [0, 0, 0], rot = [0, 0, 0], delay = 0, spin = 0 } = {}) {
@@ -249,6 +253,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     const p = part("card", { off: [-1.8, 0.3, -0.25], rot: [0, 0.6, 0.1], delay: 0.2 });
     add(p, new RoundedBoxGeometry(0.03, 0.2, 0.28, 2, 0.01), M.card, [-0.6, 0.12, -0.02]);
   }
+  await pause();
   // fan + heatsink under the top panel
   const fanPart = part("fan", { off: [0, 0.6, 0], delay: 0.2 });
   {
@@ -314,6 +319,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     add(p, new THREE.TorusGeometry(0.305, 0.006, 10, 96), M.aiLine, [LX, LY, 0.462]);
     for (let i = 0; i < 4; i++) { const a = i / 4 * Math.PI * 2; spot(p, "mount", [LX + Math.cos(a) * 0.27, LY + Math.sin(a) * 0.27, 0.47]); }
   }
+  await pause();
   // lens: two barrel halves, glass elements and the iris
   const lensZ0 = 0.47;
   const barrelProfile = [[0.27, 0], [0.31, 0], [0.31, 0.08], [0.365, 0.1], [0.365, 0.16], [0.385, 0.17], [0.385, 0.4], [0.37, 0.41], [0.37, 0.5],
@@ -413,6 +419,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
   parts.forEach((p) => mergeStatic(p.g));
   mergeStatic(fanPart.rotor);
 
+  await pause();
   // ---------- the crew ----------
   const N = low ? 150 : 380;
   let active = N;                                   // how many are updated and drawn (quality level)
@@ -571,6 +578,7 @@ export function createCamera3D(canvas, { low = false } = {}) {
     streakGeo.attributes.position.needsUpdate = true; streakGeo.attributes.color.needsUpdate = true;
   }
 
+  await pause();
   // ---------- post: depth of field (rack focus to whatever the story is about) + bloom for the crew ----------
   const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: low ? 0 : 4 });
   const composer = new EffectComposer(renderer, target);
@@ -706,10 +714,21 @@ export function createCamera3D(canvas, { low = false } = {}) {
       }
       sizeDirty = sizeForce = true; resize();
     },
-    start() { if (running) return; running = true; clock.update(); frame(); },
+    start() { if (running) return; running = true; clock.update(); raf = requestAnimationFrame(frame); },   // never inside a scroll handler
     stop() { running = false; cancelAnimationFrame(raf); },
     get running() { return running; },
     renderOnce() { resize(); step(1 / 60); composer.render(); },
+    // Compile the scene's shaders in the background (the browser's parallel shader compile), for the render target
+    // they're really drawn into, so the first real frame doesn't stall on them.
+    async precompile() {
+      const vis = agentPts.visible;
+      agentPts.visible = streaks.visible = true;
+      renderer.setRenderTarget(composer.readBuffer);
+      const ready = renderer.compileAsync(scene, cam);
+      renderer.setRenderTarget(null);
+      agentPts.visible = streaks.visible = vis;
+      try { await ready; } catch { /* older browsers: compiled on first draw instead */ }
+    },
     // Draw one hidden frame with everything in view, so shaders compile and textures upload before anyone scrolls.
     warmup() {
       const keep = { ...S }, keepD = { ...D };

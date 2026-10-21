@@ -261,13 +261,15 @@ async function load3D() {
   for (let attempt = 0; attempt < 2 && !cam3d; attempt++) {
     try {
       const m = await import("./camera3d.js" + (attempt ? "?retry" : ""));
-      cam3d = m.createCamera3D($("#cam3d"), { low: low || attempt > 0 });
+      cam3d = await m.createCamera3D($("#cam3d"), { low: low || attempt > 0 });
     } catch (e) { console.warn("3D off:", e); window.__3dError = String((e && e.stack) || e); cam3d = null; await wait(600); }
   }
   if (!cam3d) { html.classList.add("no3d"); return; }
-  if (motion) setTimeout(() => { if (prog.hero < 0.05 && !cam3d.running) cam3d.warmup(); }, 350);
   Object.assign(cam3d.state, HERO_POSE); cam3d.settle();
   cam3d.setQuality(quality.settings, quality.scale);
+  await cam3d.precompile();
+  // one hidden frame (the post-processing shaders and textures), in its own task, before the 3D is shown
+  if (motion) setTimeout(() => { if (!cam3d.running) cam3d.warmup(); }, 0);
   if (sim && views.hero) {
     const lv = (views.lcd = sim.view(cam3d.lcdCanvas, { scene: HERO_SCENE, size: [640, 360] }));
     lv.a = views.hero.a; lv.t0 = views.hero.t0; lv.visible = false;
