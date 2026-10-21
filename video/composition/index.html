@@ -36,6 +36,7 @@
       .ph { position: absolute; z-index: 5; padding: 9px 14px 8px; border-radius: 6px; background: var(--ph); color: #111;
         font-family: "Geist Mono", monospace; font-size: 22px; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
       .ph-text { color: var(--ph); }
+      #root[data-placeholders="off"] .ph { display: none; }
       .ph-box { outline: 3px dashed var(--ph); outline-offset: 4px; border-radius: 8px; }
 
       /* The product window: one shot, the light changes and the agent brings the face back, then it grows */
@@ -43,20 +44,6 @@
         transform-origin: 50% 50%; opacity: 0; border-radius: 36.7px; background: #1a1714; }
       .layer { position: absolute; inset: 0; }
       .media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-
-      /* Slate: a stand-in room (a lamp, a person) whose brightness follows the story. Not footage. */
-      .slate { position: absolute; inset: 0; overflow: hidden; background: #2a231c; }
-      .slate .room { position: absolute; inset: 0;
-        background: radial-gradient(1200px 900px at 78% 30%, rgba(255, 190, 120, 0.55), rgba(255, 190, 120, 0) 70%),
-                    linear-gradient(180deg, #3a2f25 0%, #241d17 62%, #17130f 100%); }
-      .slate .lamp { position: absolute; left: 1380px; top: 170px; width: 220px; height: 220px; border-radius: 50%;
-        background: radial-gradient(circle, rgba(255, 236, 200, 0.95) 0%, rgba(255, 200, 130, 0.5) 35%, rgba(255, 170, 90, 0) 70%); }
-      .slate .head { position: absolute; left: 820px; top: 300px; width: 280px; height: 350px; border-radius: 50% 50% 46% 46%;
-        background: radial-gradient(260px 300px at 70% 35%, #c9a184 0%, #8a6650 55%, #4a372b 100%); }
-      .slate .body { position: absolute; left: 640px; top: 620px; width: 640px; height: 520px; border-radius: 220px 220px 0 0;
-        background: linear-gradient(90deg, #1c1a1a 0%, #2f2a28 60%, #3a3330 100%); }
-      .slate .slot { position: absolute; left: 0; right: 0; bottom: 64px; text-align: center; font-family: "Geist Mono", monospace;
-        font-size: 30px; color: rgba(255, 255, 255, 0.55); white-space: nowrap; }
 
       /* Captions under the small window */
       .cap { display: flex; flex-direction: column; align-items: center; text-align: center; }
@@ -68,10 +55,6 @@
       /* Three ways, same scene, same moment */
       #trio { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 50% 50%; opacity: 0; }
       .pane { position: absolute; top: 366px; width: 616px; height: 347px; overflow: hidden; border-radius: 14px; background: #1a1714; }
-      .pane .slate .head { left: 248px; top: 92px; width: 100px; height: 124px; }
-      .pane .slate .body { left: 182px; top: 206px; width: 232px; height: 190px; border-radius: 80px 80px 0 0; }
-      .pane .slate .lamp { left: 430px; top: 50px; width: 90px; height: 90px; }
-      .pane .slate .slot { bottom: 18px; font-size: 18px; }
       .pane .ph { left: 12px; top: 12px; font-size: 15px; padding: 6px 9px 5px; }
       #p1 { left: 16px; } #p2 { left: 652px; } #p3 { left: 1288px; }
       .pane-label { position: absolute; top: 302px; font-size: 34px; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; opacity: 0; }
@@ -100,7 +83,8 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="40" data-width="1920" data-height="1080">
+    <!-- data-placeholders="off" hides the yellow PLACEHOLDER tags once the real clips and numbers are in -->
+    <div id="root" data-composition-id="main" data-start="0" data-duration="40" data-width="1920" data-height="1080" data-placeholders="on">
 
       <!-- 1. Black. One line. -->
       <div id="s1" class="clip screen" data-start="0" data-duration="3" data-track-index="1">
@@ -110,14 +94,8 @@
       <!-- 2-3. The product window: one real take. The mark (lamp off) is at 6.0 s: the clip starts 3 s before it. -->
       <div id="frame">
         <div id="LA" class="layer">
-          <!-- SWAP CLIP A (S3 agent take, exported from 3 s before the lamp-off mark): put it at assets/video/clipA.mp4,
-               uncomment the next line and delete the slate below it.
+          <!-- CLIP A: the S3 agent take, exported from 3 s before the lamp-off mark (until Saturday: a labelled stand-in) -->
           <video id="vA" class="clip media" src="assets/video/clipA.mp4" data-start="3" data-duration="11.4" data-media-start="0" data-track-index="2" muted playsinline></video>
-          -->
-          <div id="slateA" class="clip slate" data-start="3" data-duration="11.4" data-track-index="2">
-            <div class="room"></div><div class="lamp"></div><div class="body"></div><div class="head"></div>
-            <div class="slot">stand-in: S3 · tungsten · one lamp off, agent take</div>
-          </div>
         </div>
         <div class="ph" style="left: 36px; top: 36px; font-size: 34px; padding: 14px 20px 12px;">PLACEHOLDER · CLIP A · S3 agent take, from 3 s before the mark</div>
       </div>
@@ -142,24 +120,15 @@
         <div id="lab2" class="pane-label"><span class="who">B</span>By hand</div>
         <div id="lab3" class="pane-label"><span class="dot"></span><span class="who">C</span>The agent</div>
         <div id="p1" class="pane" data-layout-allow-overflow>
-          <!-- SWAP CLIP B1 (camera Auto ISO take): assets/video/clipB1.mp4, from 3 s before the mark.
           <video id="vB1" class="clip media" src="assets/video/clipB1.mp4" data-start="17.2" data-duration="8.4" data-media-start="0" data-track-index="7" muted playsinline></video>
-          -->
-          <div id="slateB1" class="clip slate" data-start="17.2" data-duration="8.4" data-track-index="7"><div class="room"></div><div class="lamp"></div><div class="body"></div><div class="head"></div><div class="slot">stand-in: camera auto</div></div>
           <div class="ph">PLACEHOLDER · B1</div>
         </div>
         <div id="p2" class="pane" data-layout-allow-overflow>
-          <!-- SWAP CLIP B2 (manual take): assets/video/clipB2.mp4, from 3 s before the mark.
           <video id="vB2" class="clip media" src="assets/video/clipB2.mp4" data-start="17.2" data-duration="8.4" data-media-start="0" data-track-index="8" muted playsinline></video>
-          -->
-          <div id="slateB2" class="clip slate" data-start="17.2" data-duration="8.4" data-track-index="8"><div class="room"></div><div class="lamp"></div><div class="body"></div><div class="head"></div><div class="slot">stand-in: by hand</div></div>
           <div class="ph">PLACEHOLDER · B2</div>
         </div>
         <div id="p3" class="pane" data-layout-allow-overflow>
-          <!-- SWAP CLIP B3 (agent take): assets/video/clipB3.mp4, from 3 s before the mark.
           <video id="vB3" class="clip media" src="assets/video/clipB3.mp4" data-start="17.2" data-duration="8.4" data-media-start="0" data-track-index="9" muted playsinline></video>
-          -->
-          <div id="slateB3" class="clip slate" data-start="17.2" data-duration="8.4" data-track-index="9"><div class="room"></div><div class="lamp"></div><div class="body"></div><div class="head"></div><div class="slot">stand-in: the agent</div></div>
           <div class="ph">PLACEHOLDER · B3</div>
         </div>
         <div id="st1" class="status ph-text">[what A did]</div>
@@ -231,10 +200,6 @@
         // 2. The window appears, small and centred, with a slow push
         tl.fromTo("#frame", { opacity: 0, scale: 0.57, y: -70 }, { opacity: 1, scale: 0.6, y: -70, duration: 1.4, ease: "power2.out" }, 3.0);
         later("#frame", { scale: 0.6 }, { scale: 0.612, duration: 7.8, ease: "none" }, 4.4);
-        // stand-in only: the lamp goes off at the mark (6.0 s), and the agent's ISO move brings the face back
-        tl.fromTo("#slateA .lamp", { opacity: 1 }, { opacity: 0.08, duration: 0.25, ease: "power1.in" }, 6.0);
-        tl.fromTo("#slateA", { filter: "brightness(1)" }, { filter: "brightness(0.42)", duration: 0.25, ease: "power1.in" }, 6.0);
-        later("#slateA", { filter: "brightness(0.42)" }, { filter: "brightness(0.95)", duration: 1.6, ease: "power2.inOut" }, 7.4);
 
         build("#c2 .cap-label", 3.9, { y: 12, blur: 6, dur: 1.0 });
         build("#c2 .w", 6.35, { y: 20, blur: 8, dur: 1.1, stagger: 0.08 });

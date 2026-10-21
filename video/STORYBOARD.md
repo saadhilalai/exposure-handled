@@ -33,18 +33,23 @@
 
 ## Swapping on Saturday
 
-The composition is `video/composition/index.html`. Every placeholder has a yellow **PLACEHOLDER** tag (or yellow bracketed text) naming its slot, so nothing can slip through.
+**Until then:** the clips are stand-ins rendered by the website's camera simulator (`video/tools/make_standins.py`).
+- Every frame says *STAND-IN · illustration, not footage*, and every placeholder in the composition has a yellow tag.
+- CLIP A shows the real story: the lamp goes off at the mark, the picture drops a stop, and the agent's third-stop ISO steps bring it back by 7.9 s.
+- The three B panes are the same steady stand-in, so no result is implied.
 
+**On Saturday:**
 1. **Pick the takes.**
-   - CLIP A: the S1 agent take whose face recovers most visibly.
-   - B1–B3: one scene and round, all three methods. S3 "one lamp off" reads best side by side.
-2. **Export** each clip from the card as H.264 1920×1080 at 29.97 or 30 fps, graded with the same LUT as the blind test. Save them in `video/composition/assets/video/` as `clipA.mp4`, `clipB1.mp4`, `clipB2.mp4` and `clipB3.mp4`.
-3. **In-points:** each clip starts 3 s before its mark. The runner now logs Rec start, and the marks are in `runner_log.jsonl`. Exporting from (mark − 3 s) means no `data-media-start` maths.
-4. **In `index.html`:** in each `<!-- SWAP ... -->` comment, uncomment the `<video>` line and delete the slate above it.
-5. **Words and numbers:**
-   - Copy the agent's real log line for the CLIP A take (its `change` event in `runner_log.jsonl`) into beat 3's label.
-   - Write the three status lines and the footnote for beat 5 from what the clips show.
-   - Fill in the results card from `score_take.py` and the rating page.
+   - CLIP A: the S3 agent take whose face recovers most visibly.
+   - B1–B3: one scene and round, all three methods (B1 camera auto, B2 by hand, B3 the agent).
+2. **Export** each clip from 3 s before its mark, with the same LUT as the blind test, H.264 1920×1080 at 29.97 or 30 fps. `tools/blind_clips.py` prints the in-points from the logs. CLIP A is 11.4 s long; B1–B3 are 8.4 s.
+3. **Replace the files** in `video/composition/assets/video/`, keeping the same names (`clipA.mp4`, `clipB1.mp4`…). Then delete each `.standin` note beside them. The tool refuses to overwrite a file without its note, so a real clip is never replaced by a stand-in.
+4. **Words and numbers in `index.html`:**
+   - Beat 3's label: the agent's real log line for CLIP A (its `change` event in `runner_log.jsonl`).
+   - Beat 5: the three status lines and the footnote.
+   - Beat 6: the results card, from `score_take.py` and the rating page.
+   - Beat 8: the repo link.
+5. **Set `data-placeholders="off"`** on the root, which hides the yellow tags. Then search the file for `[` and `PLACEHOLDER` to be sure nothing is left.
 6. **Check, then render:** `npx --yes hyperframes@0.8.167 check`, then `render --resolution landscape-4k --quality delivery --fps 30`.
 
 ## Music
