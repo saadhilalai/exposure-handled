@@ -74,6 +74,16 @@ It prints one line to copy into the plan, e.g. *"Base Look: … (User, value 0x0
 
 ## 4. The private rating page (blind test)
 
+**First, where to cut the 21 clips:** `tools/blind_clips.py` reads the session logs and prints, for each drawn take, the 12-second window's in and out points inside the camera clip. It follows the plan's rule: starting 3 s before the first mark after Rec (S5: the middle 12 s of the block). It names anything to check: no mark, Rec started late, a retake, a window past Rec stop.
+
+```
+python tools/blind_clips.py                                               # the table
+python tools/blind_clips.py --use S1_A=R6                                 # an unusable take: its next round (write down why first)
+python tools/blind_clips.py --clips-json clips.json --export-dir ~/Desktop/step7-blind   # and the page's clips.json
+```
+
+The Rec state is read 4 times a second, so check each in-point's first frames by eye when you export (same LUT, no audio, same settings).
+
 `tools/rater_server.py`, S4D style, phone first:
 
 ```
