@@ -227,6 +227,20 @@ export function lockFrame() {
   }, { passive: true });
 }
 
+// ---------- rows of buttons that scroll sideways on a phone: fade the edge that has more, so it's clear ----------
+export function scrollHints(sel) {
+  $$(sel).forEach((row) => {
+    const update = () => {
+      const more = row.scrollWidth - row.clientWidth;
+      row.classList.toggle("more-r", more > 2 && row.scrollLeft < more - 2);
+      row.classList.toggle("more-l", more > 2 && row.scrollLeft > 2);
+    };
+    row.addEventListener("scroll", update, { passive: true });
+    new ResizeObserver(update).observe(row);
+    update();
+  });
+}
+
 // ---------- film grain: a small noise tile drawn once ----------
 export function grain() {
   const c = document.createElement("canvas");
