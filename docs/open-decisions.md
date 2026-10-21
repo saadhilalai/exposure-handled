@@ -41,3 +41,13 @@ Written 2026-10-21 while you were away. Nothing here was guessed or changed: eac
 **8. Pointer over buttons.** The orange brackets now frame the button itself, so over anything clickable the pointer is a small orange dot rather than a second set of brackets. **Recommended:** keep it.
 
 **9. Slower computers lose depth of field sooner.** When frames are slow because the computer's processor is busy (not its graphics chip), the page now drops to "medium" straight away. Medium has no depth of field on the 3D camera. Fast computers (like this Mac) keep it.
+
+## Brag video (draft built with placeholders; not in git)
+
+The storyboard is `video/STORYBOARD.md` and the composition is `video/composition/index.html`. It's 40 s, in the robot film's style, with every stand-in tagged in yellow.
+
+**10. Title on the end card.** "Camera Agent" for now. The robot's film has a phrase title ("Walk Before You Climb"). **Recommended:** keep "Camera Agent" unless a line comes out of Saturday's footage.
+
+**11. Music.** The draft has none. The robot's film used "Meanwhile" by Scott Buckley (CC BY 4.0). **Recommended:** a different CC BY track, chosen like the robot's: measure where its swell falls and line it up with the moment the window grows to full screen (12.2 s). Don't reuse another project's track; the robot's first draft was rejected partly for that.
+
+**12. Commit the source?** The storyboard and composition are kept out of git (the `video/` folder is excluded locally). **Recommended:** commit the storyboard and composition source, but never renders or footage.
