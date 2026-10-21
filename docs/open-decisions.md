@@ -19,6 +19,14 @@
 
 None of 3, 5, 6, 8, 9 or 12 changes the frozen plan.
 
+## New (2026-10-21, afternoon)
+
+**13. Is Saturday both sessions, or session 1 only?** The plan has two:
+- Session 1: daytime, indoors, S1/S3/S4/S6, with both people.
+- Session 2: a clear day, S2 around midday, then S5 at sunset.
+
+docs/step7-day.md covers both. **Recommended:** session 1 on Saturday, and session 2 on the next clear day, because the plan says rain only moves session 2. Tell me if both are on Saturday, and I'll add a timeline (S2 at midday, S5 starting about 25 min before sunset).
+
 ---
 
 *The original questions, as asked:*

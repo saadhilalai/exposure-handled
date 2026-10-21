@@ -4,6 +4,8 @@ The plan itself is frozen ([step7-test-plan.md](step7-test-plan.md), tag `step7-
 
 ## 0. On the day: two Terminal windows
 
+**The whole day, step by step, is on one page: [step7-day.md](step7-day.md).**
+
 ```
 tools/step7.sh bridge            # window 1, once: the bridge with the Step 7 switch; keeps the Mac awake
 tools/step7.sh S1_R1_A_agent     # window 2, each take: that take's exact run-sheet command
