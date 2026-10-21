@@ -198,7 +198,8 @@ class AgentRunner:
             self.summary()), mode=mode, look=self.brain.look.key, allowed=sorted(self.allowed), bridge=status,
             take=self.take, iso_while_recording=self.iso_while_recording, exposure=self.exposure,
             exposure_while_recording=self.exposure_while_recording, label=self.label,
-            settings={n: self._text(n) for n in SUMMARY})
+            settings={n: self._text(n) for n in SUMMARY},
+            people=[{k: p[k] for k in ("name", "target")} for p in self.book.summary()])   # face targets in effect
 
     def _new_brain(self, look):
         return Brain(look, allowed=self.allowed,
@@ -362,7 +363,7 @@ class AgentRunner:
         row = {"t": round(t - self.t0, 2), "key": r.key_stops, "face": face and face["stops"],
                "target": face.get("target", self.brain.look.face_target) if face else None,
                "headroom": r.headroom_stops, "clipped": r.clipped_important_pct, "iso": self.cam.iso,
-               "shift": round(self.shift, 3), "state": self.state()}
+               "shift": round(self.shift, 3), "state": self.state(), "who": face.get("name") if face else None}
         with self.lock:
             self.history.append(row)
         path = self.session / "metrics.csv"
@@ -419,7 +420,7 @@ class AgentRunner:
         stops = float(np.median(recent)) if recent else faces[0]["stops"]
         person = self.book.remember(name, bgr, faces[0], stops)
         self._event("face", "%s: this face looks right at %+.1f st. I'll hold %s there." % (
-            person["name"], person["target"], person["name"]), person=person["id"])
+            person["name"], person["target"], person["name"]), person=person["id"], name=person["name"], target=person["target"])
         return person
 
     def forget_face(self, person_id):

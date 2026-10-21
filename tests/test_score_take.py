@@ -89,3 +89,32 @@ def test_a_name_that_disagrees_with_the_mode_is_flagged(tmp_path):
     log = folder / "runner_log.jsonl"
     log.write_text(log.read_text().replace('"mode": "live"', '"mode": "dry run", "take": "S1_R1_A_agent"'))
     assert "agent take" in mismatch(folder)
+
+
+def test_unrecognized_faces_use_the_takes_persons_target(tmp_path):
+    # Clarification 2: a face nobody recognized is scored against the take's person (A), not the look's +0.5.
+    from tools.score_take import score
+    folder = tmp_path / "2026-10-24_101500_S1_R1_A_agent"
+    folder.mkdir()
+    cols = COLS + ["who"]
+    rows = [dict(row(t / 4, face=0.0), target=0.5, who="") for t in range(20)] + \
+           [dict(row(5 + t / 4, face=0.0), target=0.0, who="A") for t in range(20)]
+    (folder / "metrics.csv").write_text("\n".join([",".join(cols)] + [",".join("" if r.get(c) is None else str(r.get(c)) for c in cols) for r in rows]) + "\n")
+    log = [{"event": "start", "t": 0.0, "look": "interview", "mode": "live", "take": "S1_R1_A_agent",
+            "people": [{"name": "A", "target": 0.0}, {"name": "B", "target": 0.9}]}]
+    (folder / "runner_log.jsonl").write_text("\n".join(json.dumps(e) for e in log) + "\n")
+    r = score(folder)
+    assert r["face_error_mean_st"] == 0.0 and r["face_on_target_pct_time"] == 100.0
+    assert "20 unrecognized" in r["face_target_note"] and "person A" in r["face_target_note"]
+
+
+def test_a_person_without_a_saved_target_is_scored_as_logged(tmp_path):
+    from tools.score_take import score
+    folder = tmp_path / "2026-10-24_101500_S4_R2_B_manual"
+    folder.mkdir()
+    cols = COLS + ["who"]
+    rows = [dict(row(t / 4, face=0.0), target=0.5, who="") for t in range(12)]
+    (folder / "metrics.csv").write_text("\n".join([",".join(cols)] + [",".join("" if r.get(c) is None else str(r.get(c)) for c in cols) for r in rows]) + "\n")
+    (folder / "runner_log.jsonl").write_text(json.dumps({"event": "start", "t": 0.0, "look": "low_light", "mode": "dry run", "take": "S4_R2_B_manual", "people": []}) + "\n")
+    r = score(folder)
+    assert r["face_error_mean_st"] == 0.5 and "isn't in this session's log" in r["face_target_note"]

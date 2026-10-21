@@ -7,7 +7,9 @@ watches the FX2's own auto or your manual control, so all three are measured by 
 
 Definitions (frozen in docs/step7-test-plan.md; changing them after the shoot breaks the test):
   clipping   mean % of the frame clipped in important areas, and % of the time over the look's limit
-  face       mean |face - target| in stops, and % of the time within 1/3 stop (rows with a face only)
+  face       mean |face - target| in stops, and % of the time within 1/3 stop (rows with a face only).
+             Clarification 2 (2026-10-21, before shooting): a row whose face wasn't recognized is scored against
+             the target of the person named in the take (A in S1_R1_A_agent), not the look's default.
   settle     for each mark: seconds until the face (no face: the scene key) is back on target
              (face within 1/3 stop of its target; key within 1/3 stop of the look's window, the same
              tolerance as the brain's dead band) and STAYS there 2 s. Capped at 30 s.
@@ -22,6 +24,7 @@ scored but flagged.
 import argparse
 import csv
 import json
+import re
 import statistics
 import sys
 from pathlib import Path
@@ -43,11 +46,39 @@ def load(folder):
     rows = []
     with (folder / "metrics.csv").open() as f:
         for r in csv.DictReader(f):
-            rows.append({k: (None if v == "" else v if k == "state" else float(v)) for k, v in r.items()})
+            rows.append({k: (None if v == "" else v if k in ("state", "who") else float(v)) for k, v in r.items()})
     log = [json.loads(line) for line in (folder / "runner_log.jsonl").read_text().splitlines()]
     start = next((e for e in log if e["event"] == "start"), {})
     marks = [e["t"] for e in log if e["event"] == "mark"]
-    return rows, marks, start.get("look", "cinematic"), start.get("mode", "?")
+    note = person_targets(rows, log, start.get("take") or folder.name)
+    return rows, marks, start.get("look", "cinematic"), start.get("mode", "?"), note
+
+
+TAKE_PERSON = re.compile(r"S\d_(?:R\d+|BONUS)_([A-Z])_")
+
+
+def person_targets(rows, log, take):
+    """Clarification 2: rows with a face nobody recognized get the take's person's target. Returns a note."""
+    m = TAKE_PERSON.search(take)
+    if not m:
+        return None                                            # no person in the name (S5, S6): as logged
+    if rows and "who" not in rows[0]:
+        return "logged before 'who' was recorded: face targets as logged"
+    letter = m.group(1)
+    target = None
+    for e in log:                                              # the target in effect: the last one set for them
+        people = e.get("people", []) if e.get("event") == "start" else [e] if e.get("event") == "face" else []
+        for p in people:
+            if p.get("target") is not None and (p.get("name") or "").strip().upper() in (letter, "PERSON " + letter):
+                target = p["target"]
+    unknown = [r for r in rows if r["face"] is not None and not r.get("who")]
+    if not unknown:
+        return None
+    if target is None:
+        return "person %s's face target isn't in this session's log: %d unrecognized rows scored as logged" % (letter, len(unknown))
+    for r in unknown:
+        r["target"] = target
+    return "%d unrecognized face rows scored against person %s's target (%+.2f st)" % (len(unknown), letter, target)
 
 
 def on_target(row, look):
@@ -98,7 +129,7 @@ def flickers(rows, marks):
 
 
 def score(folder):
-    rows, marks, look_key, mode = load(folder)
+    rows, marks, look_key, mode, note = load(folder)
     look = LOOKS[look_key]
     faces = [r for r in rows if r["face"] is not None and r["target"] is not None]
     settles = settle_times(rows, marks, look)
@@ -109,7 +140,7 @@ def score(folder):
         "face_rows_pct": round(100 * len(faces) / len(rows), 1),
         "face_error_mean_st": round(statistics.fmean(abs(r["face"] - r["target"]) for r in faces), 2) if faces else None,
         "face_on_target_pct_time": round(100 * sum(on_target(r, look) for r in faces) / len(faces), 1) if faces else None,
-        "marks": len(marks), "settle_s": settles, "flickers": flickers(rows, marks),
+        "marks": len(marks), "settle_s": settles, "flickers": flickers(rows, marks), "face_target_note": note,
     }
 
 
@@ -176,6 +207,9 @@ def main():
     print(" | ".join(cols))
     for r in results:
         print(" | ".join(str(r[c]) for c in cols))
+    for r in results:
+        if r.get("face_target_note"):
+            print("NOTE %s: %s" % (r["take"], r["face_target_note"]))
     if args.json:
         Path(args.json).write_text(json.dumps(results, indent=1))
 
