@@ -67,7 +67,8 @@ LABELS = {"start": ("START", "1"), "change": ("CHANGE", "32"), "would_change": (
           "advice": ("ADVICE", "33"), "kill": ("KILL", "1;31"), "error": ("ERROR", "1;31"),
           "pause": ("PAUSE", "35"), "refused": ("REFUSED", "35"), "look": ("LOOK", "1"),
           "end": ("END", "1"), "restore": ("RESTORE", "32"), "help": ("KEYS", "2"), "status": ("status", "2"),
-          "face": ("FACE", "1"), "dashboard": ("WEB", "1"), "mark": ("MARK", "1;36"), "problem": ("PROBLEM", "1;33")}
+          "face": ("FACE", "1"), "dashboard": ("WEB", "1"), "mark": ("MARK", "1;36"), "problem": ("PROBLEM", "1;33"),
+          "rec": ("REC", "1;31")}
 
 
 class Console:

@@ -178,3 +178,17 @@ def test_a_dry_run_never_offers_to_put_iso_back(fake, tmp_path):
     assert [(d["setting"], d["by"]) for d in diffs] == [("IsoSensitivity", "by hand")]
     assert r.restorable == [] and r.restore() == []
     assert cam.sets == [] and cam.props["IsoSensitivity"]["current"] == 3200
+
+
+def test_rec_start_and_stop_are_logged(fake, tmp_path):
+    # The blind-test clips are cut relative to the mark, so the log needs the moment Rec started.
+    cam, path = fake()
+    r = runner_for(cam, path, tmp_path, live=False)
+    r.run(seconds=1)
+    cam.recording = True
+    r.run(seconds=1)
+    cam.recording = False
+    r.run(seconds=1)
+    recs = [e for e in log(tmp_path, "runner_log.jsonl") if e["event"] == "rec"]
+    assert [e["recording"] for e in recs] == [True, False]
+    assert recs[0]["t"] < recs[1]["t"]

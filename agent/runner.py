@@ -124,6 +124,7 @@ class AgentRunner:
         self.eyes_ms = deque(maxlen=48)
         self.report = self.output = self.jpeg = None
         self.restorable = []
+        self.was_recording = None             # logged when the camera starts or stops recording
         self.fps = None
 
     # ------------------------------------------------------------ logging
@@ -236,6 +237,7 @@ class AgentRunner:
                 self.t_settings = now
                 self.props.update(self.client.get(*WATCHED))
                 self._rebuild()
+                self._watch_recording()
             header, jpeg = self.client.frame(after=self.frame_no, timeout_ms=1000)
         except Exception as e:                       # bridge gone or camera unplugged
             self._event("error", "Lost the bridge or camera (%s): stopped. Nothing more will be sent." % e)
@@ -341,6 +343,18 @@ class AgentRunner:
                   face=r.faces[0]["stops"] if r.faces else None, headroom=r.headroom_stops,
                   clipped_important=r.clipped_important_pct, camera=self.summary(), paused=self.paused)
         self.frames, self.t_tick = 0, t
+
+    def _watch_recording(self):
+        """Log the moment the camera starts or stops recording (the blind-test clips are cut from the mark,
+        so the time from Rec start to each mark must be in the log)."""
+        rec = bool(self.cam.recording)
+        if rec == self.was_recording:
+            return
+        first, self.was_recording = self.was_recording is None, rec
+        if first and not rec:
+            return
+        self._event("rec", "Camera already recording at the start" if first else
+                    "Camera started recording" if rec else "Camera stopped recording", recording=rec)
 
     def _sample(self, t):
         """4 times a second: one row for the chart and for metrics.csv (what Step 7 measures)."""
