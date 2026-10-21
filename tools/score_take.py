@@ -153,6 +153,12 @@ def main():
     ap.add_argument("--json")
     ap.add_argument("--allow-fake", action="store_true", help="score sessions recorded on the fake camera too")
     args = ap.parse_args()
+    labels = {is_rehearsal(f) for f in args.folders}
+    if len(labels) > 1:
+        sys.exit("Some of these folders are rehearsal takes and some aren't. Score them separately: rehearsal data "
+                 "never mixes with the Step 7 test.")
+    if True in labels:
+        print("REHEARSAL takes: not part of the Step 7 test.")
     skipped = [(f, unscorable(f, args.allow_fake)) for f in args.folders]
     for f, why in skipped:
         if why:
@@ -164,12 +170,6 @@ def main():
         why = mismatch(f)
         if why:
             print("CHECK %s: %s" % (f, why))
-    labels = {is_rehearsal(f) for f in args.folders}
-    if len(labels) > 1:
-        sys.exit("Some of these folders are rehearsal takes and some aren't. Score them separately: rehearsal data "
-                 "never mixes with the Step 7 test.")
-    if True in labels:
-        print("REHEARSAL takes: not part of the Step 7 test.")
     results = [score(f) for f in args.folders]
     cols = ["take", "look", "seconds", "clipping_mean_pct", "clipping_over_limit_pct_time", "face_error_mean_st",
             "face_on_target_pct_time", "settle_s", "flickers"]

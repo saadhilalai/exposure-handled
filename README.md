@@ -80,7 +80,7 @@ The agent is designed to expose correctly across skin tones.
 | Smoothness | 14 simulated situations (sunset, walk-bys, shade → sun, tungsten…): 0 back-and-forth | simulator |
 | A pumping bug | found on your real frame through the fake camera (6400 ↔ 5000), fixed, and kept as a test | fake camera |
 | Face recognition | same face matched across 2.3 stops of exposure change: 0.97 similarity (threshold 0.36) | recorded frame |
-| Automated tests | 1 passing | — |
+| Automated tests | 126 passing | — |
 | **Agent vs FX2 auto vs manual, blind test** | **not done yet**: plan written and frozen before shooting ([docs/step7-test-plan.md](docs/step7-test-plan.md)) | — |
 
 Demo video: coming after Step 7.
