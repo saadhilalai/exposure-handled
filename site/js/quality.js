@@ -2,6 +2,8 @@
 // Three levels (high, medium, low). A first guess comes from the graphics chip, CPU cores and memory; then the
 // real frame rate decides. When frames run long, the render resolution comes down a little at a time; if that
 // isn't enough, the level steps down. It never steps back up within a visit (no flip-flopping).
+// If the frames are slow because the CPU is busy (not the graphics chip), fewer pixels wouldn't help, so the level
+// steps down straight away: medium skips the depth-of-field pass, which halves the 3D's draw calls.
 
 export const LEVELS = {
   //          3D pixel ratio · depth of field · glow · agents · picture pixel ratio · blur taps
@@ -37,7 +39,7 @@ function guess() {
 
 export function createQuality() {
   const q = {
-    level: guess(), scale: 1, fps: 0, frameMs: 16.7, listeners: new Set(), busy: () => true,
+    level: guess(), scale: 1, fps: 0, frameMs: 16.7, listeners: new Set(), busy: () => true, cpuMs: () => 0,
     get settings() { return { ...LEVELS[q.level], load: GPU_LOAD }; },
     onChange(fn) { q.listeners.add(fn); fn(q); return () => q.listeners.delete(fn); },
     set(level) { if (level !== q.level) { q.level = level; q.scale = 1; q.listeners.forEach((fn) => fn(q)); } },
@@ -58,6 +60,8 @@ export function createQuality() {
           fastFor = 0; q.set("low"); grace = now + 600;
         } else if (avg > VERY_SLOW_MS && lower) {
           fastFor = 0; q.set(ORDER[ORDER.indexOf(q.level) + 1]); grace = now + 600;
+        } else if (avg > SLOW_MS && lower && q.cpuMs() > Math.min(11, avg * 0.5)) {
+          fastFor = 0; q.set(ORDER[ORDER.indexOf(q.level) + 1]); grace = now + 1500;      // CPU-bound
         } else if (avg > SLOW_MS) {
           fastFor = 0;
           const min = MIN_SCALE[q.level];

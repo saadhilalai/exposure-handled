@@ -614,11 +614,14 @@ export function createCamera3D(canvas, { low = false } = {}) {
   const clock = new THREE.Timer();
   let time = 0, running = false, raf = 0, focusDist = 6;
   const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
+  let cpuMs = 0;                                      // the CPU's share of each frame (smoothed), for the quality manager
   function frame() {
     raf = requestAnimationFrame(frame);
+    const t = performance.now();
     clock.update(); const dt = Math.min(clock.getDelta(), 1 / 20);
     step(dt);
     composer.render(dt);
+    cpuMs += (performance.now() - t - cpuMs) * 0.1;
   }
   let spin = 0; const _t = new THREE.Vector3();
   function placeCamera() {
@@ -722,5 +725,6 @@ export function createCamera3D(canvas, { low = false } = {}) {
     settle() { Object.assign(D, S); },
     lcdRect, resize,
     info: () => renderer.info,
+    get cpuMs() { return running ? cpuMs : 0; },
   };
 }

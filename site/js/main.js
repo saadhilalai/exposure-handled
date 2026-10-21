@@ -20,7 +20,8 @@ function kf(p, keys) {
 
 let sim = null, cam3d = null, data = null;
 const quality = createQuality();
-window.__quality = () => quality.level + " " + quality.scale.toFixed(2);   // read by the speed tests
+quality.cpuMs = () => (cam3d ? cam3d.cpuMs : 0);
+window.__quality = () => quality.level + " " + quality.scale.toFixed(2) + " cpu " + quality.cpuMs().toFixed(1);   // read by the speed tests
 const views = {};
 const prog = { hero: 0, inside: 0, try: 0, finale: 0 };
 
@@ -206,6 +207,7 @@ function hero() {
   // timecode at 23.976
   const tc = $("#hero-tc"), t0 = performance.now(), p2 = (n) => String(n).padStart(2, "0");
   setInterval(() => {
+    if (prog.hero > 0.15) return;                 // faded out: no need to keep rewriting it
     const f = Math.floor(((performance.now() - t0) / 1000) * 23.976);
     tc.textContent = `01:${p2(Math.floor(f / 1440) % 60)}:${p2(Math.floor(f / 24) % 60)}:${p2(f % 24)}`;
   }, 42);
