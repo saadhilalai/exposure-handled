@@ -1,6 +1,8 @@
-# Camera Agent website (draft, v2)
+# Camera Agent website (v2)
 
-The project's public page. **It's a draft and isn't deployed.** `index.html` carries `noindex` until launch.
+The project's public page, live at **[s4dai-exposure-handled.static.hf.space](https://s4dai-exposure-handled.static.hf.space)** (a free static Hugging Face Space, `s4dAi/exposure-handled`). Every picture on it is tagged **Real**, **Placeholder** or **Illustration** until the Step 7 footage replaces the stand-ins.
+
+**Publish an update:** `python tools/make_space.py --push s4dAi/exposure-handled` (it builds `build/hf_space/` from this folder, placeholder clips included, then uploads it).
 
 **Preview it on this Mac:**
 ```
@@ -51,13 +53,11 @@ The simulator's AI (`js/ai.js`) is a small copy of the agent's rules for the dem
 
 It stays inside the real approved ranges. Nerd mode says so on the page.
 
-## Before launch
+## Still to do
 
 - Add real FX2 footage from the shoot (for example as a mode of the before/after slider), and swap the dashboard screenshots for a recording on the FX2.
 - Add the Step 7 results.
-- Point "See the code" at the repo once it's public (it goes to the GitHub profile for now).
-- Remove `noindex` and the Draft chip.
-- Add the link-preview image tag with the site's real address (it's commented in `index.html`; the image is `media/og.jpg`, 1200×630).
+- Done at launch (2026-10-21): "See the code" points at the public repo, `noindex` and the Draft chip are gone, and the link-preview image (`media/og.jpg`, 1200×630) has its real address.
 
 ## How it's built
 

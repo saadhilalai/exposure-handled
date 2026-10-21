@@ -1,5 +1,7 @@
 # Exposure, Handled.
 
+**Website: [s4dai-exposure-handled.static.hf.space](https://s4dai-exposure-handled.static.hf.space)**. Play with the agent in your browser: break a shot and watch it fix it, or try to beat it.
+
 **Camera Agent: an AI camera assistant that runs exposure like a cinematographer.** It watches the live image from a Sony FX2, judges it the way a DP would (in stops, protecting highlights, holding faces), sets the ISO itself, and explains every choice in one plain line. For example: *"Face −1.9 st (target +0.5): ISO 2000 → 4000 (base ISO)"*. You pick the look; it handles the rest, and you can take control back at any moment with one key.
 
 An S4D project, directed by Saad Hilal. Code written with an AI coding assistant (see [How this was built](#how-this-was-built)).
@@ -80,7 +82,7 @@ The agent is designed to expose correctly across skin tones.
 | Smoothness | 14 simulated situations (sunset, walk-bys, shade → sun, tungsten…): 0 back-and-forth | simulator |
 | A pumping bug | found on your real frame through the fake camera (6400 ↔ 5000), fixed, and kept as a test | fake camera |
 | Face recognition | same face matched across 2.3 stops of exposure change: 0.97 similarity (threshold 0.36) | recorded frame |
-| Automated tests | 126 passing | — |
+| Automated tests | 133 passing | — |
 | **Agent vs FX2 auto vs manual, blind test** | **not done yet**: plan written and frozen before shooting ([docs/step7-test-plan.md](docs/step7-test-plan.md)) | — |
 
 Demo video: coming after Step 7.
@@ -150,7 +152,7 @@ Keys: **Space** kill switch · `p` Auto on/off · `l` Lock · `m` mark an event 
 | `tools/` | Run the agent, fake camera, kill switch, calibration, simulator, screenshots; for Step 7: the day's start (`step7.sh`), scoring, the blind-test cut list and rating page, the rehearsal (`rehearsal.sh`) |
 | `config/` | Approved ranges, live-view calibration |
 | `docs/` | One write-up per step, screenshots, results |
-| `site/` | The project website, a draft ([site/README.md](site/README.md)) |
+| `site/` | The project website, live at [s4dai-exposure-handled.static.hf.space](https://s4dai-exposure-handled.static.hf.space) ([site/README.md](site/README.md)) |
 | `video/` | The brag film's storyboard and composition (footage, music and renders stay out of git) |
 
 ## Honest limits

@@ -78,7 +78,6 @@ em { font-style: italic; }
 .chip.ph { color: var(--warn); border-color: rgba(245,184,61,.4); }
 .chip.ph i { border-radius: 1px; transform: rotate(45deg); width: 6px; height: 6px; }
 .chip.ill { color: #b9b4ff; border-color: rgba(185,180,255,.35); }
-.chip.draft { color: var(--warn); border-color: rgba(245,184,61,.35); padding: 6px 10px 5px; font-size: 9.5px; }
 
 .pill { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 46px; padding: 0 22px; border-radius: 999px; font: 700 12px/1 var(--wide); letter-spacing: .16em; text-transform: uppercase; text-decoration: none; color: var(--ink); background: rgba(255,255,255,.07); border: 1px solid var(--line-2); transition: background .3s, border-color .3s, transform .5s var(--ease); }
 @media (hover: hover) { .pill:hover { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.32); } }
