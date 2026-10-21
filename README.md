@@ -1,6 +1,6 @@
-# Camera Agent
+# Exposure, Handled.
 
-**An AI camera assistant that runs exposure like a cinematographer.** It watches the live image from a Sony FX2, judges it the way a DP would (in stops, protecting highlights, holding faces), sets the ISO itself, and explains every choice in one plain line. For example: *"Face −1.9 st (target +0.5): ISO 2000 → 4000 (base ISO)"*. You pick the look; it handles the rest, and you can take control back at any moment with one key.
+**Camera Agent: an AI camera assistant that runs exposure like a cinematographer.** It watches the live image from a Sony FX2, judges it the way a DP would (in stops, protecting highlights, holding faces), sets the ISO itself, and explains every choice in one plain line. For example: *"Face −1.9 st (target +0.5): ISO 2000 → 4000 (base ISO)"*. You pick the look; it handles the rest, and you can take control back at any moment with one key.
 
 An S4D project, directed by Saad Hilal. Code written with an AI coding assistant (see [How this was built](#how-this-was-built)).
 

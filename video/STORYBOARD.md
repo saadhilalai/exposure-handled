@@ -1,4 +1,4 @@
-# Camera Agent: brag video storyboard (draft, placeholder footage)
+# Exposure, Handled.: brag video storyboard (draft, placeholder footage)
 
 **Status:** built with placeholders on 2026-10-21. On Saturday, after the Step 7 shoot, swap in the real clips and numbers (see "Swapping on Saturday" below). The storyboard and composition are in git; footage, music and renders never are.
 
@@ -22,7 +22,7 @@
 | 5 | 17.2–25.6 | Three panes, same scene, same moment. They grow to full width at 21.4 | labels: *A* Camera auto · *B* By hand · ● *C* The agent. Status lines under each (from the results). Footnote: *One example: scene ?, round ?. Not the typical result.* | **CLIPS B1, B2, B3**: one scene and round, all three methods, from the same mark | placeholder (footage, status lines, footnote) |
 | 6 | 25.6–32.4 | Black results card | kicker ● *The agent* / a big number / what it means / a thin rule / *the numbers · 63 takes, N raters, blind* / caveat | — | placeholder (all numbers) |
 | 7 | 32.4–36.0 | Black | label: *kill switch · 33 ms · real FX2, Oct 19* / **"One key takes it back."** | — | final (33 ms is the real measurement from the Oct 19 live test) |
-| 8 | 36.0–40.0 | End card | **Camera Agent** / Saad Hilal · S4D / github.com/saadhilalai | — | link is a placeholder until the repo is public |
+| 8 | 36.0–40.0 | End card | **Exposure, Handled.** / Saad Hilal · S4D / github.com/saadhilalai | — | title final (director, 2026-10-21); link is a placeholder until the repo is public |
 
 **Why this order:** it shows the job in one moment (beats 2–3), then the test (5), then the result (6), then the trust line (7). It's the same shape as the robot film, which shows the skill, the test and the result.
 
@@ -63,6 +63,6 @@ The composition is `video/composition/index.html`. Every placeholder has a yello
   - The 7 dB raise is a plain gain (no compression): the excerpt ends up at −17.6 LUFS, peaking at −1.9 dBTP.
 - **Fades:** in over 0–2.2 s; out over 36.6–40 s.
 
-## Still open
+## Title
 
-- **Title on the end card:** "Camera Agent" for now. Five names are suggested to the director.
+**Exposure, Handled.** (director's pick, 2026-10-21). It's also the website's title and the README's heading, and it echoes the site's first line.

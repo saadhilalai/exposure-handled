@@ -13,7 +13,7 @@
 | 7 | Rehearsal | **Thursday 2026-10-22, at sunset.** |
 | 8 | Pointer over buttons | **Keep the dot** (as recommended). |
 | 9 | Depth of field on slower computers | **Keep** (as recommended). |
-| 10 | End-card title | **The director picks from five suggestions.** |
+| 10 | End-card title | **Exposure, Handled.** It's on the end card, the website's title and the README. |
 | 11 | Music | **"Penumbra" by Scott Buckley** (CC BY 4.0): a different track, same calm cinematic feel. |
 | 12 | Commit the video source | **Yes**, the storyboard and composition. Footage, music and renders stay out (as recommended). |
 
