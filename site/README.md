@@ -57,6 +57,7 @@ It stays inside the real approved ranges. Nerd mode says so on the page.
 - Add the Step 7 results.
 - Point "See the code" at the repo once it's public (it goes to the GitHub profile for now).
 - Remove `noindex` and the Draft chip.
+- Add the link-preview image tag with the site's real address (it's commented in `index.html`; the image is `media/og.jpg`, 1200×630).
 
 ## How it's built
 
