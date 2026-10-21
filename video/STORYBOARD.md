@@ -1,5 +1,7 @@
 # Exposure, Handled.: brag video storyboard (draft, placeholder footage)
 
+> **Superseded (2026-10-21, evening):** the director asked for a narrated film: the agent talks you through it, over the website's 3D camera, the real Oct 19 numbers and the kill switch. It's `video/film/`, scripted in [SCRIPT.md](SCRIPT.md). This 40 s silent draft (`video/composition/`) stays for reference. Its stand-in clip is reused in the new film's "next: the blind test" beat, and the swap steps below still apply to that clip.
+
 **Status:** built with placeholders on 2026-10-21. On Saturday, after the Step 7 shoot, swap in the real clips and numbers (see "Swapping on Saturday" below). The storyboard and composition are in git; footage, music and renders never are.
 
 **Same style as the robot's film ("Walk Before You Climb"):**
