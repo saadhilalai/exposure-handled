@@ -20,12 +20,17 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
   - Matrices update once a frame.
   - The canvas size is read only when it changes; it used to force a page layout every frame.
   - When the processor is the bottleneck, the quality level steps down (depth of field off) instead of the resolution.
-  - The quality recovers after a busy spell.
+  - After a busy spell, the quality tries one level back up, once per visit.
   - Off-screen CSS animations pause.
+  - The 3D is built in slices, with its shaders compiled in the background. Scrolling right after opening (CPU 4×): longest frame 433 → 200 ms, 51 → 57 fps.
+  - **Before/after**, the old version measured back to back with the new one: a normal laptop and CPU 4×/6× hold 60 fps in both; the new one is smoother while settling. The weak laptop (CPU 6× + graphics 4×) holds 60 with no frames under 30.
 - **Website polish:**
   - Orange focus brackets snap around buttons.
   - The reticle cursor now really shows; a broken image had left a plain crosshair.
   - Phone button rows fade on the side that has more.
+  - The game previews its dials before Play (no empty block on phones).
+  - Phones show 3 opening chat bubbles.
+  - New dashboard screenshots show the site's own scene, not a grey test pattern.
 - **Brag video:** the storyboard and a placeholder build are in `video/` (kept out of git), in the robot film's style. Swap steps are in video/STORYBOARD.md.
 
 ## 🎬 Next: sunset shakedown rehearsal (an evening before Saturday; day to be set)

@@ -81,15 +81,21 @@ It stays inside the real approved ranges. Nerd mode says so on the page.
     - **Then the real frame rate decides:**
       - When frames run long, the render resolution drops; if that isn't enough, the level steps down. Under ~15 fps it goes straight to low.
       - If the processor is what's busy, the level steps down at once (medium skips the depth-of-field pass, which halves the 3D's draw calls).
-      - After a busy spell (another app, a download), the resolution climbs back and it tries one level up after 8 calm seconds. A step that runs slow again isn't retried.
+      - The resolution never climbs back within a level: every change rebuilds the 3D's buffers, which is a visible hitch on a weak computer.
+      - After a busy spell (another app, the page itself loading), it tries one level back up after 12 calm seconds, once per visit.
     - **What changes per level:** the 3D pixel ratio, depth of field, glow, number of agents and edge smoothing (MSAA), plus the camera pictures' resolution and blur taps.
     - **Nerd mode** shows a live counter: fps, level and resolution.
   - **Only what's on screen renders:** the 3D stops when it's faded out, and each camera picture draws only while it's (nearly) visible. Hidden pictures give their GPU memory back after 15 s. Off-screen sections and hidden beats pause their CSS animations, which otherwise cost style and layer work every frame.
   - **The 3D camera's CPU cost:** pieces that never move on their own are merged per part and material (about a third fewer draw calls). The scene's matrices update once a frame, and the canvas size is read only when it changes.
+  - **Starting the 3D without a freeze:**
+    - It's built in slices.
+    - Its shaders compile in the background (the browser's parallel shader compile), for the render target they're drawn into.
+    - Its first frame is never drawn inside a scroll handler.
+    - Scrolling straight after the page opens (CPU 4× slower): the longest frame went from 433 ms to 200 ms.
   - **The 3D rear screen** gets one still frame, because copying a live picture between the two graphics contexts stalled frames.
   - **Without a graphics chip** (software rendering): no 3D (the camera chapter reads as a normal page), small camera pictures that redraw only when something changes, and no blur, glow or moving grain.
   - **The cursor** is drawn by the system, so it tracks the mouse exactly. Over anything clickable, orange brackets snap around the element itself (`lockFrame` in `js/ui.js`). They follow the element, not the mouse, so they can't lag.
-  - **Measured in Chrome on the M2** (October 20): 60 fps everywhere on a retina screen, with the CPU slowed 4× and 6×, with a graphics chip emulated 2× and 9× weaker (the page renders that many more pixels), and with no GPU at all. Not tested on real Windows, Intel or iPhone hardware.
+  - **Measured in Chrome on the M2** (October 20–21): 60 fps everywhere on a retina screen, with the CPU slowed 4× and 6×, with a graphics chip emulated 2× and 9× weaker (the page renders that many more pixels), with both slowed at once, and with no GPU at all. Not tested on real Windows, Intel or iPhone hardware.
   - **Testing knobs:** `?quality=high|medium|low` forces a level, `?gpuload=N` acts like a weaker chip, `?debug` exposes internals.
 - **Reduced motion:** with `prefers-reduced-motion`, nothing scrubs or flies. The camera chapter reads as a normal page over a still exploded view.
 - **If 3D can't start:** the page retries once, then shows the camera chapter as a normal page.
