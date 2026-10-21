@@ -1,6 +1,29 @@
 # Open decisions for the director
 
-Written 2026-10-21 while you were away. Nothing here was guessed or changed: each item waits for your answer, and work carried on around it. Each has a recommendation; reply with the number and your pick, for example "1: as recommended".
+## Answered (2026-10-21)
+
+| # | Decision | Answer |
+|---|---|---|
+| 1 | Manual iris | **Fixed** at the look's f-stop. Written into the plan as Clarification 1. |
+| 2 | Unrecognized faces | **Scored against the take's person.** Clarification 2 in the plan, built into `score_take.py`. Name people A and B in the face box. |
+| 3 | Run-sheet notes | **Written by hand on the printout.** The list is in docs/step7-tools.md, section 0. |
+| 4 | Plan fingerprint | **Emailed by the director:** `7b2a9e69b190f4d055f87d4acb2e536deaababe3bf262d4b0d93d8ffea2a303b` (with both clarifications; tag `step7-plan-clarified`). |
+| 5 | Disclosure | **Said in the results** (as recommended). |
+| 6 | Saturday's start | **`tools/step7.sh`** (as recommended). |
+| 7 | Rehearsal | **Thursday 2026-10-22, at sunset.** |
+| 8 | Pointer over buttons | **Keep the dot** (as recommended). |
+| 9 | Depth of field on slower computers | **Keep** (as recommended). |
+| 10 | End-card title | **The director picks from five suggestions.** |
+| 11 | Music | **"Penumbra" by Scott Buckley** (CC BY 4.0): a different track, same calm cinematic feel. |
+| 12 | Commit the video source | **Yes**, the storyboard and composition. Footage, music and renders stay out (as recommended). |
+
+None of 3, 5, 6, 8, 9 or 12 changes the frozen plan.
+
+---
+
+*The original questions, as asked:*
+
+Written 2026-10-21 while you were away.
 
 ## Before Saturday (Step 7)
 
