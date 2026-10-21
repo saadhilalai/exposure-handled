@@ -2,6 +2,23 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## 🚀 Public (2026-10-21, evening)
+
+- **Website:** https://s4dai-exposure-handled.static.hf.space, a free static Hugging Face Space (`s4dAi/exposure-handled`, the same account as LANDFALL and the robot). Republish with `python tools/make_space.py --push s4dAi/exposure-handled`.
+- **Code:** https://github.com/saadhilalai/exposure-handled. It's public with the full history, both plan tags, an About description, the website link and topics.
+- **Before going public, a privacy check of every file in all 113 commits, plus commit and tag messages, found nothing to fix:**
+  - No AI-tool names.
+  - No Mac username, computer name, personal email or tokens.
+  - No faces in any image.
+  - No Sony SDK file, LUT, face data or session data ever committed.
+  - All commits are by Saad Hilal with the no-reply address.
+- **On the site:** the Draft chip and `noindex` are gone, and every Real, Placeholder and Illustration tag stays. "See the code" opens the repo. Link previews use `media/og.jpg`.
+- **Checked live:**
+  - Chrome on desktop, Chrome at phone size and Safari's engine at phone size.
+  - No errors, no failed requests and no sideways scrolling.
+  - The 3D builds in each.
+- **Repo name:** `exposure-handled`, the brand, following `landfall` and `walk-before-you-climb`. Inside it, the tool is still called Camera Agent.
+
 ## 📅 Step 7 dates (director, 2026-10-21)
 
 - **Saturday 2026-10-24: session 1 only.** Indoors: S1, S3, S4, S6, with both people. That's 54 scored takes and 5 bonus. Day sheet: [docs/step7-day.md](docs/step7-day.md).
