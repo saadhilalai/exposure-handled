@@ -457,9 +457,10 @@
         build("#k24 .w", 11.85, { stagger: 0.12, dur: 1.2 });
         build("#kstops .w", 14.15, { stagger: 0.12 });
         fadeOut("#k24, #kstops", 15.7, 0.4);
-        build("#pISO", 16.15, { y: 20 }); fadeOut("#pISO", 17.3, 0.25);
-        build("#pIRIS", 17.45, { y: 20 }); fadeOut("#pIRIS", 18.6, 0.25);
-        build("#pWB", 18.75, { y: 20 }); fadeOut("#pWB", 19.45, 0.25);
+        // each label's entrance ends before its exit starts, so the two never fight over opacity
+        build("#pISO", 16.15, { y: 20, dur: 0.6 }); fadeOut("#pISO", 17.25, 0.25);
+        build("#pIRIS", 17.45, { y: 20, dur: 0.6 }); fadeOut("#pIRIS", 18.55, 0.25);
+        build("#pWB", 18.75, { y: 20, dur: 0.6 }); fadeOut("#pWB", 19.4, 0.2);
         build("#rng > div", 19.55, { y: 16, blur: 6, dur: 0.8, stagger: 0.1 });
         fadeOut("#rng", 21.05, 0.3);
         // the push into the sensor ends in light
