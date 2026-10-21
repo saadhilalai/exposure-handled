@@ -35,7 +35,7 @@ MODES = ("clean", "zebras", "false_color")
 
 
 class Dashboard:
-    def __init__(self, runner, host="127.0.0.1", port=8765):
+    def __init__(self, runner, host="127.0.0.1", port=8770):
         self.runner, self.host, self.port = runner, host, port
         self.cache = {}                      # mode -> (frame_no, jpeg bytes), shared by every viewer
         self.cache_lock = threading.Lock()
@@ -46,11 +46,13 @@ class Dashboard:
         self.allowed_hosts = {"%s:%d" % (h, self.port) for h in ("127.0.0.1", "localhost", host)}
 
     def start(self):
+        self.started = True
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
         return self
 
     def stop(self):
-        self.server.shutdown()
+        if getattr(self, "started", False):          # shutdown() waits for serve_forever, so only if it ran
+            self.server.shutdown()
         self.server.server_close()
 
     @property

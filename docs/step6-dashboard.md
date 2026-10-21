@@ -3,7 +3,7 @@
 A web page that shows what the agent sees, what it decided and why, and gives you the controls: look, Auto, Lock, "this face looks right", and the big kill switch. Built and checked on the **fake camera only** (no FX2 connected).
 
 ```
-python tools/run_agent.py --fake --dashboard              # fake camera, then open http://127.0.0.1:8765/
+python tools/run_agent.py --fake --dashboard              # fake camera, then open http://127.0.0.1:8770/
 python tools/run_agent.py --dashboard                     # dry run on the real camera (bridge must be running)
 python tools/run_agent.py --live --dashboard              # live: type LIVE, then press Auto on the page (twice)
 ```

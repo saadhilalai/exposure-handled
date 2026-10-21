@@ -124,7 +124,7 @@ sh tools/fetch_models.sh          # YuNet (MIT) and SFace (Apache 2.0), checked 
 
 ```
 # No camera at all: a fake FX2 that speaks the bridge's protocol
-.venv/bin/python tools/run_agent.py --fake --dashboard          # then open http://127.0.0.1:8765/
+.venv/bin/python tools/run_agent.py --fake --dashboard          # then open http://127.0.0.1:8770/
 
 # Real camera, read-only first (the bridge refuses every change)
 (cd build/bridge && ./camera_bridge ~/camera-agent/run/bridge.sock ~/camera-agent/sessions/my-session --read-only)

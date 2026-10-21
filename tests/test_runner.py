@@ -165,3 +165,16 @@ def test_session_end_restores_the_starting_iso_through_the_gate(fake, tmp_path):
     assert cam.props["IsoSensitivity"]["current"] == 800
     assert "restoring" in log(tmp_path, "changes.jsonl")[-1]["reason"]
     assert (tmp_path / "session" / "settings_end.json").exists()
+
+
+def test_a_dry_run_never_offers_to_put_iso_back(fake, tmp_path):
+    # An FX2-auto or manual take runs dry: if ISO was moved by hand, the session end must not send it back.
+    cam, path = fake(scene_offset=TOO_DARK)
+    r = runner_for(cam, path, tmp_path, live=False)
+    r.run(seconds=2)
+    cam.props["IsoSensitivity"]["current"] = 3200            # the operator turned the dial
+    r.stop()
+    diffs = r.finish()
+    assert [(d["setting"], d["by"]) for d in diffs] == [("IsoSensitivity", "by hand")]
+    assert r.restorable == [] and r.restore() == []
+    assert cam.sets == [] and cam.props["IsoSensitivity"]["current"] == 3200

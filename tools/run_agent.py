@@ -13,7 +13,7 @@ Keys:  SPACE   kill switch: stop now, lock the bridge, the camera is yours
        q       quit (offers to put your starting ISO back)
        Ctrl-C  kill switch + quit
 From any other terminal:  python tools/kill_switch.py
---dashboard also serves the dashboard at http://127.0.0.1:8765/ (same controls, plus the
+--dashboard also serves the dashboard at http://127.0.0.1:8770/ (same controls, plus the
 "this face looks right" button). A live session with the dashboard starts with Auto OFF.
 --take S1_R3_A_agent names the Step 7 take (session folder + logs). --allow-iso-while-recording
 is the Step 7 recording switch: agent takes only, needs --live, a take name ending in _agent,
@@ -27,6 +27,7 @@ Usage:
   python tools/run_agent.py --fake --dashboard          # the dashboard on the fake camera
 """
 import argparse
+import difflib
 import os
 import re
 import select
@@ -46,6 +47,18 @@ sys.path.insert(0, str(ROOT))
 from agent.bridge_client import DEFAULT_SOCKET, BridgeClient, BridgeError  # noqa: E402
 from agent.looks import LOOKS  # noqa: E402
 from agent.runner import AgentRunner, RunnerError  # noqa: E402
+
+STEP7_NAME = re.compile(r"S[1-6]_")
+
+
+def run_sheet_takes():
+    """Every take name on the Step 7 run sheet (empty if the run-sheet generator can't be loaded)."""
+    try:
+        sys.path.insert(0, str(ROOT / "tools"))
+        import make_run_sheet as sheet          # importing it doesn't write anything; only running it does
+        return {t[1] for rows in sheet.takes(sheet.build_order()).values() for t in rows}
+    except Exception:
+        return set()
 
 FAKE_SOCKET = ROOT / "run" / "fake_bridge.sock"
 LOOK_KEYS = dict(zip("12345", LOOKS))
@@ -199,8 +212,8 @@ def main():
     fake.add_argument("--record", nargs="*", metavar="T0:T1", help="the fake records from T0 to T1 s")
     fake.add_argument("--fake-read-only", action="store_true")
     web = ap.add_argument_group("dashboard")
-    web.add_argument("--dashboard", action="store_true", help="serve the dashboard (http://127.0.0.1:8765/)")
-    web.add_argument("--port", type=int, default=8765)
+    web.add_argument("--dashboard", action="store_true", help="serve the dashboard (http://127.0.0.1:8770/)")
+    web.add_argument("--port", type=int, default=8770, help="8770 by default (8765 is robot-walker's web server)")
     web.add_argument("--host", default="127.0.0.1", help="0.0.0.0 opens it to your network (Pi + phone): no password yet")
     web.add_argument("--face-refs", help="where 'this face looks right' is stored (default config/face_refs.json)")
     step7 = ap.add_argument_group("Step 7")
@@ -223,7 +236,32 @@ def main():
     if args.rehearsal and not args.face_refs:
         args.face_refs = str(ROOT / "sessions" / "REHEARSAL" / "face_refs.json")   # tonight's faces stay with tonight
 
+    if args.take and not args.rehearsal and STEP7_NAME.match(args.take):
+        names = run_sheet_takes()
+        if names and args.take not in names:
+            near = difflib.get_close_matches(args.take, names, n=3)
+            sys.exit("%s isn't on the Step 7 run sheet.%s Nothing started." % (
+                args.take, " Did you mean %s?" % " or ".join(near) if near else ""))
+
     socket_path = Path(args.socket) if args.socket else FAKE_SOCKET if args.fake else DEFAULT_SOCKET
+    if not args.fake:
+        # check the bridge answers before making a session folder (an old socket file stays behind after a crash)
+        if not socket_path.exists():
+            sys.exit("No bridge at %s. Start the bridge first (PROGRESS.md, 'How to start things again')." % socket_path)
+        try:
+            BridgeClient(socket_path, timeout=3).status()
+        except (OSError, BridgeError) as e:
+            sys.exit("The bridge isn't answering at %s (%s). It probably stopped and left its socket file behind. "
+                     "Start the bridge again, then run this again. Nothing started." % (socket_path, e))
+    # the dashboard's port is checked before anything is made; it starts serving once the runner has started
+    dashboard = None
+    if args.dashboard:
+        from agent.dashboard import Dashboard
+        try:
+            dashboard = Dashboard(None, args.host, args.port)
+        except OSError as e:
+            sys.exit("The dashboard can't use port %d (%s). Run this again with --port and a free port, e.g. "
+                     "--port %d. Nothing started." % (args.port, e.strerror or e, args.port + 1))
     session = ROOT / "sessions" / ("REHEARSAL" if args.rehearsal else "") / ("%s_%s%s" % (datetime.now().strftime("%Y-%m-%d_%H%M%S"),
                                                args.take or "runner-" + ("live" if args.live else "dry"),
                                                "-fake" if args.fake else ""))
@@ -231,8 +269,6 @@ def main():
     if args.rehearsal:
         (session / "LABEL").write_text("rehearsal: not part of the Step 7 test\n")
     fake_proc = start_fake(args, socket_path, session) if args.fake else None
-    if not fake_proc and not socket_path.exists():
-        sys.exit("No bridge at %s. Start the bridge first (PROGRESS.md, 'How to start things again')." % socket_path)
 
     console = Console()
     from agent.faces import FaceBook
@@ -242,7 +278,9 @@ def main():
                          exposure=args.allow_exposure, exposure_while_recording=args.allow_exposure_while_recording,
                          label="rehearsal" if args.rehearsal else None)
     console.runner = runner
-    keyboard = dashboard = None
+    if dashboard:
+        dashboard.runner = runner
+    keyboard = None
     try:
         if args.live:
             confirm_live(args, runner.client.status())
@@ -254,9 +292,8 @@ def main():
         if args.allow_exposure_while_recording:
             console.event("pause", "REHEARSAL RECORDING SWITCH ON for take %s: ISO, aperture, shutter and WB may change "
                                    "while the camera records. Kill switch: SPACE." % args.take)
-        if args.dashboard:
-            from agent.dashboard import Dashboard
-            dashboard = Dashboard(runner, args.host, args.port).start()
+        if dashboard:
+            dashboard.start()
             console.event("dashboard", "Dashboard: %s%s" % (dashboard.url, "  (Auto is OFF: press Auto to let it change ISO)"
                                                               if args.live else ""))
 

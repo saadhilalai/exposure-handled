@@ -512,15 +512,18 @@ class AgentRunner:
                 diffs.append({"setting": name, "start": self._text(name, self.start_props), "now": self._text(name, end),
                               "start_raw": self.start_props[name]["current"],
                               "by": "agent" if name in by_agent else "by hand"})
-        self.restorable = [d for d in diffs if d["setting"] in self.allowed] if not self.killed else []
+        # only a live session offers to put settings back: a dry run (an FX2-auto or manual take) never sends anything
+        self.restorable = [d for d in diffs if d["setting"] in self.allowed] if self.live and not self.killed else []
         self._event("end", "Session end: %d change(s) by the agent; settings different from the start: %s" % (
             len(self.changes), ", ".join("%s %s → %s (%s)" % (d["setting"], d["start"], d["now"], d["by"])
                                          for d in diffs) or "none"), diffs=diffs)
         return diffs
 
     def restore(self):
-        """Put approved settings back to where the session started (through the safety gate)."""
+        """Put approved settings back to where the session started (through the safety gate). Live sessions only."""
         results = []
+        if not self.live:
+            return results
         for d in self.restorable:
             reply = self.gate.change_setting(d["setting"], d["start_raw"],
                                              "Session end: restoring your starting %s" % d["start"])

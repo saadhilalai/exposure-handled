@@ -4,7 +4,7 @@ Clicks Auto twice, waits for the agent to work, hovers the chart, switches to fa
 locks, takes a phone-size view, then presses the kill switch. Uses the installed Google
 Chrome through Playwright (a test-only tool: `uv pip install playwright`).
 
-Usage: python tools/dashboard_screens.py <out_dir> [--url http://127.0.0.1:8765/] [--work 12]
+Usage: python tools/dashboard_screens.py <out_dir> [--url http://127.0.0.1:8770/] [--work 12]
 """
 import argparse
 import sys
@@ -16,7 +16,7 @@ from playwright.sync_api import sync_playwright
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("out")
-    ap.add_argument("--url", default="http://127.0.0.1:8765/")
+    ap.add_argument("--url", default="http://127.0.0.1:8770/")
     ap.add_argument("--work", type=float, default=12, help="seconds to let the agent work after Auto on")
     ap.add_argument("--no-kill", action="store_true")
     args = ap.parse_args()
