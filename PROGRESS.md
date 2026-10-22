@@ -20,6 +20,7 @@ The director sent three briefs (calm, hype, story). Notes: `video/FILMS.md`; cre
 - **Voice:** one human-sounding AI narrator for all three (MiniMax "Harrison"), because the ElevenLabs free account was
   blocked mid-job.
 - **Laptop sleeps:** the render queue is resumable (`video/blender/queue.sh`); restart it after a wake if it stopped.
+- **Delivered 12:03:** Calm, 4K (`~/Movies/Final Renders/1 - Calm (4K).mp4`) and a phone copy (sent). Story and Hype wait on their 3D shots.
 
 ## 🎞️ Three launch films (2026-10-21 → 22, overnight; no camera connected)
 
