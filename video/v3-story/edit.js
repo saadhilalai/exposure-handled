@@ -3,207 +3,222 @@ window.EDIT = {
  "duration": 55.0,
  "shots": [
   {
-   "id": "field_a",
-   "at": 10.98,
-   "to": 16.78,
-   "push": [
-    1.0,
-    1.06
-   ]
-  },
-  {
-   "id": "beach",
-   "at": 16.78,
-   "to": 19.6,
+   "id": "ridge",
+   "at": 8.6,
+   "to": 12.6,
    "push": [
     1.04,
     1.0
+   ],
+   "pushEase": "power1.out"
+  },
+  {
+   "id": "dusk",
+   "at": 12.6,
+   "to": 15.2,
+   "push": [
+    1.0,
+    1.04
    ]
   },
   {
-   "id": "fence",
-   "at": 19.6,
-   "to": 25.6,
+   "id": "sink",
+   "at": 15.2,
+   "to": 18.2,
    "push": [
     1.0,
     1.05
    ],
    "grade": [
     [
-     19.6,
+     15.2,
      1.0,
      1.0
     ],
     [
-     20.3,
+     16.4,
      1.0,
      1.0
     ],
     [
-     22.4,
-     0.42,
-     0.7,
+     17.4,
+     0.6,
+     0.8,
      "power2.inOut"
     ]
    ]
   },
   {
-   "id": "beach_dark",
-   "at": 25.6,
-   "to": 26.8,
+   "id": "cloud",
+   "at": 18.2,
+   "to": 19.5,
    "push": [
-    1.08,
-    1.12
+    1.0,
+    1.03
    ],
    "grade": [
     [
-     25.6,
-     0.42,
-     0.7
+     18.2,
+     0.75,
+     0.85
     ]
    ]
   },
   {
-   "id": "head",
-   "at": 26.8,
-   "to": 27.6,
+   "id": "door",
+   "at": 19.5,
+   "to": 20.6,
+   "push": [
+    1.02,
+    1.0
+   ],
+   "grade": [
+    [
+     19.5,
+     0.8,
+     0.85
+    ]
+   ]
+  },
+  {
+   "id": "sunset",
+   "at": 20.6,
+   "to": 22.25,
+   "push": [
+    1.0,
+    1.03
+   ],
+   "grade": [
+    [
+     20.6,
+     0.85,
+     0.9
+    ]
+   ]
+  },
+  {
+   "id": "gone",
+   "at": 22.25,
+   "to": 24.1,
    "push": [
     1.0,
     1.04
    ],
    "grade": [
     [
-     26.8,
-     0.42,
-     0.7
-    ]
-   ]
-  },
-  {
-   "id": "train_q",
-   "at": 27.6,
-   "to": 28.1,
-   "push": [
-    1.1,
-    1.14
-   ],
-   "grade": [
+     22.25,
+     0.8,
+     0.85
+    ],
     [
-     27.6,
-     0.42,
-     0.7
+     23.0,
+     0.8,
+     0.85
+    ],
+    [
+     24.1,
+     0.0,
+     0.6,
+     "power2.in"
     ]
    ]
   },
   {
    "id": "catch",
-   "at": 28.66,
-   "to": 32.6,
-   "punch": 1.03
-  },
-  {
-   "id": "train",
-   "at": 32.6,
-   "to": 43.04,
+   "at": 24.5,
+   "to": 28.5,
    "push": [
     1.0,
-    1.07
+    1.03
    ],
-   "grade": [
-    [
-     32.6,
-     0.42,
-     0.7
-    ],
-    [
-     33.4,
-     1.0,
-     1.0,
-     "power3.out"
-    ]
+   "fadeIn": 0.35
+  },
+  {
+   "id": "lens",
+   "at": 28.5,
+   "to": 30.75,
+   "push": [
+    1.0,
+    1.04
    ]
   },
   {
-   "id": "field_b",
-   "at": 43.04,
-   "to": 47.6,
+   "id": "city",
+   "at": 30.75,
+   "to": 32.75,
    "push": [
-    1.08,
+    1.0,
+    1.03
+   ]
+  },
+  {
+   "id": "monitor",
+   "at": 32.75,
+   "to": 34.5,
+   "push": [
+    1.03,
     1.0
-   ],
-   "pushEase": "power1.out"
+   ]
+  },
+  {
+   "id": "frame",
+   "at": 34.5,
+   "to": 37.9,
+   "push": [
+    1.0,
+    1.04
+   ]
+  },
+  {
+   "id": "horses",
+   "at": 37.9,
+   "to": 41.0,
+   "push": [
+    1.0,
+    1.03
+   ]
   },
   {
    "id": "hero",
-   "at": 47.0,
-   "to": 50.2,
+   "at": 41.0,
+   "to": 46.0,
    "push": [
     1.0,
     1.04
    ],
-   "fadeIn": 0.6,
    "shift": [
     0,
-    -11
+    -6
    ]
+  },
+  {
+   "id": "wave",
+   "at": 46.0,
+   "to": 48.6,
+   "push": [
+    1.0,
+    1.03
+   ],
+   "fadeOut": 0.5
   }
  ],
  "words": [
   {
-   "at": 3.18,
-   "to": 8.9,
-   "style": "quote",
-   "html": "There is nothing in this world",
-   "y": 45,
-   "cut": true
-  },
-  {
-   "at": 6.02,
-   "to": 8.9,
-   "style": "quote",
-   "html": "that does not have a <em>decisive moment.</em>",
-   "y": 55,
-   "cut": true
-  },
-  {
-   "at": 8.98,
-   "to": 10.8,
-   "style": "name",
-   "html": "Cardinal de Retz",
-   "cut": true
-  },
-  {
-   "at": 13.82,
-   "to": 16.7,
+   "at": 3.1,
+   "to": 4.8,
    "style": "line",
-   "html": "The light won’t wait.",
+   "html": "The light",
    "cut": true
   },
   {
-   "at": 22.7,
-   "to": 25.5,
+   "at": 5.0,
+   "to": 7.6,
    "style": "line",
-   "html": "Neither will the moment.",
+   "html": "won’t wait.",
    "cut": true
   },
   {
-   "at": 43.5,
-   "to": 47.3,
-   "style": "line",
-   "html": "What if your camera had",
-   "y": 45,
-   "cut": true
-  },
-  {
-   "at": 43.5,
-   "to": 47.3,
-   "style": "line",
-   "html": "a <em>cinematographer</em> inside it?",
-   "y": 56,
-   "cut": true
-  },
-  {
-   "at": 50.2,
+   "at": 48.6,
    "to": 55.0,
    "style": "title",
    "html": "Exposure, <em>Handled</em>.",
@@ -212,7 +227,7 @@ window.EDIT = {
    "out": false
   },
   {
-   "at": 51.6,
+   "at": 50.8,
    "to": 55.0,
    "style": "link",
    "html": "s4dai-exposure-handled.static.hf.space",
@@ -223,56 +238,14 @@ window.EDIT = {
  ],
  "flashes": [
   [
-   28.66,
+   41.0,
    0.35,
-   0.3
-  ],
-  [
-   43.04,
-   0.7,
    0.6
   ]
  ],
  "streaks": [],
  "kill": null,
- "dims": [
-  [
-   13.6,
-   13.9,
-   0.0,
-   0.3
-  ],
-  [
-   16.5,
-   16.78,
-   0.3,
-   0.0
-  ],
-  [
-   22.5,
-   22.8,
-   0.0,
-   0.3
-  ],
-  [
-   25.35,
-   25.6,
-   0.3,
-   0.0
-  ],
-  [
-   43.2,
-   43.5,
-   0.0,
-   0.35
-  ],
-  [
-   47.0,
-   47.4,
-   0.35,
-   0.0
-  ]
- ],
+ "dims": [],
  "blacks": [
   [
    53.8,
@@ -284,14 +257,21 @@ window.EDIT = {
  "letterbox": true,
  "cards": [
   [
-   0.0,
-   10.98
+   24.1,
+   24.5
   ],
   [
-   50.2,
+   48.6,
    55.0
   ]
  ],
  "look": null,
- "panels": []
+ "panels": [],
+ "horizon": {
+  "to": 8.6,
+  "top0": "#b07f55",
+  "top1": "#c08d5c"
+ },
+ "film": true,
+ "worlds": []
 };

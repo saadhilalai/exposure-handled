@@ -20,6 +20,41 @@
 
 None of 3, 5, 6, 8, 9 or 12 changes the frozen plan.
 
+## New (2026-10-22, morning): the redo of all three films
+
+Everything is in `video/FILMS.md` and `video/CREDITS.md`. None of it is on the website.
+
+**29. The narrator.** The most human take came from ElevenLabs (voice "Dallin"), but its free account was blocked
+mid-job ("Free Tier access has been disabled", which needs a paid plan). So all three films use one voice from the MiniMax
+engine (through Higgsfield), "Harrison": low, calm, with natural pauses and breaths. The audition reel is
+`video/films-voice/v2/voice-auditions.mp3` (Dallin, then Harrison, Gideon, Callum, Sterling).
+- **A (recommended):** keep Harrison.
+- **B:** a paid ElevenLabs plan, and I re-voice with Dallin.
+
+**30. Which camera.** The brief said "FX3", and also "the camera we actually used". The camera this project drives is the
+FX2, so the render is a faithful FX2 (EVF, grip, dials), without Sony's name or logo.
+- **A (recommended):** keep the FX2.
+- **B:** model an FX3 instead.
+
+**31. The orange helpers in the calm film:** cut, so the film stays art first. They're the stars of the hype film.
+
+**32. The hype film's real places.** Your Mac has no sunset, city-night, desert, forest or studio footage without client
+work or faces, so those beats use licensed Pexels plates, out of focus behind the camera.
+- **A (recommended):** keep them.
+- **B:** send me your own clips of those places and I'll swap them in.
+
+**33. The story film's footage.** It's all licensed Pexels stock now, because you named Pexels or Mixkit. Coverr clips
+were also found (free for commercial use), but they're not used. Only one clip of yours qualified: a door opening onto
+daylight in SHUTTER. It's not used, because SHUTTER is a YSV film and your notes keep YSV and S4D apart.
+- Three of the clips show faces: the photographer with horses, the actor on a monitor, and the woman at the blinds. Your
+  brief allows faces from licensed stock, and none of them is presented as endorsing the product.
+
+**34. Music.**
+- Calm: "Peace Within" (Peter Rudenko). Its piano may be sampled; the alternative is Chris Zabriskie's "The Temperature of the Air on the Bow of the Kaleetan".
+- Story: "Cylinder Three" (Chris Zabriskie).
+- Hype: "Beast", now 9 dB lower, ducking harder under the voice.
+- All CC BY 4.0, and none is used in another of your films.
+
 ## New (2026-10-22, overnight): three films to pick from
 
 Everything is in `video/FILMS.md`. The renders are in `video/v1-abstract/renders/`, `video/v2-hype/renders/` and `video/v3-story/renders/` (not in git). This replaces the hype draft below (17–20); its music and voice carry over.

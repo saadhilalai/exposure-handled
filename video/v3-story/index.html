@@ -96,25 +96,49 @@
       .p-menu::before { content: ""; position: absolute; left: 0; right: 0; top: 47%; height: 230px; transform: translateY(-50%); background: #ff6a1a; }
       .p-menu .ph { font: 700 170px/1 var(--wide); letter-spacing: .04em; text-transform: uppercase; color: #0b0b0c; }
       #card { position: absolute; inset: 0; z-index: 29; background: #000; opacity: 0; pointer-events: none; }   /* text-only cards: pure black */
+      /* an opening of two flat earthy fields under a soft, curved horizon, on paper */
+      #horizon { position: absolute; inset: 0; z-index: 4; visibility: hidden; }
+      #horizon svg { position: absolute; inset: 0; }
+      #horizon .tex { position: absolute; inset: 0; mix-blend-mode: multiply; background: url("assets/art/paper.png") center / cover; }
+      /* old film: a faint flicker, scratches and dust, never distracting */
+      #flicker { position: absolute; inset: 0; z-index: 52; background: #fff4e0; opacity: 0; pointer-events: none; mix-blend-mode: soft-light; }
+      .scratch { position: absolute; top: 0; width: 1.5px; background: rgba(255, 250, 240, .9); z-index: 53; opacity: 0; pointer-events: none; }
+      .dust { position: absolute; border-radius: 50%; background: rgba(255, 250, 240, .9); z-index: 53; opacity: 0; pointer-events: none; }
       #black { position: absolute; inset: 0; z-index: 60; background: #000; opacity: 0; pointer-events: none; }
+      /* the world behind the camera: a new one on every beat (solid colour, or a plate thrown out of focus) */
+      #worlds { position: absolute; inset: 0; }
+      .world { position: absolute; inset: 0; visibility: hidden; }
+      .world::after { content: ""; position: absolute; inset: 0;
+        background: radial-gradient(ellipse 90% 90% at 50% 46%, rgba(255,255,255,.07) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,0) 55%, rgba(0,0,0,.32) 100%); }
+      .shot.plate video { filter: blur(var(--blur, 16px)) brightness(var(--bri, 1)) saturate(var(--sat, 1)); transform: scale(1.08); }
     </style>
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="55.0" data-width="1920" data-height="1080">
-      <div class="shot" id="field_a"><video id="v_field_a" class="clip" src="assets/footage/field.mp4" data-start="10.98" data-duration="5.8" data-media-start="0.0" data-track-index="1" muted playsinline></video></div>
-      <div class="shot" id="beach"><video id="v_beach" class="clip" src="assets/footage/beach.mp4" data-start="16.78" data-duration="2.82" data-media-start="0.3" data-track-index="2" muted playsinline></video></div>
-      <div class="shot" id="fence"><video id="v_fence" class="clip" src="assets/footage/fence.mp4" data-start="19.6" data-duration="6.0" data-media-start="0.0" data-track-index="3" muted playsinline></video></div>
-      <div class="shot" id="beach_dark"><video id="v_beach_dark" class="clip" src="assets/footage/beach.mp4" data-start="25.6" data-duration="1.2" data-media-start="3.2" data-track-index="4" muted playsinline></video></div>
-      <div class="shot" id="head"><video id="v_head" class="clip" src="assets/footage/head.mp4" data-start="26.8" data-duration="0.8" data-media-start="0.0" data-track-index="5" muted playsinline></video></div>
-      <div class="shot" id="train_q"><video id="v_train_q" class="clip" src="assets/footage/train.mp4" data-start="27.6" data-duration="0.5" data-media-start="0.2" data-track-index="6" muted playsinline></video></div>
-      <div class="shot" id="catch"><video id="v_catch" class="clip" src="assets/3d/s_catch.mp4" data-start="28.66" data-duration="3.94" data-media-start="0.0" data-track-index="7" muted playsinline></video></div>
-      <div class="shot" id="train"><video id="v_train" class="clip" src="assets/footage/train.mp4" data-start="32.6" data-duration="10.44" data-media-start="1.0" data-track-index="8" muted playsinline></video></div>
-      <div class="shot" id="field_b"><video id="v_field_b" class="clip" src="assets/footage/field.mp4" data-start="43.04" data-duration="4.56" data-media-start="7.0" data-track-index="9" muted playsinline></video></div>
-      <div class="shot" id="hero"><video id="v_hero" class="clip" src="assets/3d/s_hero.mp4" data-start="47.0" data-duration="3.2" data-media-start="0.0" data-track-index="10" muted playsinline></video></div>
+      <div id="worlds"></div>
+      <div class="shot " id="ridge"><video id="v_ridge" class="clip" src="assets/footage/ridge.mp4" data-start="8.6" data-duration="4.0" data-media-start="0.0" data-track-index="1" muted playsinline></video></div>
+      <div class="shot " id="dusk"><video id="v_dusk" class="clip" src="assets/footage/dusk.mp4" data-start="12.6" data-duration="2.6" data-media-start="0.0" data-track-index="2" muted playsinline></video></div>
+      <div class="shot " id="sink"><video id="v_sink" class="clip" src="assets/footage/sink.mp4" data-start="15.2" data-duration="3.0" data-media-start="0.0" data-track-index="3" muted playsinline></video></div>
+      <div class="shot " id="cloud"><video id="v_cloud" class="clip" src="assets/footage/cloud.mp4" data-start="18.2" data-duration="1.3" data-media-start="0.0" data-track-index="4" muted playsinline></video></div>
+      <div class="shot " id="door"><video id="v_door" class="clip" src="assets/footage/door.mp4" data-start="19.5" data-duration="1.1" data-media-start="0.0" data-track-index="5" muted playsinline></video></div>
+      <div class="shot " id="sunset"><video id="v_sunset" class="clip" src="assets/footage/sunset.mp4" data-start="20.6" data-duration="1.65" data-media-start="0.0" data-track-index="6" muted playsinline></video></div>
+      <div class="shot " id="gone"><video id="v_gone" class="clip" src="assets/footage/gone.mp4" data-start="22.25" data-duration="1.85" data-media-start="0.0" data-track-index="7" muted playsinline></video></div>
+      <div class="shot " id="catch"><video id="v_catch" class="clip" src="assets/3d/s_catch.mp4" data-start="24.5" data-duration="4.0" data-media-start="0.0" data-track-index="8" muted playsinline></video></div>
+      <div class="shot " id="lens"><video id="v_lens" class="clip" src="assets/footage/lens.mp4" data-start="28.5" data-duration="2.25" data-media-start="0.0" data-track-index="9" muted playsinline></video></div>
+      <div class="shot " id="city"><video id="v_city" class="clip" src="assets/footage/city.mp4" data-start="30.75" data-duration="2.0" data-media-start="0.0" data-track-index="10" muted playsinline></video></div>
+      <div class="shot " id="monitor"><video id="v_monitor" class="clip" src="assets/footage/monitor.mp4" data-start="32.75" data-duration="1.75" data-media-start="0.0" data-track-index="11" muted playsinline></video></div>
+      <div class="shot " id="frame"><video id="v_frame" class="clip" src="assets/footage/frame.mp4" data-start="34.5" data-duration="3.4" data-media-start="0.0" data-track-index="12" muted playsinline></video></div>
+      <div class="shot " id="horses"><video id="v_horses" class="clip" src="assets/footage/horses.mp4" data-start="37.9" data-duration="3.1" data-media-start="0.0" data-track-index="13" muted playsinline></video></div>
+      <div class="shot " id="hero"><video id="v_hero" class="clip" src="assets/3d/s_hero.mp4" data-start="41.0" data-duration="5.0" data-media-start="0.0" data-track-index="14" muted playsinline></video></div>
+      <div class="shot " id="wave"><video id="v_wave" class="clip" src="assets/footage/wave.mp4" data-start="46.0" data-duration="2.6" data-media-start="0.0" data-track-index="15" muted playsinline></video></div>
       <div id="dim"></div>
       <div class="bar top"></div><div class="bar bot"></div>
       <div class="vignette"></div>
       <div id="redwash"></div>
+      <div id="horizon"><svg viewBox="0 0 1920 1080"><defs><filter id="hz"><feGaussianBlur stdDeviation="9" /></filter></defs>
+        <rect id="hzTop" width="1920" height="1080" fill="#b8875a" />
+        <path id="hzGlow" d="M-40,646 Q960,566 1960,646" fill="none" stroke="#f0c27e" stroke-width="16" filter="url(#hz)" opacity=".75" />
+        <path id="hzLow" d="M-40,650 Q960,570 1960,650 L1960,1120 L-40,1120 Z" fill="#2e2621" /></svg><div class="tex"></div></div>
       <div id="card"></div>
       <div id="words"></div>
       <div id="flash"></div>
@@ -167,6 +191,13 @@
           });
         });
 
+        // ---------- worlds: a solid colour per beat behind the camera (hard cuts) ----------
+        (E.worlds || []).forEach(function (w) {
+          var d = mk("div", "world", null, $("#worlds"));
+          d.style.background = w.color;
+          tl.set(d, { visibility: "visible" }, w.at); tl.set(d, { visibility: "hidden" }, w.to);
+        });
+
         // ---------- words ----------
         E.words.forEach(function (w) {
           var d = mk("div", "word " + w.style, w.html, $("#words"));
@@ -210,6 +241,32 @@
           if (p.dx) d.style.setProperty("--dx", p.dx + "px");
           tl.set(d, { autoAlpha: 1 }, p.at); tl.set(d, { autoAlpha: 0 }, p.to);
         });
+
+        // ---------- the horizon opening: fields settle, the line breathes ----------
+        if (E.horizon) {
+          var hz = E.horizon;
+          tl.set("#horizon", { visibility: "visible" }, 0); tl.set("#horizon", { visibility: "hidden" }, hz.to);
+          tl.fromTo("#hzLow", { y: 40 }, { y: 0, duration: hz.to, ease: "sine.out" }, 0);
+          tl.fromTo("#hzGlow", { opacity: 0.35, y: 40 }, { opacity: 0.85, y: 0, duration: hz.to, ease: "sine.out" }, 0);
+          tl.fromTo("#hzTop", { attr: { fill: hz.top0 } }, { attr: { fill: hz.top1 }, duration: hz.to, ease: "sine.inOut" }, 0);
+        }
+        // ---------- old film texture (seeded, so every render is identical) ----------
+        if (E.film) {
+          var seed = 9, rnd = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+          var n = Math.ceil(E.duration * 12);
+          for (var fi = 0; fi < n; fi++) tl.set("#flicker", { opacity: 0.015 + rnd() * 0.035 }, fi / 12);
+          for (var si = 0; si < E.duration * 0.9; si++) {           // a scratch now and then, for 2-3 frames
+            var sc = mk("div", "scratch", null, $("#root")), at = rnd() * E.duration, hh = 30 + rnd() * 70;
+            sc.style.left = (rnd() * 100).toFixed(2) + "%"; sc.style.height = hh.toFixed(0) + "%"; sc.style.top = (rnd() * (100 - hh)).toFixed(0) + "%";
+            tl.set(sc, { opacity: 0.12 + rnd() * 0.16 }, at); tl.set(sc, { opacity: 0 }, at + (2 + Math.floor(rnd() * 2)) / 24);
+          }
+          for (var di = 0; di < E.duration * 4; di++) {              // dust: single frames
+            var du = mk("div", "dust", null, $("#root")), dt = rnd() * E.duration, sz = 2 + rnd() * 4;
+            du.style.left = (rnd() * 100).toFixed(2) + "%"; du.style.top = (rnd() * 100).toFixed(2) + "%";
+            du.style.width = du.style.height = sz.toFixed(1) + "px";
+            tl.set(du, { opacity: 0.2 + rnd() * 0.3 }, dt); tl.set(du, { opacity: 0 }, dt + 1 / 24);
+          }
+        }
 
         // ---------- text-only cards: pure black (#000) behind the words, and no grain on them ----------
         var inCard = function (t) { return (E.cards || []).some(function (c) { return t >= c[0] && t < c[1]; }); };
