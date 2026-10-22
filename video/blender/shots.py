@@ -669,7 +669,12 @@ def p_hero(t, X):
 
 @shot("p_rear", 1.0, blur=False)
 def p_rear(t, X):
-    """The back: the screen showing a real frame from the camera's live view, the dials, the thumb rest."""
+    """The back: the screen showing a frame of Saad's own footage, the dials, the thumb rest."""
+    img = D.images.load(str(rig.ROOT / "video" / "blender" / "cache" / "screen_field.jpg"))
+    for n in D.materials["screen"].node_tree.nodes:
+        if n.type == "TEX_IMAGE":
+            n.image = img
+    D.materials["screen"].node_tree.nodes["Principled BSDF"].inputs["Emission Strength"].default_value = 1.6
     rig.explode(0)
     rig.iris(4)
     lights(key=0.7, top=1.0, rim_left=1.6, rim_right=1.4, card=0.4)
@@ -682,8 +687,12 @@ def p_rear(t, X):
 def p_agent(t, X):
     """The agent still: the moment it turns to us at the sensor, focus on its visor."""
     h_agent(3.4 * B, X)
+    for a in X["crew"].items:                       # just the one agent, no bokeh blobs
+        a["ob"].scale = (0, 0, 0)
     hero = X["hero"][0]
     co = rig.film_cam()
+    tgt = hero.location + Vector((0.0, 0.0, 0.0004))
+    rig.aim(co, tgt + Vector((0.028, -0.02, 0.007)), tgt)
     co.data.dof.focus_distance = (hero.location - co.location).length - 0.0013
     co.data.dof.aperture_fstop = 18.0
 
@@ -855,6 +864,8 @@ def bake_shot(name, X):
         X["f"] = f
         S["fn"](t, X)
         C.view_layer.update()
+        S["fn"](t, X)                               # again, now that the parts' world matrices match this frame (the crew and
+        C.view_layer.update()                       # the hero are placed from them; frame 0 used to see the assembled camera)
         if "crew" in X:
             pass
         rig.key_parts(f)
