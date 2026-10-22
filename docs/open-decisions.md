@@ -20,7 +20,42 @@
 
 None of 3, 5, 6, 8, 9 or 12 changes the frozen plan.
 
-## New (2026-10-21, evening): the narrated film
+## New (2026-10-21, night): the hype cut
+
+You asked for a hype video instead of the slow narrated film, so decisions 14–16 below are replaced by these. Draft 1 is sent (`video/hype/renders/`, not in git). The cut sheet, with the source of every real thing on screen, is `video/HYPE.md`.
+
+**17. Music.** The draft uses **"Beast" by Sascha Ende** (CC BY 4.0, 115 BPM, ende.app). Why I picked it:
+- It has a riser, a beat of near-silence and a hard drop.
+- Its own short break lands exactly on the kill switch, so the music cuts out there with no edit.
+- Its last bar and final hit close the film.
+
+The other candidates, all CC BY 4.0:
+- "Sunstorm Trailer" (Sascha Ende): cinematic hybrid trailer.
+- "Superbike XXL" (John Bartmann): 80s synthwave.
+- "Exit the Premises" (Kevin MacLeod): steady 128 BPM, but no drop.
+
+One catch: the draft uses ende.app's 128 kbps preview. For the final I need the full-quality file, which ende.app only gives through its "Download for free" button (it runs a browser check). Either I click it in your Chrome, or you download it and drop it in `video/hype/assets/music/`.
+
+**18. Voice.** The draft uses **Imogen**: steady and cool, and the pitch hardly wanders. All three were made with the ElevenLabs engine through your Higgsfield plan, about 0.15 credits a line; 33 lines cost about 5 credits. Reels of all 11 lines are sent:
+- Imogen (in the draft).
+- Sloane: lower and warmer.
+- Orion: male.
+
+If you'd rather have Dior from the first auditions, that needs the ElevenLabs upgrade (decision 16, option A).
+
+**19. Subtitles.** The cut has **none in the picture**, because the note said too many words on screen. The lines go in a caption file (`video/hype/captions.vtt`) for the website's player. Recommended: keep it that way.
+
+**20. One example line swapped.** "Locked." became **"Got it."** In the dashboard, LOCKED means *you* are holding every setting, so the agent saying it would claim the opposite.
+
+Everything else follows your note:
+- 36.5 s.
+- Five big words.
+- One stat: **33 ms**, the kill switch, from the real Oct 19 test.
+- Small tags on every shot.
+
+---
+
+## Replaced by the hype cut: the narrated film (decisions 14–16)
 
 **14. Approve the script.** `video/SCRIPT.md`: 14 lines, about 38 s of talking in a 70 s film. Every number comes from the Oct 19 logs, and the source is beside each line. Change any line you like. Nothing gets voiced until you approve them.
 

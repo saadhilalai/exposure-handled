@@ -2,6 +2,25 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## ⚡ The hype cut (2026-10-21, night)
+
+The director's note on the narrated film was "too slow, too many words, looks like Nerd mode", so it's been redone as a hype video. Draft 1 is sent and opened on the Mac.
+
+- **The cut:** 36.5 s, cut on the beat of "Beast" (Sascha Ende, CC BY 4.0, 115 BPM). Cut sheet and sources: `video/HYPE.md`.
+- **The 3D:** eight new shots rendered on the music's beat grid, with motion blur and speed ramps (`video/tools/capture_hype.html` + `capture_hype.py`):
+  - a whip orbit
+  - a lens macro
+  - a push into the viewfinder
+  - the dive: a smash into the lens, the body blowing apart in slow motion, then through the iris onto the sensor
+  - the iris snapping and the colour chip repainting
+  - a fast swarm
+  - the kill freeze
+  - the slam back together
+- **The 3D camera's new film controls:** the site's 3D camera gained a few optional controls (field of view, roll, focus distance, aperture, glow, exposure) and `advance()`. They're unset on the site, so the site behaves as before.
+- **The edit:** written in beats in `video/tools/build_hype.py`, which generates `video/hype/index.html`, `edit.js`, `captions.vtt` and the mix (music, CC0 hits and swishes, voice).
+- **The voice:** Higgsfield's ElevenLabs engine. The draft uses Imogen; Sloane and Orion reels are sent too.
+- **Waiting on the director:** music, voice, subtitles and one swapped line (decisions 17–20 in `docs/open-decisions.md`).
+
 ## 🎬 The narrated film (2026-10-21, evening)
 
 - **Asked for:** a narrated brag film in which the agent talks you through it, with the website's 3D camera, real numbers and the kill switch. The script comes first for approval, then the render.

@@ -63,3 +63,14 @@ video/film/assets/audio/
 video/film/assets/voice/
 video/film/renders/
 video/film/.hyperframes/
+# the hype cut's media (rendered or downloaded; rebuild with video/tools/capture_hype.py and build_hype.py)
+video/hype/assets/3d/
+video/hype/assets/real/
+video/hype/assets/dash/
+video/hype/assets/stills/
+video/hype/assets/music/
+video/hype/assets/sfx/
+video/hype/assets/audio/
+video/hype/assets/voice/
+video/hype/renders/
+video/hype/.hyperframes/

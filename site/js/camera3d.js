@@ -588,6 +588,7 @@ export async function createCamera3D(canvas, { low = false } = {}) {
   const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), low ? 0.5 : 0.55, 0.45, 1.25);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
+  const bloomBase = bloom.strength;
 
   const _f = new THREE.Vector3();
   // where a named thing sits when the camera is exploded by e (model space, rotations ignored)
@@ -637,6 +638,9 @@ export async function createCamera3D(canvas, { low = false } = {}) {
     const yaw = D.yaw + spin;
     cam.position.set(tgt.x + Math.sin(yaw) * Math.cos(D.pitch) * D.dist, tgt.y + Math.sin(D.pitch) * D.dist, tgt.z + Math.cos(yaw) * Math.cos(D.pitch) * D.dist);
     cam.lookAt(tgt);
+    if (S.roll) cam.rotateZ(S.roll);                  // film only (a dutch angle); the site never sets it
+    const fov = S.fov || 28;
+    if (cam.fov !== fov) { cam.fov = fov; cam.updateProjectionMatrix(); }
     cam.setViewOffset(W0, H0, -D.frameX * W0, -D.frameY * H0, W0, H0);
     placeParts(D.explode);
     model.updateMatrixWorld(true);
@@ -672,10 +676,14 @@ export async function createCamera3D(canvas, { low = false } = {}) {
     if (bokeh) {
       const fp = focusPoint(S.focus);
       const d = cam.position.distanceTo(fp);
-      focusDist = damp(focusDist, d, 4, dt);
+      focusDist = S.focusDist ?? damp(focusDist, d, 4, dt);
       bokeh.uniforms.focus.value = focusDist;
-      bokeh.uniforms.aperture.value = 0.0006 + 0.0013 * Math.min(1, D.explode * 1.5);
+      bokeh.uniforms.aperture.value = S.aperture ?? 0.0006 + 0.0013 * Math.min(1, D.explode * 1.5);
+      bokeh.uniforms.maxblur.value = S.maxblur ?? 0.0065;
     }
+    // film-only overrides (unset on the site): glow strength and overall exposure, for flash frames
+    bloom.strength = S.bloom ?? bloomBase;
+    renderer.toneMappingExposure = S.exposure ?? 1.05;
     sweep.intensity = Math.max(0, sweep.intensity - dt * 3);
     if (lcdDirty) { lcdTex.needsUpdate = true; lcdDirty = false; }
   }
@@ -718,6 +726,7 @@ export async function createCamera3D(canvas, { low = false } = {}) {
     stop() { running = false; cancelAnimationFrame(raf); },
     get running() { return running; },
     renderOnce(dt = 1 / 60) { resize(); step(dt); composer.render(); },     // dt: the film capture steps 1/30 s a frame
+    advance(dt) { resize(); step(dt); },                                    // the film's shutter: time passes, no frame drawn
     // Compile the scene's shaders in the background (the browser's parallel shader compile), for the render target
     // they're really drawn into, so the first real frame doesn't stall on them.
     async precompile() {

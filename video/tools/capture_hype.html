@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hype capture</title>
+<!-- The hype cut's 3D shots, rendered by the website's own camera (site/js/camera3d.js) one frame at a time.
+     Every move is keyed in beats of the music (setup(scale, bpm)), so cuts, slams and speed ramps land on the beat.
+     Motion blur: each frame is the average of several sub-frames spread over a 180° shutter.
+     Speed ramps: the crew's clock runs at warp(t) times real time (slow motion < 1 < fast).
+     Driven by video/tools/capture_hype.py; served from the repo root. Everything here is an illustration. -->
+<style>
+  html, body { margin: 0; background: #050505; overflow: hidden; }
+  #c { position: fixed; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+</style>
+<script type="importmap">{ "imports": { "three": "/site/vendor/three/three.module.min.js", "three/addons/": "/site/vendor/three/addons/" } }</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import { createCamera3D } from "/site/js/camera3d.js";
+import { createSim } from "/site/js/sim.js";
+
+// ---------- easing + keyframes (keys in beats; each key's ease shapes the segment that ends on it) ----------
+const E = {
+  io: (x) => x * x * (3 - 2 * x),
+  lin: (x) => x,
+  in: (x) => x * x * x,
+  out: (x) => 1 - (1 - x) ** 3,
+  in4: (x) => x ** 4,
+  xin: (x) => (x <= 0 ? 0 : 2 ** (10 * x - 10)),
+  xout: (x) => (x >= 1 ? 1 : 1 - 2 ** (-10 * x)),
+  xio: (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x < 0.5 ? 2 ** (20 * x - 10) / 2 : (2 - 2 ** (-20 * x + 10)) / 2),
+  hold: (x) => (x >= 1 ? 1 : 0),
+};
+function kf(b, keys) {
+  if (b <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) {
+    const [b1, v1, ease] = keys[i], [b0, v0] = keys[i - 1];
+    if (b <= b1) return v0 + (v1 - v0) * (E[ease || "io"])((b - b0) / (b1 - b0 || 1));
+  }
+  return keys[keys.length - 1][1];
+}
+const pulse = (b, at, len) => (b < at ? 0 : Math.exp(-(b - at) / len));      // a flash that dies away
+
+let cam3d, sim, S, A, B = 0.5;                       // B: seconds per beat
+const LX = 0.04, LY = -0.02;                         // the lens axis (camera3d.js)
+const HERO = { x: -0.13, y: -0.02, z: -0.47 };       // the rear screen
+// where the camera sits for a target + yaw/pitch/dist (camera3d.js placeCamera), and the focus distance to a point
+const camPos = (s) => ({ x: s.tx + Math.sin(s.yaw) * Math.cos(s.pitch) * s.dist, y: s.ty + Math.sin(s.pitch) * s.dist, z: s.tz + Math.cos(s.yaw) * Math.cos(s.pitch) * s.dist });
+const focusOn = (s, p) => { const c = camPos(s); return Math.hypot(c.x - p.x, c.y - p.y, c.z - p.z); };
+// down the lens axis: the camera at z, looking back at the sensor
+const axis = (z) => ({ tx: LX, ty: LY, tz: 0, yaw: 0, pitch: 0, dist: z });
+
+// Each shot: length in beats, pre-roll in seconds (the crew runs unseen so it has spread out), state(b), warp(b),
+// and the beats where a light sweeps across the body (sweeps).
+const SHOTS = {
+  // HOOK · the assembled camera in the dark: a whip-in orbit, a slow drift, a whip out.
+  orbit: {
+    beats: 8, preroll: 0, sweeps: [0],
+    state(b) {
+      const s = { tx: 0, ty: 0.08, tz: 0.2, yaw: kf(b, [[0, -1.25], [1.6, -0.42, "xout"], [6.2, 0.12, "lin"], [8, 0.95, "xin"]]),
+        pitch: kf(b, [[0, -0.1], [8, 0.1, "lin"]]), dist: kf(b, [[0, 4.9], [8, 4.1, "lin"]]), roll: kf(b, [[0, 0.12], [8, -0.06, "lin"]]),
+        explode: 0, agents: 0, mode: "idle", fov: 30, exposure: 0.82 + 0.9 * pulse(b, 0, 0.5), bloom: 0.9, aperture: 0.0025, maxblur: 0.01 };
+      s.focusDist = focusOn(s, { x: 0, y: 0.05, z: 0.9 });
+      return s;
+    },
+    warp: () => 1,
+  },
+  // HOOK · macro on the lens front: the orange line slides past, shallow focus.
+  lens: {
+    beats: 4, preroll: 0,
+    state(b) {
+      const p = { x: LX + 0.398 * Math.cos(0.6), y: LY + 0.398 * Math.sin(0.6), z: 1.43 };
+      const s = { tx: p.x, ty: p.y, tz: p.z, yaw: kf(b, [[0, 1.12], [4, 0.62, "out"]]), pitch: kf(b, [[0, 0.24], [4, 0.1, "out"]]),
+        dist: kf(b, [[0, 0.95], [4, 0.66, "out"]]), roll: -0.08, explode: 0, agents: 0, mode: "idle", fov: 34,
+        exposure: 0.95, bloom: 1.0, aperture: 0.006, maxblur: 0.016 };
+      s.focusDist = focusOn(s, p);
+      return s;
+    },
+    warp: () => 1,
+  },
+  // DROP · smash into the lens; on the impact (beat 4) the body blows apart around us in slow motion and the crew
+  // bursts out; then a dive down the optical path: three elements, the iris opening as we pass, two more elements,
+  // the mount, the filter, and onto the sensor, where the crew swarms at full speed.
+  dive: {
+    beats: 16, preroll: 0, sweeps: [4],
+    state(b) {
+      // 0–4 in towards the assembled lens, a touch off the axis (keeps the key light's reflection off the glass);
+      // 4–5.6 the impact: back down the axis as it blows apart; 5.6–8.6 slow motion: swing round the suspended parts
+      // and back onto the axis; 8.6–12.6 the dive (the iris opens as we reach it); 12.6–16 land on the sensor at an angle.
+      const C = 2.0;                                     // the exploded body's middle, on the axis
+      let s;
+      if (b < 12.6) {
+        const z = kf(b, [[0, 7.6], [4, 2.35, "xin"], [5.6, 11.5, "xout"], [8.6, 11.9, "lin"], [10, 4.75, "xin"], [11.2, 4.25, "lin"], [12.6, 1.25, "xout"]]);
+        s = b < 8.6
+          ? { tx: LX, ty: LY, tz: C, dist: z - C, yaw: kf(b, [[0, 0.3], [4, 0.04, "in"], [4.6, 0], [5.6, 0], [7.3, 0.62], [8.6, 0]]),
+              pitch: kf(b, [[0, 0.13], [4, 0.02, "in"], [4.6, 0], [5.6, 0], [7.3, 0.22], [8.6, 0]]) }
+          : axis(z);
+      } else {
+        // a crane up as we land: above ~0.6 rad the filter glass in front of the sensor is out of the line of sight
+        s = { tx: LX, ty: LY, tz: 0.43, yaw: kf(b, [[12.6, 0], [16, 0.3, "out"]]), pitch: kf(b, [[12.6, 0], [14, 0.66, "out"], [16, 0.72, "lin"]]),
+          dist: kf(b, [[12.6, 0.82], [14, 0.66, "out"], [16, 0.58, "lin"]]) };
+      }
+      Object.assign(s, { roll: kf(b, [[0, 0], [4, 0.06], [8.6, -0.1], [12.6, 0.5], [16, 0.56, "lin"]]),
+        explode: kf(b, [[4, 0], [5.4, 0.86, "xout"], [8.6, 1, "lin"]]),
+        agents: kf(b, [[4.1, 0], [4.7, 1, "out"]]),
+        mode: b < 12.4 ? "idle" : "iso", fov: kf(b, [[0, 28], [4, 33, "in"], [5.6, 30], [8.6, 30], [10, 44, "in"], [11.2, 42], [12.6, 32, "out"]]),
+        fnum: kf(b, [[0, 11], [10.8, 11], [11.2, 2.8, "out"]]),                       // closed as we reach it, open on beat 11
+        sensorGain: kf(b, [[8.6, 0], [10, 0.7], [11.6, 0.5], [13.6, 0.9, "out"]]),     // its glow shows through the closed iris
+        exposure: (b < 4 ? 0.88 : 1.0) + 2.6 * pulse(b, 4, 0.35) + 0.35 * pulse(b, 12.6, 0.5) - (b > 12.6 ? 0.12 : 0),
+        bloom: 0.7 + 1.6 * pulse(b, 4, 0.5) + 0.3 * pulse(b, 12.6, 0.8) - (b > 12.6 ? 0.15 : 0),
+        aperture: b < 5 ? 0.0045 : b < 12.6 ? 0.0012 : 0.0032, maxblur: 0.012 });
+      // focus: the lens front on the way in, the body while it flies apart, the iris, then the sensor
+      s.focusDist = b < 5 ? focusOn(s, { x: LX, y: LY, z: 1.47 }) : b < 8.6 ? focusOn(s, { x: LX, y: LY, z: C })
+        : b < 12.6 ? Math.max(0.3, s.dist - (s.dist > 3.9 ? 3.62 : 0.43)) : s.dist;
+      return s;
+    },
+    warp: (b) => (b < 4 ? 1 : b < 5.2 ? 0.7 : b < 8.6 ? 0.22 : b < 12.4 ? 1.4 : 3.2),
+  },
+  // IT DECIDES · the iris snapping between stops on the beat, then the colour chip repainting warm to cool.
+  decide: {
+    beats: 8, preroll: 2.5,
+    state(b) {
+      if (b < 4) {
+        const p = { x: LX, y: LY, z: 3.62 };
+        const s = { tx: p.x, ty: p.y, tz: p.z, yaw: kf(b, [[0, 0.62], [4, 0.44, "lin"]]), pitch: kf(b, [[0, 0.2], [4, 0.12, "lin"]]),
+          dist: kf(b, [[0, 1.75], [4, 1.38, "lin"]]), roll: 0.05, explode: 1, agents: 1, mode: "iris", fov: 30,
+          fnum: kf(b, [[0, 2.8], [1, 8, "hold"], [2, 4, "hold"], [3, 11, "hold"], [3.5, 2.8, "hold"]]),
+          exposure: 1.0 + 0.5 * (pulse(b, 1, 0.12) + pulse(b, 2, 0.12) + pulse(b, 3, 0.12)), bloom: 0.9, aperture: 0.004, maxblur: 0.014 };
+        s.focusDist = focusOn(s, p);
+        return s;
+      }
+      const p = { x: 0.374, y: 0.416, z: -0.73 };
+      const s = { tx: p.x, ty: p.y, tz: p.z, yaw: kf(b, [[4, 0.62], [8, 0.36, "lin"]]), pitch: kf(b, [[4, 0.42], [8, 0.34, "lin"]]),
+        dist: kf(b, [[4, 0.95], [8, 0.76, "lin"]]), roll: -0.06, explode: 1, agents: 0.45, mode: "wb", fov: 30, fnum: 2.8,
+        chipGoal: kf(b, [[4.4, 0], [7.4, 1, "io"]]), exposure: 0.85, bloom: 0.5, aperture: 0.0045, maxblur: 0.014 };
+      s.focusDist = focusOn(s, p);
+      return s;
+    },
+    warp: (b) => (b < 4 ? 2.6 : 2.6),
+  },
+  // the whole exploded camera, a fast orbit, the crew everywhere at full speed
+  swarm: {
+    beats: 4, preroll: 3,
+    state(b) {
+      const m = A.mid;
+      const s = { tx: m.x, ty: m.y, tz: m.z, yaw: kf(b, [[0, 1.55], [4, 0.25, "xio"]]), pitch: kf(b, [[0, 0.36], [4, 0.18, "io"]]),
+        dist: kf(b, [[0, 7.4], [4, 6.4, "io"]]), roll: kf(b, [[0, -0.1], [4, 0.08]]), explode: 1, agents: 1, mode: "idle", fov: 30,
+        exposure: 1.0, bloom: 0.9, aperture: 0.0016, maxblur: 0.008, sensorGain: 0.5, chipGoal: 0.5 };
+      s.focusDist = focusOn(s, m);
+      return s;
+    },
+    warp: () => 3.2,
+  },
+  // KILL · the crew racing; on beat 2 it freezes and turns red; a slow push through the silence.
+  kill: {
+    beats: 6, preroll: 3,
+    state(b) {
+      const m = A.mid;
+      const s = { tx: m.x, ty: m.y, tz: m.z, yaw: kf(b, [[0, 0.98], [6, 0.74, "lin"]]), pitch: kf(b, [[0, 0.22], [6, 0.28, "lin"]]),
+        dist: kf(b, [[0, 9.4], [2, 8.9, "lin"], [6, 7.2, "out"]]), roll: 0, explode: 1, agents: 1, mode: "idle", fov: 30,
+        exposure: b < 2 ? 1.0 : 0.86, bloom: 0.9, aperture: 0.0016, maxblur: 0.008, sensorGain: 0.4, chipGoal: 0.5, freeze: b >= 2 };
+      s.focusDist = focusOn(s, m);
+      return s;
+    },
+    warp: () => 3,
+  },
+  // FINALE · drifting apart in slow motion, then on beat 2 everything slams home: a flash, a jolt, a light sweep,
+  // and the hero camera turning under the title.
+  slam: {
+    beats: 20, preroll: 3, sweeps: [2],
+    state(b) {
+      const m = A.mid, SL = 2, pre = 0.42;               // the slam lands on beat 2; the parts accelerate in over 0.42 beats
+      const e = b < SL - pre ? kf(b, [[0, 1], [SL - pre, 0.9, "out"]]) : b < SL ? 0.9 * (1 - E.in4((b - (SL - pre)) / pre)) : 0;
+      const after = b >= SL, j = after ? Math.exp(-(b - SL) / 0.35) : 0;
+      const s = after
+        ? { tx: 0 + 0.05 * j * Math.sin((b - SL) * 40), ty: 0.06 + 0.04 * j * Math.cos((b - SL) * 33), tz: 0.25,
+            yaw: kf(b, [[SL, 1.2], [20, 0.42, "out"]]), pitch: kf(b, [[SL, 0.08], [20, 0.18, "out"]]), dist: kf(b, [[SL, 6.3], [20, 5.5, "out"]]),
+            frameY: 0.13, roll: 0.03 * j }                                      // low in frame (the view shifts up): the title sits above it
+        : { tx: m.x, ty: m.y, tz: m.z, yaw: kf(b, [[0, 0.52], [SL, 0.74, "lin"]]), pitch: kf(b, [[0, 0.3], [SL, 0.24, "lin"]]),
+            dist: kf(b, [[0, 9.2], [SL, 8.0, "in"]]), frameY: 0, roll: kf(b, [[0, 0.08], [SL, 0.0]]) };
+      Object.assign(s, { explode: e, snap: 1, agents: b < SL - 0.3 ? 1 : 0, mode: b < SL - 0.6 ? "idle" : "home", fov: 30,
+        exposure: 1.0 + 3.0 * pulse(b, SL, 0.18), bloom: 0.8 + 1.4 * pulse(b, SL, 0.5), aperture: 0.0014, maxblur: 0.008,
+        sensorGain: 0, chipGoal: 0.5, fnum: 2.8 });
+      s.focusDist = focusOn(s, after ? { x: 0, y: 0.06, z: 0.6 } : m);
+      return s;
+    },
+    warp: (b) => (b < 1.5 ? 0.25 : 1),
+  },
+  // INTO THE VIEWFINDER · from behind, a push that accelerates into the rear screen, which shows a real frame.
+  vf: {
+    beats: 4, preroll: 0,
+    state(b) {
+      const s = { tx: HERO.x, ty: HERO.y, tz: HERO.z, yaw: kf(b, [[0, Math.PI + 0.5], [3.6, Math.PI, "out"]]), pitch: kf(b, [[0, 0.16], [3.6, 0.0, "out"]]),
+        dist: kf(b, [[0, 4.4], [3.6, 0.7, "xin"], [4, 0.66, "lin"]]), roll: kf(b, [[0, 0.14], [3.6, 0]]),
+        explode: 0, agents: 0, mode: "idle", fov: 28, exposure: 0.9, bloom: 0.8, aperture: 0.002, maxblur: 0.01 };
+      s.focusDist = focusOn(s, HERO);
+      return s;
+    },
+    warp: () => 1,
+  },
+};
+
+const KEYS = ["tx", "ty", "tz", "yaw", "pitch", "dist", "explode", "agents", "frameX", "frameY", "lift", "fnum", "sensorGain", "chipGoal",
+  "mode", "focus", "turntable", "snap", "fov", "roll", "focusDist", "aperture", "maxblur", "bloom", "exposure"];
+const DEFAULTS = { frameX: 0, frameY: 0, lift: 0, fnum: 2.8, sensorGain: 0, chipGoal: 0, focus: "body", turntable: 0, snap: 1 };
+function apply(st) {
+  for (const k of KEYS) S[k] = st[k] !== undefined ? st[k] : DEFAULTS[k];
+  cam3d.settle();                                    // every value exactly on its key: no damping lag in the film
+  if (st.freeze !== undefined && st.freeze !== cam3d.frozen) cam3d.freeze(st.freeze);
+}
+let lastB = -1;
+function sweepsBetween(b0, b1) { for (const at of shot.sweeps || []) if (b0 < at && at <= b1) cam3d.flashSweep(); }
+
+let acc, actx;
+window.setup = async (scale, bpm) => {
+  B = 60 / bpm;
+  const canvas = document.getElementById("c");
+  cam3d = await createCamera3D(canvas, { low: false });
+  cam3d.setQuality({ pr3d: scale, dof: true, bloom: true, agents: 380, msaa: 4, load: 1 }, 1);
+  S = cam3d.state;
+  A = { sensor: cam3d.anchor("sensor"), iris: cam3d.anchor("iris"), chip: cam3d.anchor("chip"), mid: cam3d.anchor("center", 1) };
+  // the rear screen shows a real live-view frame from the Oct 19 FX2 test (for the push into the viewfinder)
+  const img = new Image(); img.src = "/site/media/real/test1_05.jpg"; await img.decode();
+  const lc = cam3d.lcdCanvas.getContext("2d");
+  lc.fillStyle = "#000"; lc.fillRect(0, 0, 640, 360);
+  const k = Math.max(640 / img.width, 360 / img.height);
+  lc.drawImage(img, (640 - img.width * k) / 2, (360 - img.height * k) / 2, img.width * k, img.height * k);
+  cam3d.lcdChanged();
+  await cam3d.precompile();
+  acc = document.createElement("canvas"); acc.width = canvas.width; acc.height = canvas.height;
+  actx = acc.getContext("2d");
+  return { w: canvas.width, h: canvas.height };
+};
+
+let shot;
+window.begin = (name, fps) => {
+  shot = SHOTS[name];
+  apply(shot.state(0)); lastB = -1;
+  const n = Math.round(shot.preroll * fps);
+  for (let i = 0; i < n; i++) { apply(shot.state(0)); cam3d.renderOnce(shot.warp(0) / fps); }
+  return { beats: shot.beats, seconds: shot.beats * B };
+};
+// one finished frame at shot time i / fps: `sub` sub-frames over a 180° shutter, averaged; then the rest of the frame's
+// time passes undrawn
+window.frame = (i, fps, quality, sub) => {
+  const T = i / fps, open = 0.5 / fps;
+  const glc = document.getElementById("c");
+  for (let j = 0; j < sub; j++) {
+    const t = T + (j / sub) * open, b = t / B;
+    apply(shot.state(b)); sweepsBetween(lastB, b); lastB = b;
+    cam3d.renderOnce(shot.warp(b) * open / sub);
+    actx.globalAlpha = 1 / (j + 1);
+    actx.drawImage(glc, 0, 0, acc.width, acc.height);
+  }
+  cam3d.advance(shot.warp(T / B) * (1 / fps - open));
+  return acc.toDataURL("image/jpeg", quality);
+};
+window.ready = true;
+</script>
+</body>
+</html>
