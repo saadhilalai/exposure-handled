@@ -264,5 +264,67 @@ window.EDIT = {
    "to": 3.13,
    "color": "#e8e2d5"
   }
+ ],
+ "camfx": [
+  {
+   "id": "world",
+   "at": 0.0,
+   "f": "none"
+  },
+  {
+   "id": "world",
+   "at": 0.522,
+   "f": "sepia(.18) saturate(1.15)"
+  },
+  {
+   "id": "world",
+   "at": 1.043,
+   "f": "sepia(.12) saturate(1.1)"
+  },
+  {
+   "id": "world",
+   "at": 1.565,
+   "f": "hue-rotate(-6deg) brightness(.95)"
+  },
+  {
+   "id": "world",
+   "at": 2.087,
+   "f": "none"
+  },
+  {
+   "id": "world",
+   "at": 2.609,
+   "f": "brightness(1.04)"
+  },
+  {
+   "id": "world",
+   "at": 3.13,
+   "f": "sepia(.32) saturate(1.3) brightness(1.03)"
+  },
+  {
+   "id": "world",
+   "at": 3.652,
+   "f": "hue-rotate(-10deg) saturate(.85) brightness(.82)"
+  },
+  {
+   "id": "world",
+   "at": 4.174,
+   "f": "sepia(.26) saturate(1.2) brightness(1.05)"
+  },
+  {
+   "id": "world",
+   "at": 4.696,
+   "f": "sepia(.08) saturate(.95) brightness(.92)"
+  },
+  {
+   "id": "world",
+   "at": 5.217,
+   "f": "brightness(1.05)"
+  },
+  {
+   "id": "world",
+   "at": 5.739,
+   "f": "brightness(.9)"
+  }
  ]
 };

@@ -92,12 +92,20 @@ PLATES = {
     "studio": (PX / "p-studio_px10729080_close-up-on-lamp-in-room.mp4", 0.2, 1.4, "eq=brightness=0.04"),
     "stage": (PX / "p-studio_px28957437_dramatic-foggy-light-show-in-dark-hallway.mp4", 33.8, 35.0, "eq=brightness=-0.05:saturation=0.6"),
 }
+# where each plate sits behind the camera: the horizon under it (so its shadow lands on ground), the sun beside the lens
+PLATE_CSS = {"sunset": "--tx:24%;--ty:-23%;--sc:1.55", "desert": "--tx:27%;--ty:-6%;--sc:1.5", "city": "--ty:-4%;--sc:1.2",
+             "forest": "--sc:1.15", "studio": "--sc:1.1", "stage": "--ty:6%;--sc:1.2"}
+# and the camera's light matched to each world: a light grade on the transparent render, beat by beat
+HYPE_CAMFX = {0: "none", 1: "sepia(.18) saturate(1.15)", 2: "sepia(.12) saturate(1.1)", 3: "hue-rotate(-6deg) brightness(.95)",
+              4: "none", 5: "brightness(1.04)", 6: "sepia(.32) saturate(1.3) brightness(1.03)", 7: "hue-rotate(-10deg) saturate(.85) brightness(.82)",
+              8: "sepia(.26) saturate(1.2) brightness(1.05)", 9: "sepia(.08) saturate(.95) brightness(.92)", 10: "brightness(1.05)", 11: "brightness(.9)"}
 ALPHA = {"c_silhouette", "h_world"}           # 3D shots rendered with a transparent background (VP9 + alpha)
 V2 = dict(
     dir="v2-hype", title="Exposure, Handled. (hype)", duration=s(70),
     music=dict(file=HYPE / "music" / "beast.mp3", beast=True, gain=-9.0),
     worlds=[dict(at=s(i), to=s(i + 1), color=c) for i, c in enumerate(HYPE_WORLDS) if c],
-    shots=[("pl_" + k, "pl:" + k, s(i), s(i + 1), dict(cls="plate")) for i, k in HYPE_PLATES.items()] + [
+    camfx=[dict(id="world", at=s(i), f=f) for i, f in HYPE_CAMFX.items()],
+    shots=[("pl_" + k, "pl:" + k, s(i), s(i + 1), dict(cls="plate", css=PLATE_CSS.get(k))) for i, k in HYPE_PLATES.items()] + [
         ("world", "3d:h_world", 0, s(12), dict(push=[1.0, 1.0])),
         ("smash", "3d:h_smash", s(12), s(16), dict(push=[1.0, 1.12], pushEase="power2.in")),
         ("xray", "3d:h_xray", s(16), s(24), dict(punch=1.08)),
@@ -476,7 +484,7 @@ def edit(F):
              words=[dict(w, at=round(w["at"], 3), to=round(w["to"], 3)) for w in F["words"]],
              flashes=F.get("flashes", []), streaks=F.get("streaks", []), kill=F.get("kill"), dims=F.get("dims", []), blacks=F.get("blacks", []),
              letterbox=F.get("letterbox", False), cards=F.get("cards", []), look=F.get("look"), panels=F.get("panels", []),
-             horizon=F.get("horizon"), film=F.get("film", False), worlds=F.get("worlds", []))
+             horizon=F.get("horizon"), film=F.get("film", False), worlds=F.get("worlds", []), camfx=F.get("camfx", []))
     (d / "edit.js").write_text("// Made by video/tools/build_films.py. Don't edit by hand.\nwindow.EDIT = %s;\n" % json.dumps(E, ensure_ascii=False, indent=1))
     page = (V / "tools" / "films_template.html").read_text().replace("{{DURATION}}", str(round(F["duration"], 3))).replace("{{SHOTS}}", "\n".join(html))
     (d / "index.html").write_text(page)

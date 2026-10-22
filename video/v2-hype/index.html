@@ -110,18 +110,19 @@
       .world { position: absolute; inset: 0; visibility: hidden; }
       .world::after { content: ""; position: absolute; inset: 0;
         background: radial-gradient(ellipse 90% 90% at 50% 46%, rgba(255,255,255,.07) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,0) 55%, rgba(0,0,0,.32) 100%); }
-      .shot.plate video { filter: blur(var(--blur, 16px)) brightness(var(--bri, 1)) saturate(var(--sat, 1)); transform: scale(1.08); }
+      .shot.plate video { filter: blur(var(--blur, 16px)) brightness(var(--bri, 1)) saturate(var(--sat, 1));
+        transform: translate(var(--tx, 0%), var(--ty, 0%)) scale(var(--sc, 1.08)); }
     </style>
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="36.522" data-width="1920" data-height="1080">
       <div id="worlds"></div>
-      <div class="shot plate" id="pl_sunset"><video id="v_pl_sunset" class="clip" src="assets/plates/sunset.mp4" data-start="3.13" data-duration="0.522" data-media-start="0.0" data-track-index="1" muted playsinline></video></div>
-      <div class="shot plate" id="pl_city"><video id="v_pl_city" class="clip" src="assets/plates/city.mp4" data-start="3.652" data-duration="0.522" data-media-start="0.0" data-track-index="2" muted playsinline></video></div>
-      <div class="shot plate" id="pl_desert"><video id="v_pl_desert" class="clip" src="assets/plates/desert.mp4" data-start="4.174" data-duration="0.522" data-media-start="0.0" data-track-index="3" muted playsinline></video></div>
-      <div class="shot plate" id="pl_forest"><video id="v_pl_forest" class="clip" src="assets/plates/forest.mp4" data-start="4.696" data-duration="0.521" data-media-start="0.0" data-track-index="4" muted playsinline></video></div>
-      <div class="shot plate" id="pl_studio"><video id="v_pl_studio" class="clip" src="assets/plates/studio.mp4" data-start="5.217" data-duration="0.522" data-media-start="0.0" data-track-index="5" muted playsinline></video></div>
-      <div class="shot plate" id="pl_stage"><video id="v_pl_stage" class="clip" src="assets/plates/stage.mp4" data-start="5.739" data-duration="0.522" data-media-start="0.0" data-track-index="6" muted playsinline></video></div>
+      <div class="shot plate" id="pl_sunset" style="--tx:24%;--ty:-23%;--sc:1.55"><video id="v_pl_sunset" class="clip" src="assets/plates/sunset.mp4" data-start="3.13" data-duration="0.522" data-media-start="0.0" data-track-index="1" muted playsinline></video></div>
+      <div class="shot plate" id="pl_city" style="--ty:-4%;--sc:1.2"><video id="v_pl_city" class="clip" src="assets/plates/city.mp4" data-start="3.652" data-duration="0.522" data-media-start="0.0" data-track-index="2" muted playsinline></video></div>
+      <div class="shot plate" id="pl_desert" style="--tx:27%;--ty:-6%;--sc:1.5"><video id="v_pl_desert" class="clip" src="assets/plates/desert.mp4" data-start="4.174" data-duration="0.522" data-media-start="0.0" data-track-index="3" muted playsinline></video></div>
+      <div class="shot plate" id="pl_forest" style="--sc:1.15"><video id="v_pl_forest" class="clip" src="assets/plates/forest.mp4" data-start="4.696" data-duration="0.521" data-media-start="0.0" data-track-index="4" muted playsinline></video></div>
+      <div class="shot plate" id="pl_studio" style="--sc:1.1"><video id="v_pl_studio" class="clip" src="assets/plates/studio.mp4" data-start="5.217" data-duration="0.522" data-media-start="0.0" data-track-index="5" muted playsinline></video></div>
+      <div class="shot plate" id="pl_stage" style="--ty:6%;--sc:1.2"><video id="v_pl_stage" class="clip" src="assets/plates/stage.mp4" data-start="5.739" data-duration="0.522" data-media-start="0.0" data-track-index="6" muted playsinline></video></div>
       <div class="shot " id="world"><video id="v_world" class="clip" src="assets/3d/h_world.webm" data-start="0" data-duration="6.261" data-media-start="0.0" data-track-index="7" muted playsinline></video></div>
       <div class="shot " id="smash"><video id="v_smash" class="clip" src="assets/3d/h_smash.mp4" data-start="6.261" data-duration="2.087" data-media-start="0.0" data-track-index="8" muted playsinline></video></div>
       <div class="shot " id="xray"><video id="v_xray" class="clip" src="assets/3d/h_xray.mp4" data-start="8.348" data-duration="4.174" data-media-start="0.0" data-track-index="9" muted playsinline></video></div>
@@ -195,6 +196,9 @@
             tl.set(imgs[i], { autoAlpha: 0 }, 0); tl.set(imgs[i], { autoAlpha: 1 }, f); tl.set(imgs[i], { autoAlpha: 0 }, nxt);
           });
         });
+
+        // ---------- the camera's light matched to each world (a grade on the transparent render, per beat) ----------
+        (E.camfx || []).forEach(function (c) { tl.set("#" + c.id, { filter: c.f }, c.at); });
 
         // ---------- worlds: a solid colour per beat behind the camera (hard cuts) ----------
         (E.worlds || []).forEach(function (w) {
