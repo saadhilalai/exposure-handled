@@ -66,19 +66,27 @@ The research is in `docs/framing-research.md`.
   - Path-traced 4K runs about 50 s a frame on this Mac. So the moving shots are path-traced at 1920×1080 and scaled up to 4K, with a light glow pass.
   - The three stills are true 4K.
 
-## Film 1: Calm (50 s)
+## Film 1: Calm (52 s), in the manner of the AI-lab launch films
+
+The director's must-have: this one should feel like the AI-lab model launch films in the references.
+- Calm, on black, with a warm bone-and-amber tone.
+- Hard-cut serif lines and a quote.
+- An instrument montage on a quickening pulse, then silence and the hit.
+- The "same words, many surfaces" montage.
 
 | Time | Picture | Words / voice |
 |---|---|---|
-| 0.0 | Black | **I propose to consider the question,** (then) ***'Can machines think?'*** |
-| 5.1 | Black | **Alan Turing, 1950** |
-| 6.75 | Points of light drifting, slowly gathering into the shape of a camera | The agent, almost alone over the music: "I watch the light." · "I read it in stops." · "I keep your look." · "You keep the moment." (music swells under the last line) |
-| 15.75 | Black, true silence (0.75 s) | |
-| 16.5 | The hit: the solid camera, a soft flash and a low boom | |
-| 19.0 | The camera opens like a flower; the crew glows inside | |
-| 26.6 | One agent, close: its visor's histogram moving, its arm reaching to the sensor | |
-| 33.2 | The camera closes; the crew settles | **A camera that thinks / like a *cinematographer.*** (on the music's lift) |
-| 45.2 | Pure black (text-only cards are always #000, no grain) | **Exposure, *Handled*.** · "Exposure… handled." · the website link |
+| 0.0 | Pure black | **I propose to consider the question,** (then) ***'Can machines think?'*** |
+| 5.1 | Pure black | **Alan Turing, 1950** |
+| 6.75 | Points of light gathering into the shape of a camera | The agent, almost alone over the music: "I watch the light." · "I read it in stops." · "I keep your look." · "You keep the moment." |
+| 14.0 | The instruments: the front glass, the iris, the knurled dial, the orange ring, the iris, an agent's visor, the iris. Each cut is shorter (0.85 → 0.25 s) as the music swells | |
+| 17.45 | Pure black, true silence (0.75 s) | |
+| 18.2 | The hit: the solid camera, a soft flash and a low boom | |
+| 20.7 | The camera opens like a flower; the crew glows inside | |
+| 28.3 | One agent, close: its visor's histogram moving, its arm reaching to the sensor | |
+| 34.9 | The camera closes; the crew settles | **A camera that thinks / like a *cinematographer.*** (on the music's lift) |
+| 43.9 | The title held in one band of the screen across thirteen surfaces, cuts shrinking 0.42 → 0.125 s: newsprint-grain paper, the page's own `<title>` line, a typewriter sheet, a Bauhaus abstract, a chalk slate, the README's heading, a sticky note, a cyanotype, a terminal, an ensō, gaffer tape, a blueprint, a camera menu | a soft tick on each cut |
+| 47.0 | Pure black | **Exposure, *Handled*.** · "Exposure… handled." · the website link |
 
 ## Film 2: Hype (36.5 s, cut on the beat of "Beast", 115 BPM)
 
