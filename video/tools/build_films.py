@@ -325,6 +325,44 @@ def voice_lines():
     print("voice: %d lines -> %s" % (len(srcs), out.relative_to(ROOT)))
 
 
+V2DIR = VOICE / "v2"
+RADIO = ("highpass=f=380,lowpass=f=3000,acompressor=threshold=0.08:ratio=6:attack=2:release=40:makeup=3,asoftclip=type=tanh,"
+         "aecho=0.8:0.6:35|62:0.22|0.12")
+
+
+def voice_v2():
+    """The human-sounding narrator (ElevenLabs v4, voice "Dallin"): keep the breaths, trim only the dead air at the ends,
+    a gentle clean-up. The opening quote also gets a vintage-transmission version: band-limited, a little drive, a small
+    room, tape hiss and crackle, so it plainly reads as an old recording read aloud, not as anyone's real voice."""
+    src, out = V2DIR / "lines", V2DIR / "proc"
+    out.mkdir(parents=True, exist_ok=True)
+    clean = ("silenceremove=start_periods=1:start_threshold=-55dB:start_silence=0.05,areverse,"
+             "silenceremove=start_periods=1:start_threshold=-55dB:start_silence=0.25,areverse,highpass=f=65,"
+             "acompressor=threshold=0.18:ratio=2:attack=8:release=120:makeup=1.3")
+    n = 0
+    for p in sorted(src.glob("*.mp3")):
+        dst = out / (p.stem + ".wav")
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(p), "-af", clean, "-ar", "48000", "-ac", "1", str(dst)])
+        dur = duration(dst) + 0.6
+        g = ("[0:a]%s,apad=pad_dur=0.6[v];anoisesrc=c=pink:a=0.018:d=%.2f:r=48000,highpass=f=900,lowpass=f=5200[h];"
+             "aevalsrc='if(gt(random(0),0.9982),0.5*(random(1)-0.5),0)':d=%.2f:s=48000,lowpass=f=3800[c];"
+             "[v][h][c]amix=inputs=3:normalize=0,afade=t=in:d=0.25,afade=t=out:st=%.2f:d=0.35" % (RADIO, dur, dur, dur - 0.35))
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(dst), "-filter_complex", g, "-ar", "48000", "-ac", "1", str(out / (p.stem + "_radio.wav"))])
+        n += 1
+    print("voice v2: %d lines (clean + radio) -> %s" % (n, out.relative_to(ROOT)))
+
+
+def voice_file(F, vid, fx=None):
+    if F.get("voice_dir") == "v2":
+        base = V2DIR / "proc"
+        for stem in (vid, vid + "_a"):
+            f = base / (stem + ("_radio" if fx == "radio" else "") + ".wav")
+            if f.exists():
+                return f
+        return base / (vid + ".wav")
+    return VOICE / "lines" / (vid + ".wav")
+
+
 def edit_calm(F):
     d = V / F["dir"]
     html, shots = [], []
@@ -362,7 +400,8 @@ def edit(F):
     E = dict(duration=round(F["duration"], 3), shots=shots,
              words=[dict(w, at=round(w["at"], 3), to=round(w["to"], 3)) for w in F["words"]],
              flashes=F.get("flashes", []), streaks=F.get("streaks", []), kill=F.get("kill"), dims=F.get("dims", []), blacks=F.get("blacks", []),
-             letterbox=F.get("letterbox", False), cards=F.get("cards", []), look=F.get("look"), panels=F.get("panels", []))
+             letterbox=F.get("letterbox", False), cards=F.get("cards", []), look=F.get("look"), panels=F.get("panels", []),
+             horizon=F.get("horizon"), film=F.get("film", False))
     (d / "edit.js").write_text("// Made by video/tools/build_films.py. Don't edit by hand.\nwindow.EDIT = %s;\n" % json.dumps(E, ensure_ascii=False, indent=1))
     page = (V / "tools" / "films_template.html").read_text().replace("{{DURATION}}", str(round(F["duration"], 3))).replace("{{SHOTS}}", "\n".join(html))
     (d / "index.html").write_text(page)
@@ -371,8 +410,9 @@ def edit(F):
              "v2a": "On it.", "v2b": "Highlights first.", "v2c": "Faces next.", "v3a": "You frame. I'll handle the light.",
              "h01": "Light's changing.", "h04": "Got it.", "h06": "Done.", "h07": "Want it back?", "h08": "One key.", "h09": "Stopped.",
              "h10": "It's yours.", "h11": "Exposure… handled."}
-    for vid, at in F["voice"]:
-        f = VOICE / "lines" / (vid + ".wav")
+    for row in F["voice"]:
+        vid, at = row[0], row[1]
+        f = voice_file(F, vid, row[2] if len(row) > 2 else None)
         dur = duration(f) if f.exists() else 1.0
         vtt += ["%s --> %s" % (ts(at), ts(at + dur + 0.3)), texts[vid], ""]
     (d / "captions.vtt").write_text("\n".join(vtt))
@@ -406,6 +446,9 @@ def mix(F):
               "[1:a]atrim=start=%.3f,asetpts=PTS-STARTPTS[m2]" % b0,
               "[m1][m2]acrossfade=d=0.03:c1=tri:c2=tri,aresample=48000,aformat=channel_layouts=stereo,"
               "volume=eval=frame:volume='%s',afade=t=out:st=%.3f:d=%.3f,atrim=duration=%.3f[mus]" % (vol, s(68.6), s(70) - s(68.6) + 0.5, D)]
+    elif not m.get("file"):                         # no track chosen yet: a silent bed
+        inputs += ["-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"]
+        g.append("[0:a]atrim=duration=%.3f[mus]" % D)
     else:
         inputs += ["-i", str(m["file"])]
         fo = m["fade_out"]
@@ -423,8 +466,9 @@ def mix(F):
         fx.append("[x%d]" % n)
         n += 1
     vo = []
-    for vid, at in F["voice"]:
-        f = VOICE / "lines" / (vid + ".wav")
+    for row in F["voice"]:
+        vid, at = row[0], row[1]
+        f = voice_file(F, vid, row[2] if len(row) > 2 else None)
         inputs += ["-i", str(f)]
         ms = int(at * 1000)
         g.append("[%d:a]aresample=48000,aformat=channel_layouts=stereo,adelay=%d|%d[v%d]" % (n, ms, ms, n))
@@ -466,12 +510,14 @@ def render(F, draft=False):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("step", choices=["prep", "voice", "edit", "mix", "render"])
+    ap.add_argument("step", choices=["prep", "voice", "voice2", "edit", "mix", "render"])
     ap.add_argument("films", nargs="*", default=["v1", "v2", "v3"])
     ap.add_argument("--draft", action="store_true")
     a = ap.parse_args()
     if a.step == "voice":
         voice_lines()
-    for k in a.films if a.step != "voice" else []:
+    if a.step == "voice2":
+        voice_v2()
+    for k in a.films if a.step not in ("voice", "voice2") else []:
         F = FILMS[k]
         {"prep": prep, "edit": edit, "mix": mix, "render": lambda F: render(F, a.draft)}[a.step](F)
