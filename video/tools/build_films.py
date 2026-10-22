@@ -41,7 +41,10 @@ V1 = dict(
     # an eye, a frame); the camera shown sparingly, as art; one or two words at a time; a human-sounding narrator.
     calm=dict(A=[0.0, 8.6], C=[12.2, 19.0], D=[19.0, 25.0], E=[25.0, 32.5], F=[32.5, 38.5],
               flashes=[["#m1", 44.65, 45.65], ["#m2", 46.5, 47.25], ["#m3", 47.9, 48.5]]),
-    music=dict(file=None, start=0.0, fade_in=1.0, fade_out=(57.4, 1.2), gain=0.0, env=[]),
+    # "Peace Within" (Peter Rudenko): its lift (1:13.3 in the track) lands on the hit after the black hold
+    music=dict(file=V / "music-candidates/round2/calm/peace-within-rudenko/rudenko_peace-within.mp3", start=21.75, fade_in=1.5,
+               fade_out=(57.2, 1.4), gain=0.0,
+               env=[(0, -12), (7.5, -12), (9.0, -6), (43.5, -4), (48.8, -1), (49.05, -45), (51.5, -45), (51.55, 1)]),
     shots=[
         ("sil", "3d:c_silhouette", 38.5, 43.5, dict(cls="paper")),
         ("mg1", "3d:c_glint", 43.5, 44.65, dict()),
@@ -66,7 +69,7 @@ V1 = dict(
         ("p-ochre", "Exposure, Handled.", -30), ("p-term", "<b>$</b> exposure, handled<u></u>", -40), ("p-dusk", "Exposure, Handled.", 0),
         ("p-umber", "Exposure, Handled.", 0)]],
     panel_start=51.55, panel_durs=[0.42, 0.38, 0.34, 0.30, 0.27, 0.24, 0.22, 0.20, 0.18, 0.16],
-    voice=[("c0", 0.9, "radio"), ("c1", 12.7), ("c2", 19.5), ("c3", 25.5), ("c4", 33.2), ("c5", 39.0), ("c6", 54.6)],
+    voice=[("c0_b", 0.9, "radio"), ("c1", 12.7), ("c2", 19.6), ("c3_a", 25.6), ("c4", 33.4), ("c5", 39.2), ("c6_b", 54.8)],
     voice_dir="v2", sfx=[], fadeOut=(57.6, 58.6),
 )
 

@@ -13,7 +13,7 @@ for s in "$@"; do
     mkdir -p video/blender/out/stills4k && mv video/blender/out/stills4k/tmp/*.png video/blender/out/stills4k/$name.png 2>/dev/null
     continue
   fi
-  [[ -f video/blender/out/$s.mp4 ]] && continue
+  [[ -f video/blender/out/$s.mp4 || -f video/blender/out/$s.webm ]] && continue
   echo "$(date +%T) start $s" >> $LOG
   $B -b -noaudio --python-exit-code 1 -P video/blender/shots.py -- $s >> $LOG.full 2>&1 && echo "$(date +%T) done $s" >> $LOG || echo "$(date +%T) FAILED $s" >> $LOG
 done

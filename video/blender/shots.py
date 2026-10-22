@@ -233,11 +233,40 @@ def key_lights(f):
 SHOTS = {}
 
 
-def shot(name, dur, blur=True, spp=None):
+def shot(name, dur, blur=True, spp=None, alpha=False):
+    """alpha=True: transparent background (with a shadow catcher if the shot makes one), encoded as VP9 with alpha so
+    the edit can put any world behind the camera."""
     def deco(fn):
-        SHOTS[name] = {"dur": dur, "fn": fn, "blur": blur, "spp": spp}
+        SHOTS[name] = {"dur": dur, "fn": fn, "blur": blur, "spp": spp, "alpha": alpha}
         return fn
     return deco
+
+
+def shadow_catcher(z=-0.0391, size=3.0):
+    """A floor that only catches shadows (Cycles), for compositing the camera onto plates."""
+    if "catcher" in D.objects:
+        return D.objects["catcher"]
+    me = D.meshes.new("catcher")
+    h = size / 2
+    me.from_pydata([(-h, -h, 0), (h, -h, 0), (h, h, 0), (-h, h, 0)], [], [(0, 1, 2, 3)])
+    ob = D.objects.new("catcher", me)
+    C.scene.collection.objects.link(ob)
+    ob.location = (0, 0, z)
+    ob.is_shadow_catcher = True
+    return ob
+
+
+def world_color(rgb, strength=1.0):
+    """Tint what the camera's glass and metal reflect (the colour of the new world around it)."""
+    bg = C.scene.world.node_tree.nodes["Background"]
+    bg.inputs["Color"].default_value = (*rgb, 1)
+    bg.inputs["Strength"].default_value = strength
+
+
+def key_world(f):
+    bg = C.scene.world.node_tree.nodes["Background"]
+    bg.inputs["Color"].keyframe_insert("default_value", frame=f)
+    bg.inputs["Strength"].keyframe_insert("default_value", frame=f)
 
 
 def cam(pos, target, mm, fstop, focus=None, roll=0.0):
@@ -874,6 +903,7 @@ def bake_shot(name, X):
             b.keyframe_insert("location", frame=f)
         rig.key_cam(f)
         key_lights(f)
+        key_world(f)
         for nm in ("rear dial", "fan rotor"):
             D.objects[nm].keyframe_insert("rotation_euler", frame=f)
         if "crew" in X:
@@ -917,6 +947,9 @@ def main():
         sc.render.image_settings.file_format = "PNG"
         sc.render.image_settings.color_depth = "8"
         sc.render.image_settings.compression = 30
+        alpha = SHOTS[name].get("alpha")
+        sc.render.film_transparent = bool(alpha)
+        sc.render.image_settings.color_mode = "RGBA" if alpha else "RGB"
         if opts["--stills"]:
             d = Path(opts["--stilldir"])
             d.mkdir(parents=True, exist_ok=True)
@@ -935,11 +968,17 @@ def main():
         t0 = time.time()
         bpy.ops.render.render(animation=True)
         print("RENDERED %s: %d frames in %.0f s" % (name, n, time.time() - t0), flush=True)
-        mp4 = OUT / (name + ".mp4")
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-start_number", "0", "-i", str(d / "f_%04d.png"),
-                        "-c:v", "libx264", "-preset", "slow", "-crf", "12", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(mp4)],
-                       check=True)
-        print("ENCODED", mp4, flush=True)
+        if alpha:
+            out = OUT / (name + ".webm")
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-start_number", "0", "-i", str(d / "f_%04d.png"),
+                            "-c:v", "libvpx-vp9", "-pix_fmt", "yuva420p", "-b:v", "0", "-crf", "18", "-row-mt", "1", "-g", "24",
+                            "-auto-alt-ref", "0", str(out)], check=True)
+        else:
+            out = OUT / (name + ".mp4")
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-start_number", "0", "-i", str(d / "f_%04d.png"),
+                            "-c:v", "libx264", "-preset", "slow", "-crf", "12", "-g", "24", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+                            str(out)], check=True)
+        print("ENCODED", out, flush=True)
 
 
 if __name__ == "__main__":
