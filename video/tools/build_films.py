@@ -44,7 +44,7 @@ V1 = dict(
     # "Peace Within" (Peter Rudenko): its lift (1:13.3 in the track) lands on the hit after the black hold
     music=dict(file=V / "music-candidates/round2/calm/peace-within-rudenko/rudenko_peace-within.mp3", start=21.75, fade_in=1.5,
                fade_out=(57.2, 1.4), gain=0.0,
-               env=[(0, -12), (7.5, -12), (9.0, -6), (43.5, -4), (48.8, -1), (49.05, -45), (51.5, -45), (51.55, 1)]),
+               env=[(0, -12), (7.5, -12), (9.0, -6), (43.5, -4), (48.8, -1), (49.05, -45), (51.5, -45), (51.55, 1), (54.2, 1), (54.7, -9)]),
     shots=[
         ("sil", "3d:c_silhouette", 38.5, 43.5, dict(cls="paper")),
         ("mg1", "3d:c_glint", 43.5, 44.65, dict()),
@@ -69,7 +69,7 @@ V1 = dict(
         ("p-ochre", "Exposure, Handled.", -30), ("p-term", "<b>$</b> exposure, handled<u></u>", -40), ("p-dusk", "Exposure, Handled.", 0),
         ("p-umber", "Exposure, Handled.", 0)]],
     panel_start=51.55, panel_durs=[0.42, 0.38, 0.34, 0.30, 0.27, 0.24, 0.22, 0.20, 0.18, 0.16],
-    voice=[("c0_b", 0.9, "radio"), ("c1", 12.7), ("c2", 19.6), ("c3_a", 25.6), ("c4", 33.4), ("c5", 39.2), ("c6_b", 54.8)],
+    voice=[("c0_b", 0.9, "radio", 8.0), ("c1", 12.7), ("c2", 19.6), ("c3_a", 25.6), ("c4", 33.4), ("c5", 39.2), ("c6_b", 54.8)],
     voice_dir="v2", sfx=[], fadeOut=(57.6, 58.6),
 )
 
@@ -554,7 +554,8 @@ def mix(F):
         f = voice_file(F, vid, row[2] if len(row) > 2 else None)
         inputs += ["-i", str(f)]
         ms = int(at * 1000)
-        g.append("[%d:a]aresample=48000,aformat=channel_layouts=stereo,adelay=%d|%d[v%d]" % (n, ms, ms, n))
+        gain = row[3] if len(row) > 3 else 0.0           # e.g. the band-limited radio line reads quieter
+        g.append("[%d:a]aresample=48000,aformat=channel_layouts=stereo,volume=%sdB,adelay=%d|%d[v%d]" % (n, gain, ms, ms, n))
         vo.append("[v%d]" % n)
         n += 1
     g.append("%samix=inputs=%d:normalize=0,apad=whole_dur=%.3f,atrim=duration=%.3f,volume=2.2,asplit=2[vo1][vo2]" % ("".join(vo), len(vo), D, D))
