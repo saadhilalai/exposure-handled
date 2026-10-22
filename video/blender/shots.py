@@ -264,7 +264,7 @@ def aim_light(o, pos, target):
 
 
 # --- the hype film (V2): beats of "Beast", 115 BPM ---------------------------------------------------------------
-@shot("h_reveal", 4 * B)
+@shot("h_reveal", 4 * B, spp=16)
 def h_reveal(t, X):
     """Black. A hard strip of light rakes across the top edge and the lens: the silhouette appears. Slow push."""
     b = t / B
@@ -280,7 +280,7 @@ def h_reveal(t, X):
     cam(pos, (0.0, -0.035, 0.004), 50, 5.6)
 
 
-@shot("h_dial", 1.5 * B)
+@shot("h_dial", 1.5 * B, spp=16)
 def h_dial(t, X):
     """Macro: the rear dial's knurling turns past, razor-thin focus."""
     rig.explode(0)
@@ -292,7 +292,7 @@ def h_dial(t, X):
     cam(pos, c + Vector((0.0, 0.006, 0.001)), 100, 4.0)
 
 
-@shot("h_vents", 1.5 * B)
+@shot("h_vents", 1.5 * B, spp=16)
 def h_vents(t, X):
     """Macro slide along the vents and ports on the side."""
     rig.explode(0)
@@ -302,7 +302,7 @@ def h_vents(t, X):
     cam(pos, Vector((0.064, y, 0.004)), 85, 4.0)
 
 
-@shot("h_ring", 1.5 * B)
+@shot("h_ring", 1.5 * B, spp=16)
 def h_ring(t, X):
     """The orange ring at the mount, rack focus from the grip edge onto the ring."""
     rig.explode(0)
@@ -313,7 +313,7 @@ def h_ring(t, X):
     cam(pos, tgt, 100, 2.8, focus=kf(t, [(0, 0.06, "lin"), (0.4 * B, 0.06, "lin"), (1.1 * B, 0.09, "io")]))
 
 
-@shot("h_eye", 2 * B)
+@shot("h_eye", 2 * B, spp=16)
 def h_eye(t, X):
     """Head-on into the lens: the coatings glint, the iris inside closes a stop on the cut."""
     rig.explode(0)
@@ -324,7 +324,7 @@ def h_eye(t, X):
     cam(pos, Vector((rig.LX, -0.10, rig.LZ)), 85, 4.0, focus=d + 0.005)
 
 
-@shot("h_orbit", 4 * B)
+@shot("h_orbit", 4 * B, spp=16)
 def h_orbit(t, X):
     """A fast whip orbit around the whole camera that settles into a slow drift; hard rim light."""
     b = t / B
@@ -337,7 +337,7 @@ def h_orbit(t, X):
     cam(pos, (0.0, -0.035, 0.0), 50, 8.0)
 
 
-@shot("h_smash", 4 * B)
+@shot("h_smash", 4 * B, spp=16)
 def h_smash(t, X):
     """The smash zoom: from a three-quarter view straight down the lens axis into the glass, accelerating."""
     b = t / B
@@ -433,7 +433,7 @@ def h_agent(t, X):
     scan.scale = (1, 1, 1) if 1.0 < b < 3.05 else (0, 0, 0)
     tgt = hero.location + Vector((0.0, 0.0012, 0.0003))
     pos = tgt + Vector((kf(b, [(0, 0.042, "lin"), (4, 0.03, "io")]), kf(b, [(0, -0.022, "lin"), (4, -0.016, "io")]), 0.006))
-    cam(pos, tgt, 100, 11.0, focus=(hero.location - pos).length)
+    cam(pos, tgt, 100, 14.0, focus=(hero.location - pos).length - 0.0011)
 
 
 def _setup_agent(X):
@@ -493,7 +493,7 @@ def h_kill(t, X):
 SHOTS["h_kill"]["setup"] = lambda X: X.update(crew=Crew(200, seed=9))
 
 
-@shot("h_slam", 8 * B)
+@shot("h_slam", 8 * B, spp=16)
 def h_slam(t, X):
     """The parts drift in slow motion, then slam home on the beat (2 beats in), a flash and a shake, then the hero turn."""
     b = t / B
@@ -510,7 +510,7 @@ def h_slam(t, X):
     cam(pos, tgt, 50, 8.0)
 
 
-@shot("h_title", 8 * B)
+@shot("h_title", 8 * B, spp=16)
 def h_title(t, X):
     """The hero, turning slowly in the dark under the title; leave the upper third for the type."""
     b = t / B
@@ -581,7 +581,7 @@ def a_agent(t, X):
     histogram(t * 0.5, X["f"])
     tgt = hero.location + Vector((0.0, 0.0012, 0.0003))
     pos = tgt + Vector((kf(t, [(0, -0.044, "lin"), (7, -0.034, "io")]), kf(t, [(0, -0.02, "lin"), (7, -0.016, "io")]), 0.005))
-    cam(pos, tgt, 100, 11.0, focus=(hero.location - pos).length)
+    cam(pos, tgt, 100, 14.0, focus=(hero.location - pos).length - 0.0011)
 
 
 SHOTS["a_agent"]["setup"] = lambda X: X.update(hero=hero_agent("hero calm"), crew=Crew(10, seed=12, kinds=["sensor package"]))
@@ -636,7 +636,7 @@ def s_catch(t, X):
     histogram(t * (1.0 + 3.0 * jolt), X["f"])
     tgt = hero.location + Vector((0.0, 0.0, 0.0003))
     pos = tgt + Vector((kf(t, [(0, -0.03, "lin"), (4, -0.024, "io")]), kf(t, [(0, -0.034, "lin"), (4, -0.028, "io")]), 0.012))
-    cam(pos, tgt, 100, 11.0, focus=(hero.location - pos).length)
+    cam(pos, tgt, 100, 14.0, focus=(hero.location - pos).length - 0.0011)
 
 
 SHOTS["s_catch"]["setup"] = lambda X: X.update(hero=hero_agent("hero catch"), crew=Crew(10, seed=33, kinds=["sensor package", "stabiliser plate"]))
@@ -675,6 +675,19 @@ def p_rear(t, X):
     tgt = Vector((0.0, 0.0, 0.0))
     pos = orbit(tgt, math.pi + 0.55, 0.22, 0.4)
     cam(pos, tgt, 60, 9.0)
+
+
+@shot("p_agent", 1.0, blur=False)
+def p_agent(t, X):
+    """The agent still: the moment it turns to us at the sensor, focus on its visor."""
+    h_agent(3.4 * B, X)
+    hero = X["hero"][0]
+    co = rig.film_cam()
+    co.data.dof.focus_distance = (hero.location - co.location).length - 0.0013
+    co.data.dof.aperture_fstop = 18.0
+
+
+SHOTS["p_agent"]["setup"] = _setup_agent
 
 
 # ---------------------------------------------------------------- particles (V1)

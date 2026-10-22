@@ -2,6 +2,18 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## 🎞️ Three launch films (2026-10-21 → 22, overnight; no camera connected)
+
+The director asked for three different films to pick from, with a new photoreal camera. Notes: `video/FILMS.md`; decisions: `docs/open-decisions.md` (21–29).
+- **References:** all 13 studied (the 10 audio-only files were matched to their video uploads). The private breakdown is in `refs/BREAKDOWN.md` (git-ignored, like `refs/`). Five techniques are summarised in FILMS.md.
+- **Framing research:** `docs/framing-research.md`. The closest thing is FrameCoach, which suggests changes but needs a tap for each one. There's no verified "first", so the films use vision lines.
+- **The camera:**
+  - A new photoreal model built from code in Blender (`video/blender/build_camera.py`), with an exploded view and orange agent robots.
+  - Path-traced in Cycles (`shots.py`), in resumable queues (`queue.sh`).
+  - Moving shots render at 1080p and are scaled up to 4K. The stills are true 4K.
+- **Films:** `video/v1-abstract` (calm, 50 s), `video/v2-hype` (36.5 s), `video/v3-story` (55 s), made by `video/tools/build_films.py`.
+- **Picking:** the director picks one in the morning. Nothing goes on the website until then.
+
 ## ⚡ The hype cut (2026-10-21, night)
 
 The director's note on the narrated film was "too slow, too many words, looks like Nerd mode", so it's been redone as a hype video. Draft 1 is sent and opened on the Mac.

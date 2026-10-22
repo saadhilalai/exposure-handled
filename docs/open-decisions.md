@@ -20,6 +20,44 @@
 
 None of 3, 5, 6, 8, 9 or 12 changes the frozen plan.
 
+## New (2026-10-22, overnight): three films to pick from
+
+Everything is in `video/FILMS.md`. The renders are in `video/v1-abstract/renders/`, `video/v2-hype/renders/` and `video/v3-story/renders/` (not in git). This replaces the hype draft below (17–20); its music and voice carry over.
+
+**21. Which film?** Calm (50 s), Hype (36.5 s) or Story (55 s). Or tell me what to take from each.
+
+**22. A "first" claim: not used anywhere yet.**
+- The research (`docs/framing-research.md`) found nothing public that does all of this together: watches a pro cinema camera's live image, changes its exposure itself, steers by a chosen look, and explains each change. The closest, FrameCoach, needs a tap for every change.
+- But "first" can't be proven, and FrameCoach is one feature away from making it false.
+- If you want it, the safest wording is for a description, not the film: *"As far as we can find (October 2026), the first assistant that runs a cinema camera's exposure on its own, from a chosen look, and explains every change in plain English."*
+- **Recommended:** leave it out. The films say "A camera that thinks like a cinematographer" instead.
+
+**23. The story film's big line: "What if your camera had a cinematographer inside it?"** It's your line. The research flags that the agent runs on the laptop, not inside the camera.
+- **A:** keep it. It's a question, a vision line, and the film shows the crew inside as an illustration.
+- **B:** "...beside it?"
+- **Recommended:** A.
+
+**24. Voice.** All three films use the same AI voice as the hype draft, Imogen, kept loud and on top of the music, in short lines. Sloane and Orion are in the hype voice reels.
+- **Recommended:** keep one voice across all your films.
+
+**25. Music.** "Petrichor" (calm) and "Cassini" (story) by Scott Buckley, and "Beast" by Sascha Ende (hype). All CC BY 4.0, all checked on their own pages.
+- Scott Buckley also scored the robot film, with a different track ("Meanwhile").
+- "Beast" is still the 128 kbps preview: its full-quality file needs the "Download for free" button on ende.app (a click in a browser).
+- **Recommended:** keep these. If Hype wins, download the full-quality Beast before the final.
+
+**26. Quotes, and how their names are shown.**
+- No real person's voice is used. The references' archival voice, a real scientist, isn't something to copy, and you said not to put words in real people's mouths.
+- The calm film opens like the Nothing film instead, but with the agent's own voice.
+- The quotes are on screen, real and checked:
+  - Turing, 1950: "I propose to consider the question, 'Can machines think?'"
+  - Cardinal de Retz, the epigraph of Cartier-Bresson's *The Decisive Moment*: "There is nothing in this world that does not have a decisive moment."
+- Names get their own card, in white, never small grey text under the quote.
+
+**27. Resolution.**
+- **Now:** the moving 3D is path-traced at 1920×1080 and scaled up to 4K. Path-traced 4K is about 50 s a frame here, about 20 hours for all three films.
+- **The stills:** true 4K.
+- **Recommended:** once you pick a film, re-render just its 3D shots at 4K over a night.
+
 ## New (2026-10-21, night): the hype cut
 
 You asked for a hype video instead of the slow narrated film, so decisions 14–16 below are replaced by these. Draft 1 is sent (`video/hype/renders/`, not in git). The cut sheet, with the source of every real thing on screen, is `video/HYPE.md`.
