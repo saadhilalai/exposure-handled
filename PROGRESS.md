@@ -14,7 +14,7 @@ The director asked for three different films to pick from, with a new photoreal 
 - **Films:** `video/v1-abstract` (calm, 50 s), `video/v2-hype` (36.5 s), `video/v3-story` (55 s), made by `video/tools/build_films.py`.
 - **Picking:** the director picks one in the morning. Nothing goes on the website until then.
 - **Done at 06:15, 2026-10-22:**
-  - All three films are rendered at 4K and checked frame by frame. Each also has a 1080p preview next to it in `renders/`.
+  - All three films are rendered at 4K and checked frame by frame. Each also has a 1080p preview and a phone copy (under 30 MB) next to it in `renders/`.
   - Four 4K stills: product, exploded, agent close-up, rear.
   - A first-frame bug in seven 3D shots was found and fixed: the crew and the hero were placed from the camera parts' previous-frame positions.
   - Tonight's commits are local, not pushed. The privacy scan is clean (no AI-company or client names, no local paths).
