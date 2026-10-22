@@ -534,9 +534,10 @@ def a_form(t, X):
     cam(pos, tgt, 50, 5.6)
 
 
-@shot("a_solid", 9.0, spp=16)
+@shot("a_solid", 3.0, spp=16)
 def a_solid(t, X):
-    """The same move as a_form, the real camera: crossfaded in over the particles in the edit."""
+    """The last 3 s of a_form's move, with the real camera: the edit lands on it after the silence."""
+    t += 6.0
     rig.explode(0)
     rig.iris(4)
     lights(key=0.7, top=0.8, rim_left=1.2, rim_right=1.0, card=0.6)
@@ -604,15 +605,15 @@ def a_close(t, X):
 SHOTS["a_close"]["setup"] = lambda X: X.update(crew=Crew(60, seed=22))
 
 
-@shot("a_end", 9.2, spp=16)
+@shot("a_end", 5.6, spp=16)
 def a_end(t, X):
     """The end frame of the calm film: the camera low in frame, turning a few degrees, room above it for the line."""
     rig.explode(0)
     rig.iris(4)
     lights(key=0.55, top=0.9, rim_left=1.5, rim_right=1.2, card=0.6)
-    yaw = kf(t, [(0, -0.55, "lin"), (9.2, -0.32, "io")])
+    yaw = kf(t, [(0, -0.5, "lin"), (5.6, -0.36, "io")])
     tgt = Vector((0.0, -0.03, 0.045))
-    pos = orbit(tgt, yaw, 0.1, kf(t, [(0, 0.6, "lin"), (9.2, 0.54, "io")]))
+    pos = orbit(tgt, yaw, 0.1, kf(t, [(0, 0.6, "lin"), (5.6, 0.56, "io")]))
     cam(pos, tgt, 50, 8.0)
 
 
