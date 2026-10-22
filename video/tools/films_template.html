@@ -95,6 +95,7 @@
           if (s.punch) later(w, { scale: p[0] * s.punch }, { scale: p[0], duration: 0.22, ease: "power3.out" }, s.at);
           if (s.fadeIn) later(w, { opacity: 0 }, { opacity: 1, duration: s.fadeIn, ease: "power1.inOut" }, s.at);
           if (s.fadeOut) later(w, { opacity: 1 }, { opacity: 0, duration: s.fadeOut, ease: "power1.inOut" }, s.to - s.fadeOut);
+          if (E.look && !s.grade) w.style.filter = E.look;     // the film's own tone (calm film: warm bone and amber)
           if (s.grade) {
             var g0 = s.grade[0];
             tl.set(w, { filter: "brightness(" + g0[1] + ") saturate(" + g0[2] + ")" }, s.at);

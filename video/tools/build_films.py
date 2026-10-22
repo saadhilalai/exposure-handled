@@ -36,33 +36,43 @@ def s(beat):
 # shots: (id, source, at, to, extra); source "3d:<shot>" is a Blender render, "ft:<file>" a footage excerpt.
 # times are seconds of the film; "ms" = where in the source to start.
 V1 = dict(
-    dir="v1-abstract", title="Exposure, Handled. (calm)", duration=50.0,
-    # the agent speaks first, almost alone (the bed far under it), the bed swells under its last line, then 0.75 s of
-    # silence, and the camera lands on the hit
-    music=dict(file=V / "music-candidates/film1/petrichor-scott-buckley/sb_petrichor.mp3", start=123.0, fade_in=1.5, fade_out=(48.6, 1.9), gain=0.0,
-               env=[(0, -15), (6.2, -15), (6.8, -11), (14.4, -11), (15.3, -1), (15.65, -1), (15.8, -45), (16.45, -45), (16.5, 0)]),
+    dir="v1-abstract", title="Exposure, Handled. (calm)", duration=52.0,
+    # in the manner of the AI-lab launch films (refs R02-R04, R13): a quote hard on black; the agent speaking first, almost
+    # alone; points of light gathering; a montage of the camera's own "instruments" on a pulse that quickens; silence; the
+    # hit; slow, warm, lots of black; one line; the title hard on black.
+    look="sepia(0.28) saturate(0.82) contrast(1.06) brightness(1.04)",
+    music=dict(file=V / "music-candidates/film1/petrichor-scott-buckley/sb_petrichor.mp3", start=123.0, fade_in=1.5, fade_out=(50.0, 2.0), gain=0.0,
+               env=[(0, -15), (6.2, -15), (6.8, -11), (13.0, -11), (14.0, 0), (17.35, 0), (17.5, -45), (18.15, -45), (18.2, 1)]),
     shots=[
-        ("form", "3d:a_form", 6.75, 15.75, dict(push=[1.0, 1.03])),
-        ("solid", "3d:a_solid", 16.5, 19.4, dict(ms=0.1, push=[1.0, 1.02])),
-        ("open", "3d:a_open", 19.0, 27.0, dict(fadeIn=0.4, push=[1.0, 1.02])),
-        ("agent", "3d:a_agent", 26.6, 33.6, dict(fadeIn=0.4, push=[1.0, 1.03])),
-        ("close", "3d:a_close", 33.2, 45.2, dict(fadeIn=0.4, push=[1.0, 1.02])),
+        ("form", "3d:a_form", 6.75, 14.0, dict(ms=1.75, push=[1.0, 1.04])),
+        # the instruments: each cut shorter than the last (0.85 -> 0.15 s)
+        ("m_eye", "3d:h_eye", 14.0, 14.85, dict(ms=0.1, push=[1.0, 1.02])),
+        ("m_iris1", "3d:h_iris", 14.85, 15.55, dict(ms=0.15, push=[1.0, 1.02])),
+        ("m_dial", "3d:h_dial", 15.55, 16.1, dict(ms=0.1)),
+        ("m_ring", "3d:h_ring", 16.1, 16.55, dict(ms=0.25)),
+        ("m_iris2", "3d:h_iris", 16.55, 16.9, dict(ms=1.15)),
+        ("m_agent", "3d:h_agent", 16.9, 17.2, dict(ms=1.6)),
+        ("m_iris3", "3d:h_iris", 17.2, 17.45, dict(ms=1.65)),
+        ("solid", "3d:a_solid", 18.2, 21.1, dict(ms=0.1, push=[1.0, 1.02])),
+        ("open", "3d:a_open", 20.7, 28.7, dict(fadeIn=0.4, push=[1.0, 1.02])),
+        ("agent", "3d:a_agent", 28.3, 35.3, dict(fadeIn=0.4, push=[1.0, 1.03])),
+        ("close", "3d:a_close", 34.9, 46.9, dict(fadeIn=0.4, push=[1.0, 1.02])),
     ],
-    cards=[(0.0, 6.75), (45.2, 50.0)],
+    cards=[(0.0, 6.75), (17.45, 18.2), (46.9, 52.0)],
     words=[
         dict(at=0.8, to=4.9, style="quote", html="I propose to consider the question,", y=45, cut=True),
         dict(at=2.3, to=4.9, style="quote", html="<em>‘Can machines think?’</em>", y=55, cut=True),
         dict(at=5.1, to=6.5, style="name", html="Alan Turing, 1950", cut=True),
         dict(at=36.6, to=41.4, style="line", html="A camera that thinks", y=45, cut=True),
         dict(at=36.6, to=41.4, style="line", html="like a <em>cinematographer.</em>", y=56, cut=True),
-        dict(at=45.6, to=50.0, style="title", html="Exposure, <em>Handled</em>.", y=46, cut=True, out=False),
-        dict(at=47.0, to=50.0, style="link", html=SITE_URL, y=60, cut=True, out=False),
+        dict(at=47.0, to=52.0, style="title", html="Exposure, <em>Handled</em>.", y=46, size=112, cut=True, out=False),
+        dict(at=48.6, to=52.0, style="link", html=SITE_URL, y=58, size=34, cut=True, out=False),
     ],
-    voice=[("v1a", 7.4), ("v1b", 9.9), ("v1c", 12.3), ("v1d", 14.6), ("h11", 45.9)],
-    sfx=[(16.5, "lowFrequency_explosion_000.ogg", -12)],
-    flashes=[(16.5, 0.45, 0.6)],
-    dims=[(44.4, 45.2, 0.0, 0.6)],
-    blacks=[(48.8, 50.0, 0.0, 1.0)],
+    voice=[("v1a", 7.2), ("v1b", 9.4), ("v1c", 11.6), ("v1d", 13.6), ("h11", 47.4)],
+    sfx=[(18.2, "lowFrequency_explosion_000.ogg", -12)],
+    flashes=[(18.2, 0.45, 0.6)],
+    dims=[(46.2, 46.9, 0.0, 0.5)],
+    blacks=[(50.8, 52.0, 0.0, 1.0)],
 )
 
 # The hype film keeps the hype draft's music edit: "Beast" (115 BPM), film beat 0 = track beat -16, the drop at film
@@ -307,7 +317,7 @@ def edit(F):
     E = dict(duration=round(F["duration"], 3), shots=shots,
              words=[dict(w, at=round(w["at"], 3), to=round(w["to"], 3)) for w in F["words"]],
              flashes=F.get("flashes", []), streaks=F.get("streaks", []), kill=F.get("kill"), dims=F.get("dims", []), blacks=F.get("blacks", []),
-             letterbox=F.get("letterbox", False), cards=F.get("cards", []))
+             letterbox=F.get("letterbox", False), cards=F.get("cards", []), look=F.get("look"))
     (d / "edit.js").write_text("// Made by video/tools/build_films.py. Don't edit by hand.\nwindow.EDIT = %s;\n" % json.dumps(E, ensure_ascii=False, indent=1))
     page = (V / "tools" / "films_template.html").read_text().replace("{{DURATION}}", str(round(F["duration"], 3))).replace("{{SHOTS}}", "\n".join(html))
     (d / "index.html").write_text(page)

@@ -59,12 +59,19 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="50.0" data-width="1920" data-height="1080">
-      <div class="shot" id="form"><video id="v_form" class="clip" src="assets/3d/a_form.mp4" data-start="6.75" data-duration="9.0" data-media-start="0.0" data-track-index="1" muted playsinline></video></div>
-      <div class="shot" id="solid"><video id="v_solid" class="clip" src="assets/3d/a_solid.mp4" data-start="16.5" data-duration="2.9" data-media-start="0.1" data-track-index="2" muted playsinline></video></div>
-      <div class="shot" id="open"><video id="v_open" class="clip" src="assets/3d/a_open.mp4" data-start="19.0" data-duration="8.0" data-media-start="0.0" data-track-index="3" muted playsinline></video></div>
-      <div class="shot" id="agent"><video id="v_agent" class="clip" src="assets/3d/a_agent.mp4" data-start="26.6" data-duration="7.0" data-media-start="0.0" data-track-index="4" muted playsinline></video></div>
-      <div class="shot" id="close"><video id="v_close" class="clip" src="assets/3d/a_close.mp4" data-start="33.2" data-duration="12.0" data-media-start="0.0" data-track-index="5" muted playsinline></video></div>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="52.0" data-width="1920" data-height="1080">
+      <div class="shot" id="form"><video id="v_form" class="clip" src="assets/3d/a_form.mp4" data-start="6.75" data-duration="7.25" data-media-start="1.75" data-track-index="1" muted playsinline></video></div>
+      <div class="shot" id="m_eye"><video id="v_m_eye" class="clip" src="assets/3d/h_eye.mp4" data-start="14.0" data-duration="0.85" data-media-start="0.1" data-track-index="2" muted playsinline></video></div>
+      <div class="shot" id="m_iris1"><video id="v_m_iris1" class="clip" src="assets/3d/h_iris.mp4" data-start="14.85" data-duration="0.7" data-media-start="0.15" data-track-index="3" muted playsinline></video></div>
+      <div class="shot" id="m_dial"><video id="v_m_dial" class="clip" src="assets/3d/h_dial.mp4" data-start="15.55" data-duration="0.55" data-media-start="0.1" data-track-index="4" muted playsinline></video></div>
+      <div class="shot" id="m_ring"><video id="v_m_ring" class="clip" src="assets/3d/h_ring.mp4" data-start="16.1" data-duration="0.45" data-media-start="0.25" data-track-index="5" muted playsinline></video></div>
+      <div class="shot" id="m_iris2"><video id="v_m_iris2" class="clip" src="assets/3d/h_iris.mp4" data-start="16.55" data-duration="0.35" data-media-start="1.15" data-track-index="6" muted playsinline></video></div>
+      <div class="shot" id="m_agent"><video id="v_m_agent" class="clip" src="assets/3d/h_agent.mp4" data-start="16.9" data-duration="0.3" data-media-start="1.6" data-track-index="7" muted playsinline></video></div>
+      <div class="shot" id="m_iris3"><video id="v_m_iris3" class="clip" src="assets/3d/h_iris.mp4" data-start="17.2" data-duration="0.25" data-media-start="1.65" data-track-index="8" muted playsinline></video></div>
+      <div class="shot" id="solid"><video id="v_solid" class="clip" src="assets/3d/a_solid.mp4" data-start="18.2" data-duration="2.9" data-media-start="0.1" data-track-index="9" muted playsinline></video></div>
+      <div class="shot" id="open"><video id="v_open" class="clip" src="assets/3d/a_open.mp4" data-start="20.7" data-duration="8.0" data-media-start="0.0" data-track-index="10" muted playsinline></video></div>
+      <div class="shot" id="agent"><video id="v_agent" class="clip" src="assets/3d/a_agent.mp4" data-start="28.3" data-duration="7.0" data-media-start="0.0" data-track-index="11" muted playsinline></video></div>
+      <div class="shot" id="close"><video id="v_close" class="clip" src="assets/3d/a_close.mp4" data-start="34.9" data-duration="12.0" data-media-start="0.0" data-track-index="12" muted playsinline></video></div>
       <div id="dim"></div>
       <div class="bar top"></div><div class="bar bot"></div>
       <div class="vignette"></div>
@@ -78,7 +85,7 @@
       <div class="streak" id="streak4"></div>
       <div id="grain"></div>
       <div id="black"></div>
-      <audio id="mix" src="assets/audio/mix.m4a" data-start="0" data-duration="50.0" data-media-start="0" data-track-index="40" data-volume="1"></audio>
+      <audio id="mix" src="assets/audio/mix.m4a" data-start="0" data-duration="52.0" data-media-start="0" data-track-index="40" data-volume="1"></audio>
     </div>
 
     <script>
@@ -99,6 +106,7 @@
           if (s.punch) later(w, { scale: p[0] * s.punch }, { scale: p[0], duration: 0.22, ease: "power3.out" }, s.at);
           if (s.fadeIn) later(w, { opacity: 0 }, { opacity: 1, duration: s.fadeIn, ease: "power1.inOut" }, s.at);
           if (s.fadeOut) later(w, { opacity: 1 }, { opacity: 0, duration: s.fadeOut, ease: "power1.inOut" }, s.to - s.fadeOut);
+          if (E.look && !s.grade) w.style.filter = E.look;     // the film's own tone (calm film: warm bone and amber)
           if (s.grade) {
             var g0 = s.grade[0];
             tl.set(w, { filter: "brightness(" + g0[1] + ") saturate(" + g0[2] + ")" }, s.at);

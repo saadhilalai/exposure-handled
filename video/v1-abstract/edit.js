@@ -1,20 +1,63 @@
 // Made by video/tools/build_films.py. Don't edit by hand.
 window.EDIT = {
- "duration": 50.0,
+ "duration": 52.0,
  "shots": [
   {
    "id": "form",
    "at": 6.75,
-   "to": 15.75,
+   "to": 14.0,
    "push": [
     1.0,
-    1.03
+    1.04
    ]
   },
   {
+   "id": "m_eye",
+   "at": 14.0,
+   "to": 14.85,
+   "push": [
+    1.0,
+    1.02
+   ]
+  },
+  {
+   "id": "m_iris1",
+   "at": 14.85,
+   "to": 15.55,
+   "push": [
+    1.0,
+    1.02
+   ]
+  },
+  {
+   "id": "m_dial",
+   "at": 15.55,
+   "to": 16.1
+  },
+  {
+   "id": "m_ring",
+   "at": 16.1,
+   "to": 16.55
+  },
+  {
+   "id": "m_iris2",
+   "at": 16.55,
+   "to": 16.9
+  },
+  {
+   "id": "m_agent",
+   "at": 16.9,
+   "to": 17.2
+  },
+  {
+   "id": "m_iris3",
+   "at": 17.2,
+   "to": 17.45
+  },
+  {
    "id": "solid",
-   "at": 16.5,
-   "to": 19.4,
+   "at": 18.2,
+   "to": 21.1,
    "push": [
     1.0,
     1.02
@@ -22,8 +65,8 @@ window.EDIT = {
   },
   {
    "id": "open",
-   "at": 19.0,
-   "to": 27.0,
+   "at": 20.7,
+   "to": 28.7,
    "push": [
     1.0,
     1.02
@@ -32,8 +75,8 @@ window.EDIT = {
   },
   {
    "id": "agent",
-   "at": 26.6,
-   "to": 33.6,
+   "at": 28.3,
+   "to": 35.3,
    "push": [
     1.0,
     1.03
@@ -42,8 +85,8 @@ window.EDIT = {
   },
   {
    "id": "close",
-   "at": 33.2,
-   "to": 45.2,
+   "at": 34.9,
+   "to": 46.9,
    "push": [
     1.0,
     1.02
@@ -92,27 +135,29 @@ window.EDIT = {
    "cut": true
   },
   {
-   "at": 45.6,
-   "to": 50.0,
+   "at": 47.0,
+   "to": 52.0,
    "style": "title",
    "html": "Exposure, <em>Handled</em>.",
    "y": 46,
+   "size": 112,
    "cut": true,
    "out": false
   },
   {
-   "at": 47.0,
-   "to": 50.0,
+   "at": 48.6,
+   "to": 52.0,
    "style": "link",
    "html": "s4dai-exposure-handled.static.hf.space",
-   "y": 60,
+   "y": 58,
+   "size": 34,
    "cut": true,
    "out": false
   }
  ],
  "flashes": [
   [
-   16.5,
+   18.2,
    0.45,
    0.6
   ]
@@ -121,16 +166,16 @@ window.EDIT = {
  "kill": null,
  "dims": [
   [
-   44.4,
-   45.2,
+   46.2,
+   46.9,
    0.0,
-   0.6
+   0.5
   ]
  ],
  "blacks": [
   [
-   48.8,
-   50.0,
+   50.8,
+   52.0,
    0.0,
    1.0
   ]
@@ -142,8 +187,13 @@ window.EDIT = {
    6.75
   ],
   [
-   45.2,
-   50.0
+   17.45,
+   18.2
+  ],
+  [
+   46.9,
+   52.0
   ]
- ]
+ ],
+ "look": "sepia(0.28) saturate(0.82) contrast(1.06) brightness(1.04)"
 };
