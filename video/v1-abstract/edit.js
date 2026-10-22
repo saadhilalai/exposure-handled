@@ -102,7 +102,7 @@ window.EDIT = {
    "at": 41.0,
    "to": 43.3,
    "html": "The moment",
-   "y": 86
+   "y": 9.5
   },
   {
    "at": 54.26,

@@ -227,17 +227,17 @@ def c_silhouette(t, X):
 
 @shot("c_glint", 1.4, spp=32)
 def c_glint(t, X):
-    """Macro on the front glass: a line of light sweeps across the coatings."""
+    """The whole front of the lens, close: a line of light sweeps across the glass and its coatings."""
     xray(0)
     iris(2.8)
-    lights(key=0.15, top=0.3, rim_left=0.6, rim_right=0.6, card=0.2)
+    lights(key=0.1, top=0.25, rim_left=0.8, rim_right=0.5, card=0.15)
     sw = S.sweep_light()
-    sw.data.energy = 10.0
-    x = kf(t, [(0, -0.35, "lin"), (1.4, 0.35, "io")])
-    S.aim_light(sw, (x, -0.5, 0.25), (MX, -0.12, MZ))
-    tgt = Vector((MX, -0.124, MZ))
-    pos = tgt + Vector((0.035, -0.11, 0.02))
-    cam(pos, tgt, 85, 4.0)
+    sw.data.energy = 12.0
+    x = kf(t, [(0, -0.45, "lin"), (1.4, 0.45, "io")])
+    S.aim_light(sw, (x, -0.5, 0.3), (MX, -0.12, MZ))
+    tgt = Vector((MX, -0.12, MZ))
+    pos = tgt + Vector((0.07, -0.2, 0.05)).normalized() * kf(t, [(0, 0.24, "lin"), (1.4, 0.225, "io")])
+    cam(pos, tgt, 85, 8.0)
 
 
 @shot("c_iris", 1.2, spp=32)
@@ -259,8 +259,8 @@ def c_dial(t, X):
     d = D.objects["front dial"]
     d.rotation_euler = Euler((0, 0, t * 1.4))
     c = d.matrix_world.translation
-    pos = c + Vector((-0.03, -0.05, 0.012))
-    cam(pos, c + Vector((0, -0.008, 0)), 100, 4.0)
+    pos = c + Vector((-0.03, -0.05, 0.012)) * 1.5
+    cam(pos, c + Vector((0, -0.008, 0)), 100, 7.1)
 
 
 @shot("c_ring", 1.0, spp=32)
@@ -269,8 +269,8 @@ def c_ring(t, X):
     xray(0)
     lights(key=0.2, top=kf(t, [(0, 0.3, "lin"), (1, 1.4, "io")]), rim_left=1.2, rim_right=0.4, card=0.1)
     tgt = Vector((MX - 0.034, -0.06, MZ + 0.015))
-    pos = tgt + Vector((-0.06, -0.035, 0.03))
-    cam(pos, tgt, 100, 4.0)
+    pos = tgt + Vector((-0.06, -0.035, 0.03)) * 1.5
+    cam(pos, tgt, 100, 7.1)
 
 
 # --- HYPE: the world changes, the camera stays ---------------------------------------------------------------------

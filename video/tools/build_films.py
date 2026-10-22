@@ -59,7 +59,7 @@ V1 = dict(
         dict(at=21.4, to=24.8, html="Never still", y=86),
         dict(at=33.4, to=35.6, html="Every stop", y=9.5),
         dict(at=35.8, to=38.3, html="Your look", y=9.5),
-        dict(at=41.0, to=43.3, html="The moment", y=86),
+        dict(at=41.0, to=43.3, html="The moment", y=9.5),
         dict(at=54.26, to=58.6, cls="title", html="Exposure, <em>Handled</em>.", y=46, out=False),
         dict(at=55.9, to=58.6, cls="link", html=SITE_URL, y=58, out=False),
     ],

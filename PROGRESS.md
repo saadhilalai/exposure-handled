@@ -2,6 +2,25 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## 🎞️ The redo of all three films (2026-10-22, morning; no camera connected)
+
+The director sent three briefs (calm, hype, story). Notes: `video/FILMS.md`; credits: `video/CREDITS.md`; decisions 29–34 in
+`docs/open-decisions.md`. Nothing goes on the website until the director approves.
+- **The camera:** a faithful model of the FX2 this project drives (`video/blender/build_fx.py`, no maker's name or logo), with
+  an X-ray switch that turns the body to glass, and new shots (`shots_fx.py`): transparent renders with a shadow catcher,
+  helpers that shine with light trails, the iris and colour chip at work. The lens macros were reframed after a test render
+  came out muddy.
+- **Calm:** rebuilt as art on warm paper (SVG): a horizon and sun, light, a breathing shape, a lens that becomes an eye, a
+  frame stepping through stops; the Turing quote as an old radio transmission; the camera once, as a silhouette revealed by
+  a sweep of light; the "same words, many surfaces" cards, now all one size in one band.
+- **Hype:** the camera locked in the centre while the world changes on every beat (solid colours, then licensed plates of
+  real places, out of focus); the glass reveal; music 9 dB lower under the voice.
+- **Story:** licensed Pexels stock (no train, no beach), a two-field horizon opening that match-cuts to a real ridge at
+  sunrise, an old-film texture, letterboxed.
+- **Voice:** one human-sounding AI narrator for all three (MiniMax "Harrison"), because the ElevenLabs free account was
+  blocked mid-job.
+- **Laptop sleeps:** the render queue is resumable (`video/blender/queue.sh`); restart it after a wake if it stopped.
+
 ## 🎞️ Three launch films (2026-10-21 → 22, overnight; no camera connected)
 
 The director asked for three different films to pick from, with a new photoreal camera. Notes: `video/FILMS.md`; decisions: `docs/open-decisions.md` (21–29).
