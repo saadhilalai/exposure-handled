@@ -139,14 +139,16 @@ window.EDIT = {
    "at": 12.6,
    "to": 14.452,
    "style": "huge",
-   "html": "It sees."
+   "html": "It sees.",
+   "y": 26
   },
   {
    "at": 14.687,
    "to": 16.539,
    "style": "huge",
    "html": "It decides.",
-   "size": 250
+   "size": 250,
+   "y": 24
   },
   {
    "at": 30.261,
@@ -190,8 +192,8 @@ window.EDIT = {
   ],
   [
    27.13,
-   0.9,
-   0.5
+   0.75,
+   0.3
   ]
  ],
  "streaks": [
