@@ -3,37 +3,33 @@ window.EDIT = {
  "duration": 36.522,
  "shots": [
   {
-   "id": "reveal",
+   "id": "pl_sunset",
+   "at": 3.13,
+   "to": 3.652
+  },
+  {
+   "id": "pl_city",
+   "at": 3.652,
+   "to": 4.174
+  },
+  {
+   "id": "pl_desert",
+   "at": 4.174,
+   "to": 4.696
+  },
+  {
+   "id": "pl_forest",
+   "at": 4.696,
+   "to": 5.217
+  },
+  {
+   "id": "world",
    "at": 0,
-   "to": 2.087,
+   "to": 6.261,
    "push": [
     1.0,
-    1.04
+    1.0
    ]
-  },
-  {
-   "id": "dial",
-   "at": 2.087,
-   "to": 2.87,
-   "punch": 1.06
-  },
-  {
-   "id": "vents",
-   "at": 2.87,
-   "to": 3.652,
-   "punch": 1.06
-  },
-  {
-   "id": "ring",
-   "at": 3.652,
-   "to": 4.174,
-   "punch": 1.06
-  },
-  {
-   "id": "orbit",
-   "at": 4.174,
-   "to": 6.261,
-   "punch": 1.04
   },
   {
    "id": "smash",
@@ -46,37 +42,43 @@ window.EDIT = {
    "pushEase": "power2.in"
   },
   {
-   "id": "burst",
+   "id": "xray",
    "at": 8.348,
    "to": 12.522,
    "punch": 1.08
   },
   {
-   "id": "iris",
+   "id": "irisx",
    "at": 12.522,
    "to": 14.609,
    "punch": 1.05
   },
   {
-   "id": "agent",
+   "id": "chip",
    "at": 14.609,
    "to": 16.696,
    "punch": 1.04
   },
   {
-   "id": "eye",
+   "id": "glint",
    "at": 16.696,
-   "to": 17.739,
-   "punch": 1.03
+   "to": 17.217,
+   "punch": 1.06
   },
   {
-   "id": "dial2",
+   "id": "dial",
+   "at": 17.217,
+   "to": 17.739,
+   "punch": 1.06
+  },
+  {
+   "id": "ring",
    "at": 17.739,
    "to": 18.261,
-   "punch": 1.05
+   "punch": 1.06
   },
   {
-   "id": "ring2",
+   "id": "irisx2",
    "at": 18.261,
    "to": 18.783,
    "punch": 1.05
@@ -88,13 +90,13 @@ window.EDIT = {
    "punch": 1.06
   },
   {
-   "id": "burst2",
+   "id": "xray2",
    "at": 20.87,
    "to": 22.957,
    "punch": 1.05
   },
   {
-   "id": "iris2",
+   "id": "irisx3",
    "at": 22.957,
    "to": 24.522,
    "punch": 1.04
@@ -117,38 +119,17 @@ window.EDIT = {
  ],
  "words": [
   {
-   "at": 0.13,
-   "to": 0.757,
+   "at": 6.313,
+   "to": 7.278,
    "style": "huge",
    "html": "A camera"
   },
   {
-   "at": 0.783,
-   "to": 1.539,
+   "at": 7.304,
+   "to": 8.322,
    "style": "huge",
    "html": "that thinks",
    "size": 250
-  },
-  {
-   "at": 1.565,
-   "to": 3.339,
-   "style": "serif",
-   "html": "like a <em>cinematographer.</em>"
-  },
-  {
-   "at": 12.6,
-   "to": 14.452,
-   "style": "huge",
-   "html": "It sees.",
-   "y": 20
-  },
-  {
-   "at": 14.687,
-   "to": 16.539,
-   "style": "huge",
-   "html": "It decides.",
-   "size": 250,
-   "y": 17
   },
   {
    "at": 30.261,
@@ -177,7 +158,7 @@ window.EDIT = {
   ],
   [
    12.522,
-   0.35,
+   0.3,
    0.2
   ],
   [
@@ -198,7 +179,7 @@ window.EDIT = {
  ],
  "streaks": [
   [
-   4.174,
+   6.261,
    38,
    1
   ],
@@ -239,5 +220,49 @@ window.EDIT = {
   ]
  ],
  "look": null,
- "panels": []
+ "panels": [],
+ "horizon": null,
+ "film": false,
+ "worlds": [
+  {
+   "at": 0.0,
+   "to": 0.522,
+   "color": "#000000"
+  },
+  {
+   "at": 0.522,
+   "to": 1.043,
+   "color": "#b8791f"
+  },
+  {
+   "at": 1.043,
+   "to": 1.565,
+   "color": "#8a1b13"
+  },
+  {
+   "at": 1.565,
+   "to": 2.087,
+   "color": "#1c3893"
+  },
+  {
+   "at": 2.087,
+   "to": 2.609,
+   "color": "#78885f"
+  },
+  {
+   "at": 2.609,
+   "to": 3.13,
+   "color": "#e8e2d5"
+  },
+  {
+   "at": 5.217,
+   "to": 5.739,
+   "color": "#ecebe8"
+  },
+  {
+   "at": 5.739,
+   "to": 6.261,
+   "color": "#0a0a0b"
+  }
+ ]
 };

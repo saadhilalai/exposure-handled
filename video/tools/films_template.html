@@ -105,10 +105,17 @@
       .scratch { position: absolute; top: 0; width: 1.5px; background: rgba(255, 250, 240, .9); z-index: 53; opacity: 0; pointer-events: none; }
       .dust { position: absolute; border-radius: 50%; background: rgba(255, 250, 240, .9); z-index: 53; opacity: 0; pointer-events: none; }
       #black { position: absolute; inset: 0; z-index: 60; background: #000; opacity: 0; pointer-events: none; }
+      /* the world behind the camera: a new one on every beat (solid colour, or a plate thrown out of focus) */
+      #worlds { position: absolute; inset: 0; }
+      .world { position: absolute; inset: 0; visibility: hidden; }
+      .world::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 55% at 50% 52%, rgba(255,255,255,.10), rgba(0,0,0,0) 70%),
+        radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,.38) 100%); }
+      .shot.plate video { filter: blur(var(--blur, 16px)) brightness(var(--bri, 1)) saturate(var(--sat, 1)); transform: scale(1.08); }
     </style>
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="{{DURATION}}" data-width="1920" data-height="1080">
+      <div id="worlds"></div>
 {{SHOTS}}
       <div id="dim"></div>
       <div class="bar top"></div><div class="bar bot"></div>
@@ -168,6 +175,13 @@
             var nxt = i + 1 < s.frames.length ? s.frames[i + 1] : s.to;
             tl.set(imgs[i], { autoAlpha: 0 }, 0); tl.set(imgs[i], { autoAlpha: 1 }, f); tl.set(imgs[i], { autoAlpha: 0 }, nxt);
           });
+        });
+
+        // ---------- worlds: a solid colour per beat behind the camera (hard cuts) ----------
+        (E.worlds || []).forEach(function (w) {
+          var d = mk("div", "world", null, $("#worlds"));
+          d.style.background = w.color;
+          tl.set(d, { visibility: "visible" }, w.at); tl.set(d, { visibility: "hidden" }, w.to);
         });
 
         // ---------- words ----------
