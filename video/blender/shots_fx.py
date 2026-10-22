@@ -50,9 +50,31 @@ def xray(v):
     g.inputs["IOR"].default_value = 1.58 + (1.03 - 1.58) * min(1.0, float(v))
 
 
+def tune_xray(ior=1.3, rough=0.03, glow=0.35, tint=(0.93, 0.96, 1.0)):
+    """Clearer glass for the X-ray (after the test renders read as frosted acrylic): fewer, crisper reflections, fainter
+    edge glow, a cool tint. Walks each X-ray mix from the material output (see build_fx.xrayify)."""
+    for mt in D.materials:
+        nt = mt.node_tree
+        out = nt.nodes.get("Material Output") if nt else None
+        if not out or not out.inputs["Surface"].links:
+            continue
+        fin = out.inputs["Surface"].links[0].from_node
+        if fin.type != "MIX_SHADER" or not fin.inputs["Fac"].links:
+            continue
+        a = fin.inputs["Fac"].links[0].from_node
+        if a.type != "ATTRIBUTE" or a.attribute_name != "xray":
+            continue
+        add = fin.inputs[2].links[0].from_node
+        mixg, em = add.inputs[0].links[0].from_node, add.inputs[1].links[0].from_node
+        em.inputs["Strength"].links[0].from_node.inputs[1].default_value = glow
+        mixg.inputs["Fac"].links[0].from_node.inputs["IOR"].default_value = ior
+        mixg.inputs[1].links[0].from_node.inputs["Color"].default_value = (*tint, 1)
+        mixg.inputs[2].links[0].from_node.inputs["Roughness"].default_value = rough
+
+
 def shine(k=1.0):
     """The agents' glow (the redo: they must shine)."""
-    for nm, s in (("agent thruster", 34.0), ("agent tip", 22.0), ("ai glow", 9.0), ("ai trace", 4.0)):
+    for nm, s in (("agent thruster", 34.0), ("agent tip", 22.0), ("ai glow", 12.0), ("ai trace", 7.0)):
         D.materials[nm].node_tree.nodes["Principled BSDF"].inputs["Emission Strength"].default_value = s * k
     D.lights["agent light"].energy = 0.012 * k
 
@@ -383,7 +405,8 @@ def h_irisx(t, X):
     xray(1.0)
     shine(1.2)
     iris(kf(b, [(0, 11, "lin"), (0.9, 11, "lin"), (1.0, 8, "xout"), (1.9, 8, "lin"), (2.0, 4, "xout"), (2.9, 4, "lin"), (3.0, 2.8, "xout")]))
-    lights(key=0.4, top=0.5, rim_left=1.4, rim_right=1.2, card=0.6)
+    lights(key=0.4, top=0.5, rim_left=1.4, rim_right=1.2, card=0.6, glow=1.4)
+    D.objects["crew glow"].location = D.objects["sensor die"].matrix_world.translation   # light behind the iris: the opening glows
     X["crew"].mode = ("work", {"speed": 1.6})
     X["crew"].place(t * 1.5)
     X["tw"] = t * 1.5
@@ -622,6 +645,7 @@ def main():
             i += 1
     for name in names:
         rig.load()
+        tune_xray()
         X = {}
         if "setup" in SHOTS[name]:
             SHOTS[name]["setup"](X)

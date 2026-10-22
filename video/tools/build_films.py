@@ -592,9 +592,30 @@ def render(F, draft=False):
     print("render %s -> %s" % (F["dir"], d / "renders" / name))
 
 
+FINAL = Path.home() / "Movies" / "Final Renders"
+FINAL_NAMES = {"v1-abstract": "1 - Calm", "v2-hype": "2 - Hype", "v3-story": "3 - Story"}
+
+
+def deliver(F):
+    """A phone copy (1080p, under 30 MB) beside the 4K render, and both linked into ~/Movies/Final Renders (hard links:
+    no extra disk; not the Desktop, which syncs to iCloud)."""
+    d = V / F["dir"] / "renders"
+    k4 = d / ("%s-4k.mp4" % F["dir"])
+    phone = d / ("%s-phone.mp4" % F["dir"])
+    kbps = int(min(9000, 29.0 * 8 * 1000 / duration(k4) - 192))
+    run(["nice", "-n", "10", "ffmpeg", "-v", "error", "-y", "-i", str(k4), "-vf", "scale=1920:1080:flags=lanczos", "-c:v", "libx264",
+         "-preset", "slow", "-b:v", "%dk" % kbps, "-maxrate", "%dk" % int(kbps * 1.4), "-bufsize", "%dk" % (kbps * 2), "-pix_fmt", "yuv420p",
+         "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", str(phone)])
+    FINAL.mkdir(exist_ok=True)
+    name = FINAL_NAMES[F["dir"]]
+    for src, label in ((k4, "4K"), (phone, "phone")):
+        link(src, FINAL / ("%s (%s).mp4" % (name, label)))
+    print("deliver %s: phone copy %.1f MB; linked into %s" % (F["dir"], phone.stat().st_size / 1e6, FINAL))
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("step", choices=["prep", "voice", "voice2", "edit", "mix", "render"])
+    ap.add_argument("step", choices=["prep", "voice", "voice2", "edit", "mix", "render", "deliver"])
     ap.add_argument("films", nargs="*", default=["v1", "v2", "v3"])
     ap.add_argument("--draft", action="store_true")
     a = ap.parse_args()
@@ -604,4 +625,4 @@ if __name__ == "__main__":
         voice_v2()
     for k in a.films if a.step not in ("voice", "voice2") else []:
         F = FILMS[k]
-        {"prep": prep, "edit": edit, "mix": mix, "render": lambda F: render(F, a.draft)}[a.step](F)
+        {"prep": prep, "edit": edit, "mix": mix, "render": lambda F: render(F, a.draft), "deliver": deliver}[a.step](F)
