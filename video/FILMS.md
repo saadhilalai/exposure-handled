@@ -1,6 +1,14 @@
 # Exposure, Handled.: three launch films
 
-**Status:** three drafts, made overnight on 2026-10-21/22 for the director to pick from. None of them is on the website.
+**Status:** three finished drafts, made overnight on 2026-10-21/22 for the director to pick from. None of them is on the website.
+
+**Where they are (not in git):**
+- **The films:** `v1-abstract/renders/v1-abstract-4k.mp4`, `v2-hype/renders/v2-hype-4k.mp4`, `v3-story/renders/v3-story-4k.mp4`. All 3840×2160, 24 fps, stereo AAC, mixed to -14 LUFS.
+- **The stills (true 4K, path-traced):** `blender/out/stills4k/`
+  - `camera-product.png`
+  - `camera-exploded.png`
+  - `camera-agent-closeup.png`
+  - `camera-rear.png` (the screen shows Saad's own footage)
 
 | | Film | Length | Feel | Music |
 |---|---|---|---|---|
