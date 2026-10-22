@@ -86,7 +86,7 @@ window.EDIT = {
   {
    "id": "close",
    "at": 34.9,
-   "to": 46.9,
+   "to": 43.875,
    "push": [
     1.0,
     1.02
@@ -164,14 +164,7 @@ window.EDIT = {
  ],
  "streaks": [],
  "kill": null,
- "dims": [
-  [
-   46.2,
-   46.9,
-   0.0,
-   0.5
-  ]
- ],
+ "dims": [],
  "blacks": [
   [
    50.8,
@@ -191,9 +184,102 @@ window.EDIT = {
    18.2
   ],
   [
-   46.9,
+   47.0,
    52.0
   ]
  ],
- "look": "sepia(0.28) saturate(0.82) contrast(1.06) brightness(1.04)"
+ "look": "sepia(0.28) saturate(0.82) contrast(1.06) brightness(1.04)",
+ "panels": [
+  {
+   "at": 43.875,
+   "to": 44.295,
+   "cls": "p-news grainy",
+   "html": "Exposure, Handled.",
+   "dx": -60
+  },
+  {
+   "at": 44.295,
+   "to": 44.675,
+   "cls": "p-code",
+   "html": "<i>&lt;title&gt;</i>Exposure, Handled.<i>&lt;/title&gt;</i>",
+   "dx": 40
+  },
+  {
+   "at": 44.675,
+   "to": 45.015,
+   "cls": "p-type grainy",
+   "html": "EXPOSURE, HANDLED.",
+   "dx": 0
+  },
+  {
+   "at": 45.015,
+   "to": 45.315,
+   "cls": "p-bauhaus",
+   "html": "Exposure, Handled.",
+   "dx": -30
+  },
+  {
+   "at": 45.315,
+   "to": 45.585,
+   "cls": "p-chalk",
+   "html": "Exposure, Handled.",
+   "dx": 20
+  },
+  {
+   "at": 45.585,
+   "to": 45.825,
+   "cls": "p-readme",
+   "html": "<i>#</i> Exposure, Handled.",
+   "dx": 70
+  },
+  {
+   "at": 45.825,
+   "to": 46.045,
+   "cls": "p-note",
+   "html": "Exposure, Handled.",
+   "dx": -20
+  },
+  {
+   "at": 46.045,
+   "to": 46.245,
+   "cls": "p-cyan",
+   "html": "Exposure, Handled.",
+   "dx": 0
+  },
+  {
+   "at": 46.245,
+   "to": 46.425,
+   "cls": "p-term",
+   "html": "<b>$</b> exposure, handled<u></u>",
+   "dx": -40
+  },
+  {
+   "at": 46.425,
+   "to": 46.585,
+   "cls": "p-enso grainy",
+   "html": "Exposure, Handled.",
+   "dx": 10
+  },
+  {
+   "at": 46.585,
+   "to": 46.725,
+   "cls": "p-tape",
+   "html": "EXPOSURE, HANDLED.",
+   "dx": 0
+  },
+  {
+   "at": 46.725,
+   "to": 46.855,
+   "cls": "p-blue",
+   "html": "Exposure, Handled.",
+   "dx": -20
+  },
+  {
+   "at": 46.855,
+   "to": 46.98,
+   "cls": "p-menu",
+   "html": "Exposure · Handled",
+   "dx": 0
+  }
+ ]
 };

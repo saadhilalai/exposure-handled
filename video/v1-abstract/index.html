@@ -54,6 +54,47 @@
         background: radial-gradient(ellipse at center, rgba(0,0,0,0) 58%, rgba(0,0,0,.45) 100%); }
       #grain { position: absolute; inset: -10%; z-index: 50; pointer-events: none; opacity: .06; background: url("assets/grain.png");
         background-size: 320px; }
+      /* "same words, many surfaces": the phrase holds one band of the screen while the surface under it changes every cut */
+      .panel { position: absolute; inset: 0; z-index: 28; overflow: hidden; visibility: hidden; }
+      .panel .ph { position: absolute; left: 50%; top: 47%; transform: translate(calc(-50% + var(--dx, 0px)), -50%); white-space: nowrap; }
+      .grainy::after { content: ""; position: absolute; inset: 0; opacity: .5; mix-blend-mode: multiply; background-size: 360px;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='360'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .42  0 0 0 0 .38  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+      .p-news { background: #ebe8e1; color: #141210; } .p-news .ph { font: 700 250px/1 "Big Caslon", "Baskerville", serif; letter-spacing: -.02em; }
+      .p-code { background: #000; color: #e8e6e1; } .p-code .ph { font: 400 104px/1 Menlo, monospace; }
+      .p-code .ph i { font-style: normal; color: #7c7a74; } .p-code .ph b { font-weight: 400; color: #ff8a3d; }
+      .p-type { background: #efe6d2; color: #26221c; } .p-type .ph { font: 400 170px/1 "American Typewriter", "Courier New", monospace; letter-spacing: .02em; }
+      .p-type::before { content: ""; position: absolute; left: 0; right: 0; top: 61%; height: 3px; background: #26221c; opacity: .8; }
+      .p-bauhaus { background: #e7dfcf; color: #0d0d0d; }
+      .p-bauhaus::before { content: ""; position: absolute; width: 760px; height: 760px; border-radius: 50%; background: #ff6a1a; left: 58%; top: 50%; transform: translate(-50%, -50%); }
+      .p-bauhaus::after { content: ""; position: absolute; left: 6%; top: 18%; width: 46px; height: 64%; background: #0d0d0d; }
+      .p-bauhaus .ph { font: 700 210px/1 Futura, "Avenir Next", sans-serif; letter-spacing: -.02em; }
+      .p-chalk { background: #000; color: #f1efe8; } .p-chalk .ph { font: 400 190px/1 Chalkduster, "Marker Felt", sans-serif; opacity: .92; }
+      .p-readme { background: #ffffff; color: #1f2328; } .p-readme .ph { font: 600 230px/1 -apple-system, "Helvetica Neue", Helvetica, sans-serif; letter-spacing: -.02em; }
+      .p-readme .ph i { font-style: normal; color: #9198a1; font-weight: 500; }
+      .p-readme::before { content: ""; position: absolute; left: 0; right: 0; top: 64%; height: 2px; background: #d1d9e0; }
+      .p-note { background: #000; color: #22201b; }
+      .p-note::before { content: ""; position: absolute; left: 50%; top: 50%; width: 1500px; height: 1500px; background: #f6d64a; transform: translate(-50%, -50%) rotate(-3deg);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
+      .p-note .ph { font: 700 200px/1 Noteworthy, "Marker Felt", sans-serif; transform: translate(calc(-50% + var(--dx, 0px)), -50%) rotate(-3deg); }
+      .p-cyan { background: #1b4c86; color: #f3f6fa; }
+      .p-cyan::before { content: ""; position: absolute; left: 50%; top: 50%; width: 900px; height: 900px; border-radius: 50%; transform: translate(-50%, -50%);
+        box-shadow: 0 0 0 2px rgba(255,255,255,.35), 0 0 0 90px rgba(255,255,255,.06), 0 0 0 92px rgba(255,255,255,.28), 0 0 0 220px rgba(255,255,255,.05), 0 0 0 222px rgba(255,255,255,.22); }
+      .p-cyan .ph { font: italic 400 230px/1 Didot, "Bodoni 72", serif; }
+      .p-term { background: #000; color: #e9e7e2; } .p-term .ph { font: 400 92px/1 Menlo, monospace; } .p-term .ph b { color: #ff6a1a; font-weight: 400; }
+      .p-term .ph u { text-decoration: none; display: inline-block; width: .6em; height: 1em; background: #e9e7e2; vertical-align: -.12em; margin-left: .1em; }
+      .p-enso { background: #ece6da; color: #111; }
+      .p-enso::before { content: ""; position: absolute; left: 50%; top: 50%; width: 820px; height: 820px; border-radius: 50%; border: 34px solid #111;
+        border-right-color: transparent; transform: translate(-50%, -50%) rotate(28deg); opacity: .88; }
+      .p-enso .ph { font: italic 400 210px/1 Baskerville, "Big Caslon", serif; }
+      .p-tape { background: #000; color: #121212; }
+      .p-tape::before { content: ""; position: absolute; left: -2%; right: -2%; top: 50%; height: 300px; background: #d9d6cf; transform: translateY(-50%) rotate(1.2deg); }
+      .p-tape .ph { font: 700 180px/1 "Marker Felt", Noteworthy, sans-serif; transform: translate(calc(-50% + var(--dx, 0px)), -50%) rotate(1.2deg); }
+      .p-blue { background: #173a73; color: #eef3fb; background-size: 60px 60px;
+        background-image: linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px); }
+      .p-blue .ph { font: 600 200px/1 "Avenir Next", Avenir, sans-serif; letter-spacing: -.01em; }
+      .p-menu { background: #000; color: #fff; }
+      .p-menu::before { content: ""; position: absolute; left: 0; right: 0; top: 47%; height: 230px; transform: translateY(-50%); background: #ff6a1a; }
+      .p-menu .ph { font: 700 170px/1 var(--wide); letter-spacing: .04em; text-transform: uppercase; color: #0b0b0c; }
       #card { position: absolute; inset: 0; z-index: 29; background: #000; opacity: 0; pointer-events: none; }   /* text-only cards: pure black */
       #black { position: absolute; inset: 0; z-index: 60; background: #000; opacity: 0; pointer-events: none; }
     </style>
@@ -71,7 +112,7 @@
       <div class="shot" id="solid"><video id="v_solid" class="clip" src="assets/3d/a_solid.mp4" data-start="18.2" data-duration="2.9" data-media-start="0.1" data-track-index="9" muted playsinline></video></div>
       <div class="shot" id="open"><video id="v_open" class="clip" src="assets/3d/a_open.mp4" data-start="20.7" data-duration="8.0" data-media-start="0.0" data-track-index="10" muted playsinline></video></div>
       <div class="shot" id="agent"><video id="v_agent" class="clip" src="assets/3d/a_agent.mp4" data-start="28.3" data-duration="7.0" data-media-start="0.0" data-track-index="11" muted playsinline></video></div>
-      <div class="shot" id="close"><video id="v_close" class="clip" src="assets/3d/a_close.mp4" data-start="34.9" data-duration="12.0" data-media-start="0.0" data-track-index="12" muted playsinline></video></div>
+      <div class="shot" id="close"><video id="v_close" class="clip" src="assets/3d/a_close.mp4" data-start="34.9" data-duration="8.975" data-media-start="0.0" data-track-index="12" muted playsinline></video></div>
       <div id="dim"></div>
       <div class="bar top"></div><div class="bar bot"></div>
       <div class="vignette"></div>
@@ -163,6 +204,13 @@
         (E.blacks || []).forEach(function (b) { later("#black", { opacity: b[2] }, { opacity: b[3], duration: b[1] - b[0], ease: "power1.inOut" }, b[0]); });
 
         if (E.letterbox) document.querySelectorAll(".bar").forEach(function (b) { b.style.display = "block"; });   // 2.39:1
+
+        // ---------- panels: the phrase on a run of surfaces, hard cuts ----------
+        (E.panels || []).forEach(function (p) {
+          var d = mk("div", "panel " + p.cls, '<div class="ph">' + p.html + "</div>", $("#root"));
+          if (p.dx) d.style.setProperty("--dx", p.dx + "px");
+          tl.set(d, { autoAlpha: 1 }, p.at); tl.set(d, { autoAlpha: 0 }, p.to);
+        });
 
         // ---------- text-only cards: pure black (#000) behind the words, and no grain on them ----------
         var inCard = function (t) { return (E.cards || []).some(function (c) { return t >= c[0] && t < c[1]; }); };

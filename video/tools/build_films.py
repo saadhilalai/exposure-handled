@@ -56,9 +56,10 @@ V1 = dict(
         ("solid", "3d:a_solid", 18.2, 21.1, dict(ms=0.1, push=[1.0, 1.02])),
         ("open", "3d:a_open", 20.7, 28.7, dict(fadeIn=0.4, push=[1.0, 1.02])),
         ("agent", "3d:a_agent", 28.3, 35.3, dict(fadeIn=0.4, push=[1.0, 1.03])),
-        ("close", "3d:a_close", 34.9, 46.9, dict(fadeIn=0.4, push=[1.0, 1.02])),
+        ("close", "3d:a_close", 34.9, 43.875, dict(fadeIn=0.4, push=[1.0, 1.02])),
     ],
-    cards=[(0.0, 6.75), (17.45, 18.2), (46.9, 52.0)],
+    panels="montage",
+    cards=[(0.0, 6.75), (17.45, 18.2), (47.0, 52.0)],
     words=[
         dict(at=0.8, to=4.9, style="quote", html="I propose to consider the question,", y=45, cut=True),
         dict(at=2.3, to=4.9, style="quote", html="<em>‘Can machines think?’</em>", y=55, cut=True),
@@ -71,7 +72,7 @@ V1 = dict(
     voice=[("v1a", 7.2), ("v1b", 9.4), ("v1c", 11.6), ("v1d", 13.6), ("h11", 47.4)],
     sfx=[(18.2, "lowFrequency_explosion_000.ogg", -12)],
     flashes=[(18.2, 0.45, 0.6)],
-    dims=[(46.2, 46.9, 0.0, 0.5)],
+    dims=[],
     blacks=[(50.8, 52.0, 0.0, 1.0)],
 )
 
@@ -174,6 +175,28 @@ V3 = dict(
     blacks=[(53.8, 55.0, 0.0, 1.0)],
 )
 FILMS = {"v1": V1, "v2": V2, "v3": V3}
+
+# "Same words, many surfaces" (after the reference film whose name runs across headlines in one spot): the title holds one
+# band of the screen while what it's written on changes every cut, each cut shorter, landing on the clean title on black.
+# Only our own surfaces: the README's and the page's real title lines, a terminal, and designed paper, slate, art.
+MONTAGE = [
+    ("p-news grainy", "Exposure, Handled.", -60), ("p-code", "<i>&lt;title&gt;</i>Exposure, Handled.<i>&lt;/title&gt;</i>", 40),
+    ("p-type grainy", "EXPOSURE, HANDLED.", 0), ("p-bauhaus", "Exposure, Handled.", -30), ("p-chalk", "Exposure, Handled.", 20),
+    ("p-readme", "<i>#</i> Exposure, Handled.", 70), ("p-note", "Exposure, Handled.", -20), ("p-cyan", "Exposure, Handled.", 0),
+    ("p-term", "<b>$</b> exposure, handled<u></u>", -40), ("p-enso grainy", "Exposure, Handled.", 10), ("p-tape", "EXPOSURE, HANDLED.", 0),
+    ("p-blue", "Exposure, Handled.", -20), ("p-menu", "Exposure · Handled", 0),
+]
+DURS = [0.42, 0.38, 0.34, 0.30, 0.27, 0.24, 0.22, 0.20, 0.18, 0.16, 0.14, 0.13, 0.125]
+
+
+def montage(start=43.875):
+    out, t = [], start
+    for (cls, html, dx), d in zip(MONTAGE, DURS):
+        out.append(dict(at=round(t, 3), to=round(t + d, 3), cls=cls, html=html, dx=dx))
+        t += d
+    return out
+V1["panels"] = montage()
+V1["sfx"] = V1["sfx"] + [(p["at"], "impactGeneric_light_002.ogg", -27) for p in V1["panels"]]
 
 
 def story_shots():
@@ -317,7 +340,7 @@ def edit(F):
     E = dict(duration=round(F["duration"], 3), shots=shots,
              words=[dict(w, at=round(w["at"], 3), to=round(w["to"], 3)) for w in F["words"]],
              flashes=F.get("flashes", []), streaks=F.get("streaks", []), kill=F.get("kill"), dims=F.get("dims", []), blacks=F.get("blacks", []),
-             letterbox=F.get("letterbox", False), cards=F.get("cards", []), look=F.get("look"))
+             letterbox=F.get("letterbox", False), cards=F.get("cards", []), look=F.get("look"), panels=F.get("panels", []))
     (d / "edit.js").write_text("// Made by video/tools/build_films.py. Don't edit by hand.\nwindow.EDIT = %s;\n" % json.dumps(E, ensure_ascii=False, indent=1))
     page = (V / "tools" / "films_template.html").read_text().replace("{{DURATION}}", str(round(F["duration"], 3))).replace("{{SHOTS}}", "\n".join(html))
     (d / "index.html").write_text(page)

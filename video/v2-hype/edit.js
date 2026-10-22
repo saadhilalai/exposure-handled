@@ -235,5 +235,7 @@ window.EDIT = {
    30.261,
    36.522
   ]
- ]
+ ],
+ "look": null,
+ "panels": []
 };

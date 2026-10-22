@@ -287,5 +287,7 @@ window.EDIT = {
    50.2,
    55.0
   ]
- ]
+ ],
+ "look": null,
+ "panels": []
 };
