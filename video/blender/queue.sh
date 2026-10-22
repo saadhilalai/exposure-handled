@@ -15,6 +15,7 @@ for s in "$@"; do
     continue
   fi
   [[ -f video/blender/out/$s.mp4 || -f video/blender/out/$s.webm ]] && continue
+  [[ -d video/blender/out/$s ]] && find video/blender/out/$s -name 'f_*.png' -size 0 -delete   # a frame cut off mid-render (power loss)
   echo "$(date +%T) start $s" >> $LOG
   $B -b -noaudio --python-exit-code 1 -P $SCRIPT -- $s >> $LOG.full 2>&1 && echo "$(date +%T) done $s" >> $LOG || echo "$(date +%T) FAILED $s" >> $LOG
 done
