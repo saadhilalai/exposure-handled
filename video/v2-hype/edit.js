@@ -140,7 +140,7 @@ window.EDIT = {
    "to": 14.452,
    "style": "huge",
    "html": "It sees.",
-   "y": 26
+   "y": 20
   },
   {
    "at": 14.687,
@@ -148,7 +148,7 @@ window.EDIT = {
    "style": "huge",
    "html": "It decides.",
    "size": 250,
-   "y": 24
+   "y": 17
   },
   {
    "at": 30.261,

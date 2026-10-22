@@ -47,7 +47,7 @@
       .streak { position: absolute; left: -30%; width: 160%; height: 4px; z-index: 29; opacity: 0; pointer-events: none; mix-blend-mode: screen;
         background: linear-gradient(90deg, rgba(255, 120, 40, 0) 0%, rgba(255, 140, 60, .55) 35%, rgba(255, 236, 214, 1) 50%, rgba(255, 140, 60, .55) 65%, rgba(255, 120, 40, 0) 100%);
         box-shadow: 0 0 22px 6px rgba(255, 120, 40, .45), 0 0 80px 18px rgba(255, 106, 26, .22); }
-      .bar { position: absolute; left: 0; right: 0; height: 138px; z-index: 27; background: #000; display: none; }
+      .bar { position: absolute; left: 0; right: 0; height: 138px; z-index: 55; background: #000; display: none; }   /* above flashes and grain: pure black */
       .bar.top { top: 0; } .bar.bot { bottom: 0; }
       #dim { position: absolute; inset: 0; z-index: 25; background: #000; opacity: 0; pointer-events: none; }
       .vignette { position: absolute; inset: 0; z-index: 26; pointer-events: none;
@@ -130,6 +130,7 @@
         E.shots.forEach(function (s) {
           var w = $("#" + s.id);
           if (s.origin) w.style.transformOrigin = s.origin;
+          if (s.shift) gsap.set(w, { xPercent: s.shift[0], yPercent: s.shift[1] });
           if (s.img) { tl.set(w, { autoAlpha: 0 }, 0); tl.set(w, { autoAlpha: 1 }, s.at); tl.set(w, { autoAlpha: 0 }, s.to); }
           var p = s.push || [1, 1.03];
           tl.fromTo(w, { scale: p[0] }, { scale: p[1], duration: s.to - s.at, ease: s.pushEase || "none" }, s.at);

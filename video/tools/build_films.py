@@ -72,7 +72,7 @@ V1 = dict(
     voice=[("v1a", 7.2), ("v1b", 9.4), ("v1c", 11.6), ("v1d", 13.6), ("h11", 47.4)],
     sfx=[(18.2, "lowFrequency_explosion_000.ogg", -12)],
     flashes=[(18.2, 0.45, 0.6)],
-    dims=[],
+    dims=[(36.3, 36.6, 0.0, 0.45), (41.4, 41.7, 0.45, 0.0)],
     blacks=[(50.8, 52.0, 0.0, 1.0)],
 )
 
@@ -105,8 +105,8 @@ V2 = dict(
         dict(at=s(0.25), to=s(1.45), style="huge", html="A camera"),
         dict(at=s(1.5), to=s(2.95), style="huge", html="that thinks", size=250),
         dict(at=s(3.0), to=s(6.4), style="serif", html="like a <em>cinematographer.</em>"),
-        dict(at=s(24.15), to=s(27.7), style="huge", html="It sees.", y=26),
-        dict(at=s(28.15), to=s(31.7), style="huge", html="It decides.", size=250, y=24),
+        dict(at=s(24.15), to=s(27.7), style="huge", html="It sees.", y=20),
+        dict(at=s(28.15), to=s(31.7), style="huge", html="It decides.", size=250, y=17),
         dict(at=s(58), to=s(70), style="title", html="Exposure, <em>Handled</em>.", y=46, cut=True, out=False),
         dict(at=s(62), to=s(70), style="link", html=SITE_URL, y=60, cut=True, out=False),
     ],
@@ -153,7 +153,7 @@ V3 = dict(
         ("catch", "3d:s_catch", 28.66, 32.60, dict(punch=1.03)),
         ("train", "ft:train.mp4", 32.60, 43.04, dict(ms=1.0, push=[1.0, 1.07], grade=[(32.6, DARK, 0.7), (33.4, 1.0, 1.0, "power3.out")])),
         ("field_b", "ft:field.mp4", 43.04, 47.60, dict(ms=7.0, push=[1.08, 1.0], pushEase="power1.out")),
-        ("hero", "3d:s_hero", 47.00, 50.20, dict(fadeIn=0.6, push=[1.0, 1.04])),
+        ("hero", "3d:s_hero", 47.00, 50.20, dict(fadeIn=0.6, push=[1.0, 1.04], shift=[0, -11])),
     ],
     words=[
         dict(at=3.18, to=8.9, style="quote", html="There is nothing in this world", y=45, cut=True),
@@ -327,7 +327,7 @@ def edit(F):
     shots, html = [], []
     for i, (sid, src, at, to, ex) in enumerate(all_shots(F)):
         e = dict(id=sid, at=round(at, 3), to=round(to, 3))
-        for k in ("push", "punch", "fadeIn", "fadeOut", "origin", "grade", "pushEase"):
+        for k in ("push", "punch", "fadeIn", "fadeOut", "origin", "grade", "pushEase", "shift"):
             if k in ex:
                 e[k] = ex[k]
         kind, name = src.split(":", 1)

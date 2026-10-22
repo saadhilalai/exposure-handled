@@ -141,7 +141,11 @@ window.EDIT = {
     1.0,
     1.04
    ],
-   "fadeIn": 0.6
+   "fadeIn": 0.6,
+   "shift": [
+    0,
+    -11
+   ]
   }
  ],
  "words": [
