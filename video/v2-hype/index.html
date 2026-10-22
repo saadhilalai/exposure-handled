@@ -108,8 +108,8 @@
       /* the world behind the camera: a new one on every beat (solid colour, or a plate thrown out of focus) */
       #worlds { position: absolute; inset: 0; }
       .world { position: absolute; inset: 0; visibility: hidden; }
-      .world::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 55% at 50% 52%, rgba(255,255,255,.10), rgba(0,0,0,0) 70%),
-        radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,.38) 100%); }
+      .world::after { content: ""; position: absolute; inset: 0;
+        background: radial-gradient(ellipse 90% 90% at 50% 46%, rgba(255,255,255,.07) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,0) 55%, rgba(0,0,0,.32) 100%); }
       .shot.plate video { filter: blur(var(--blur, 16px)) brightness(var(--bri, 1)) saturate(var(--sat, 1)); transform: scale(1.08); }
     </style>
   </head>
@@ -120,20 +120,22 @@
       <div class="shot plate" id="pl_city"><video id="v_pl_city" class="clip" src="assets/plates/city.mp4" data-start="3.652" data-duration="0.522" data-media-start="0.0" data-track-index="2" muted playsinline></video></div>
       <div class="shot plate" id="pl_desert"><video id="v_pl_desert" class="clip" src="assets/plates/desert.mp4" data-start="4.174" data-duration="0.522" data-media-start="0.0" data-track-index="3" muted playsinline></video></div>
       <div class="shot plate" id="pl_forest"><video id="v_pl_forest" class="clip" src="assets/plates/forest.mp4" data-start="4.696" data-duration="0.521" data-media-start="0.0" data-track-index="4" muted playsinline></video></div>
-      <div class="shot " id="world"><video id="v_world" class="clip" src="assets/3d/h_world.webm" data-start="0" data-duration="6.261" data-media-start="0.0" data-track-index="5" muted playsinline></video></div>
-      <div class="shot " id="smash"><video id="v_smash" class="clip" src="assets/3d/h_smash.mp4" data-start="6.261" data-duration="2.087" data-media-start="0.0" data-track-index="6" muted playsinline></video></div>
-      <div class="shot " id="xray"><video id="v_xray" class="clip" src="assets/3d/h_xray.mp4" data-start="8.348" data-duration="4.174" data-media-start="0.0" data-track-index="7" muted playsinline></video></div>
-      <div class="shot " id="irisx"><video id="v_irisx" class="clip" src="assets/3d/h_irisx.mp4" data-start="12.522" data-duration="2.087" data-media-start="0.0" data-track-index="8" muted playsinline></video></div>
-      <div class="shot " id="chip"><video id="v_chip" class="clip" src="assets/3d/h_chip.mp4" data-start="14.609" data-duration="2.087" data-media-start="0.0" data-track-index="9" muted playsinline></video></div>
-      <div class="shot " id="glint"><video id="v_glint" class="clip" src="assets/3d/c_glint.mp4" data-start="16.696" data-duration="0.521" data-media-start="0.2" data-track-index="10" muted playsinline></video></div>
-      <div class="shot " id="dial"><video id="v_dial" class="clip" src="assets/3d/c_dial.mp4" data-start="17.217" data-duration="0.522" data-media-start="0.0" data-track-index="11" muted playsinline></video></div>
-      <div class="shot " id="ring"><video id="v_ring" class="clip" src="assets/3d/c_ring.mp4" data-start="17.739" data-duration="0.522" data-media-start="0.0" data-track-index="12" muted playsinline></video></div>
-      <div class="shot " id="irisx2"><video id="v_irisx2" class="clip" src="assets/3d/h_irisx.mp4" data-start="18.261" data-duration="0.522" data-media-start="1.513" data-track-index="13" muted playsinline></video></div>
-      <div class="shot " id="swarm"><video id="v_swarm" class="clip" src="assets/3d/h_swarm.mp4" data-start="18.783" data-duration="2.087" data-media-start="0.0" data-track-index="14" muted playsinline></video></div>
-      <div class="shot " id="xray2"><video id="v_xray2" class="clip" src="assets/3d/h_xray.mp4" data-start="20.87" data-duration="2.087" data-media-start="2.087" data-track-index="15" muted playsinline></video></div>
-      <div class="shot " id="irisx3"><video id="v_irisx3" class="clip" src="assets/3d/h_irisx.mp4" data-start="22.957" data-duration="1.565" data-media-start="0.0" data-track-index="16" muted playsinline></video></div>
-      <div class="shot " id="kill"><video id="v_kill" class="clip" src="assets/3d/h_kill.mp4" data-start="24.522" data-duration="1.565" data-media-start="0.0" data-track-index="17" muted playsinline></video></div>
-      <div class="shot " id="slam"><video id="v_slam" class="clip" src="assets/3d/h_slam.mp4" data-start="26.087" data-duration="4.174" data-media-start="0.0" data-track-index="18" muted playsinline></video></div>
+      <div class="shot plate" id="pl_studio"><video id="v_pl_studio" class="clip" src="assets/plates/studio.mp4" data-start="5.217" data-duration="0.522" data-media-start="0.0" data-track-index="5" muted playsinline></video></div>
+      <div class="shot plate" id="pl_stage"><video id="v_pl_stage" class="clip" src="assets/plates/stage.mp4" data-start="5.739" data-duration="0.522" data-media-start="0.0" data-track-index="6" muted playsinline></video></div>
+      <div class="shot " id="world"><video id="v_world" class="clip" src="assets/3d/h_world.webm" data-start="0" data-duration="6.261" data-media-start="0.0" data-track-index="7" muted playsinline></video></div>
+      <div class="shot " id="smash"><video id="v_smash" class="clip" src="assets/3d/h_smash.mp4" data-start="6.261" data-duration="2.087" data-media-start="0.0" data-track-index="8" muted playsinline></video></div>
+      <div class="shot " id="xray"><video id="v_xray" class="clip" src="assets/3d/h_xray.mp4" data-start="8.348" data-duration="4.174" data-media-start="0.0" data-track-index="9" muted playsinline></video></div>
+      <div class="shot " id="irisx"><video id="v_irisx" class="clip" src="assets/3d/h_irisx.mp4" data-start="12.522" data-duration="2.087" data-media-start="0.0" data-track-index="10" muted playsinline></video></div>
+      <div class="shot " id="chip"><video id="v_chip" class="clip" src="assets/3d/h_chip.mp4" data-start="14.609" data-duration="2.087" data-media-start="0.0" data-track-index="11" muted playsinline></video></div>
+      <div class="shot " id="glint"><video id="v_glint" class="clip" src="assets/3d/c_glint.mp4" data-start="16.696" data-duration="0.521" data-media-start="0.2" data-track-index="12" muted playsinline></video></div>
+      <div class="shot " id="dial"><video id="v_dial" class="clip" src="assets/3d/c_dial.mp4" data-start="17.217" data-duration="0.522" data-media-start="0.0" data-track-index="13" muted playsinline></video></div>
+      <div class="shot " id="ring"><video id="v_ring" class="clip" src="assets/3d/c_ring.mp4" data-start="17.739" data-duration="0.522" data-media-start="0.0" data-track-index="14" muted playsinline></video></div>
+      <div class="shot " id="irisx2"><video id="v_irisx2" class="clip" src="assets/3d/h_irisx.mp4" data-start="18.261" data-duration="0.522" data-media-start="1.513" data-track-index="15" muted playsinline></video></div>
+      <div class="shot " id="swarm"><video id="v_swarm" class="clip" src="assets/3d/h_swarm.mp4" data-start="18.783" data-duration="2.087" data-media-start="0.0" data-track-index="16" muted playsinline></video></div>
+      <div class="shot " id="xray2"><video id="v_xray2" class="clip" src="assets/3d/h_xray.mp4" data-start="20.87" data-duration="2.087" data-media-start="2.087" data-track-index="17" muted playsinline></video></div>
+      <div class="shot " id="irisx3"><video id="v_irisx3" class="clip" src="assets/3d/h_irisx.mp4" data-start="22.957" data-duration="1.565" data-media-start="0.0" data-track-index="18" muted playsinline></video></div>
+      <div class="shot " id="kill"><video id="v_kill" class="clip" src="assets/3d/h_kill.mp4" data-start="24.522" data-duration="1.565" data-media-start="0.0" data-track-index="19" muted playsinline></video></div>
+      <div class="shot " id="slam"><video id="v_slam" class="clip" src="assets/3d/h_slam.mp4" data-start="26.087" data-duration="4.174" data-media-start="0.0" data-track-index="20" muted playsinline></video></div>
       <div id="dim"></div>
       <div class="bar top"></div><div class="bar bot"></div>
       <div class="vignette"></div>

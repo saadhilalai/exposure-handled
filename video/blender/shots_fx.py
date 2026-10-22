@@ -516,14 +516,14 @@ def _setup_catch(X):
 SHOTS["s_catch"]["setup"] = _setup_catch
 
 
-@shot("s_hero", 8.0, spp=24)
+@shot("s_hero", 5.0, spp=24)
 def s_hero(t, X):
-    """The camera, assembled, a slow push in warm-and-cool light; its screen showing Saad's own footage."""
+    """The camera, assembled, a slow push in warm-and-cool light (5 s: what the story uses)."""
     xray(0)
     iris(2.8)
     lights(key=0.55, top=0.8, rim_left=1.6, rim_right=1.0, card=0.6)
     tgt = Vector((0.0, -0.03, 0.012))
-    pos = orbit(tgt, kf(t, [(0, -0.42, "lin"), (8, -0.3, "io")]), 0.1, kf(t, [(0, 0.5, "lin"), (8, 0.44, "io")]))
+    pos = orbit(tgt, kf(t, [(0, -0.42, "lin"), (5, -0.33, "io")]), 0.1, kf(t, [(0, 0.5, "lin"), (5, 0.455, "io")]))
     cam(pos, tgt, 50, 8.0)
 
 

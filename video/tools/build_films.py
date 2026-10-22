@@ -79,8 +79,20 @@ V1 = dict(
 # Beats 0-12: the camera locked in the centre while the world behind it changes on every beat: bold solid colours, then
 # real places (plates thrown out of focus, as a long lens would), then the studio. Its light, reflections and iris change
 # with each world in the render (video/blender/shots_fx.py, WORLDS).
-HYPE_WORLDS = ["#000000", "#b8791f", "#8a1b13", "#1c3893", "#78885f", "#e8e2d5", None, None, None, None, "#ecebe8", "#0a0a0b"]
-HYPE_PLATES = {6: "sunset", 7: "city", 8: "desert", 9: "forest"}     # beat: plate id (PLATES)
+HYPE_WORLDS = ["#000000", "#b8791f", "#8a1b13", "#1c3893", "#78885f", "#e8e2d5", None, None, None, None, None, None]
+HYPE_PLATES = {6: "sunset", 7: "city", 8: "desert", 9: "forest", 10: "studio", 11: "stage"}     # beat: plate id (PLATES)
+# The plates: one beat each of a real place, (source, in, out, grade). Saad's own footage has none of these places without
+# client work or faces, so they're licensed Pexels clips (video/stock/STOCK.md), thrown out of focus behind the camera.
+PX = V / "stock" / "pexels"
+PLATES = {
+    "sunset": (PX / "p-sunset_px28486616_the-sun-setting-over-a-field-with-a-view-of-the-.mp4", 2.0, 3.2, None),
+    "city": (PX / "p-city_px36872872_stunning-twilight-cityscape-aerial-view.mp4", 0.5, 1.7, None),
+    "desert": (PX / "p-desert_px5728372_video-of-sunset-on-a-desert.mp4", 6.0, 7.2, None),
+    "forest": (PX / "p-forest_px31807870_sunbeams-through-forest-trees-in-drenthe.mp4", 4.0, 5.2, None),
+    "studio": (PX / "p-studio_px10729080_close-up-on-lamp-in-room.mp4", 0.2, 1.4, "eq=brightness=0.04"),
+    "stage": (PX / "p-studio_px28957437_dramatic-foggy-light-show-in-dark-hallway.mp4", 33.8, 35.0, "eq=brightness=-0.05:saturation=0.6"),
+}
+ALPHA = {"c_silhouette", "h_world"}           # 3D shots rendered with a transparent background (VP9 + alpha)
 V2 = dict(
     dir="v2-hype", title="Exposure, Handled. (hype)", duration=s(70),
     music=dict(file=HYPE / "music" / "beast.mp3", beast=True, gain=-9.0),
@@ -127,55 +139,63 @@ V2 = dict(
     blacks=[(s(68.6), s(70), 0.0, 1.0)],
 )
 
-# The story film: Saad's own footage (personal days out on an Osmo Pocket 3: no client work, no faces), graded to one
-# look, the light falling in the grade, the agent catching it. Cut to the hits of "Cassini" (3.18, 6.02, 8.98, 10.98, 13.82,
-# 16.78, 19.60, 22.70, 25.60, 28.66, 37.34 and the big one at 43.04 s).
-ICLOUD = Path.home() / "Library" / "Mobile Documents" / "com~apple~CloudDocs"
-FOOTAGE = {   # id: (source, in, out, crop or None, "709" or "hlg")
-    "field": (ICLOUD / "DJI_20260430183909_0314_D.MP4", 9.0, 21.0, None, "709"),
-    "beach": (ICLOUD / "DJI_20260426192545_0352_D.MP4", 0.0, 5.0, None, "hlg"),
-    "fence": (ICLOUD / "DJI_20260428180930_0354_D.MP4", 0.5, 6.6, None, "hlg"),
-    "head": (ICLOUD / "DJI_20260425202029_0011_D.MP4", 16.2, 17.2, "crop=2560:1440:1280:720", "709"),
-    "train": (ICLOUD / "DJI_20260428180846_0353_D.MP4", 0.0, 11.6, None, "hlg"),
+# The story film. The director cut the old footage ("not cinematic"; no train, no beach). Saad's Mac was searched again:
+# nothing of his own met the bar without client work or faces, so the picture is licensed stock from Pexels (licences
+# and links in video/stock/STOCK.md and CREDITS.md), graded to one look, plus the 3D camera. Letterboxed 2.39:1, an old-film
+# texture over everything. Opens on two flat earthy fields under a curved horizon (after the AI-lab launch film's opening),
+# which match-cuts to a real ridge line at sunrise. Music: "Cylinder Three" (Chris Zabriskie), quieter than the voice;
+# its first new layer (0:24.5) lands as we go inside the camera, the second (0:41.0) on the hero.
+STOCK = V / "stock" / "pexels"
+FOOTAGE = {   # id: (source, in, out, crop or None, "709" or "hlg", extra filter or None)
+    "ridge": (STOCK / "s-op_px28769585_silhouette-of-person-at-sunrise-in-mountains.mp4", 0.5, 5.0, None, "709", None),
+    "dusk": (STOCK / "s-op_px4231685_silhouette-of-a-man-taking-photos.mp4", 0.2, 3.2, None, "709", None),
+    "sink": (STOCK / "s-li_px3603305_video-footage-in-hyper-lapse-of-the-sun-setting-.mp4", 2.0, 5.5, None, "709", None),
+    "cloud": (STOCK / "s-li_px33824905_dramatic-sky-timelapse-with-sunlit-clouds.mp4", 4.0, 5.6, None, "709", None),
+    "door": (STOCK / "s-li_px6092472_female-opening-the-window-blinds.mp4", 2.4, 5.4, None, "709", "reverse,setpts=PTS/2.6"),
+    "sunset": (STOCK / "s-mo_px27775382_a-sunset-over-the-ocean-with-birds-flying-over-i.mp4", 0.0, 2.0, None, "709", None),
+    "gone": (STOCK / "s-mo_px34785690_serene-sunset-over-ocean-with-flying-seagull.mp4", 5.0, 7.2, None, "709", None),
+    "lens": (STOCK / "s-op_px8089525_close-up-footage-of-a-person-adjusting-the-lens-.mp4", 0.5, 3.0, "crop=3840:2160:128:0", "709", None),
+    "city": (STOCK / "s-li_px14549980_day-to-night-cycle-in-city.mp4", 10.0, 30.0, None, "709", "setpts=PTS/9"),
+    "monitor": (STOCK / "s-op_px8089229_a-cameraman-filming-a-production-using-a-video-c.mp4", 4.0, 6.0, "crop=3840:2160:128:0", "709", None),
+    "frame": (STOCK / "s-op_px28941862_silhouette-photography-at-sunset-by-the-sea.mp4", 0.5, 4.2, None, "709", None),
+    "horses": (STOCK / "s-op_px26791738_a-man-taking-a-photo-of-horses-in-the-desert.mp4", 0.0, 3.4, None, "709", None),
+    "wave": (STOCK / "s-mo_px32779591_golden-sunset-waves-glistening-on-the-shore.mp4", 5.0, 8.0, None, "709", None),
 }
-DARK = 0.42
-# Plates for the hype film's "the world changes" beats: (source, in, out, grade). Filled from video/stock/STOCK.md
-# (licences checked there) or Saad's own footage; one beat each, thrown out of focus behind the camera.
-PLATES = {}
-ALPHA = {"c_silhouette", "h_world"}           # 3D shots rendered with a transparent background (VP9 + alpha)
 V3 = dict(
-    dir="v3-story", title="Exposure, Handled. (story)", duration=55.0, letterbox=True,
-    music=dict(file=V / "music-candidates/film3/cassini-scott-buckley/sb_cassini.mp3", start=180.4, fade_in=0.3, fade_out=(53.4, 1.6), gain=-2.0,
-               env=[(0, 0), (28.05, 0), (28.2, -26), (28.6, -26), (28.66, 0)]),
+    dir="v3-story", title="Exposure, Handled. (story)", duration=55.0, letterbox=True, film=True,
+    horizon=dict(to=8.6, top0="#b07f55", top1="#c08d5c"),
+    music=dict(file=V / "music-candidates/round2/story/cylinder-three-zabriskie/zabriskie_cylinder-three.flac", start=0.0, fade_in=0.05,
+               fade_out=(53.2, 1.8), gain=-3.0, env=[(0, -2), (23.6, -2), (24.1, -9), (24.5, -1), (40.8, -1), (41.0, 1), (48.4, 1), (48.6, -4)],
+               duck="threshold=0.012:ratio=12:attack=6:release=300"),
     shots=[
-        ("field_a", "ft:field.mp4", 10.98, 16.78, dict(push=[1.0, 1.06])),
-        ("beach", "ft:beach.mp4", 16.78, 19.60, dict(ms=0.3, push=[1.04, 1.0])),
-        ("fence", "ft:fence.mp4", 19.60, 25.60, dict(push=[1.0, 1.05], grade=[(19.6, 1.0, 1.0), (20.3, 1.0, 1.0), (22.4, DARK, 0.7, "power2.inOut")])),
-        ("beach_dark", "ft:beach.mp4", 25.60, 26.80, dict(ms=3.2, push=[1.08, 1.12], grade=[(25.6, DARK, 0.7)])),
-        ("head", "ft:head.mp4", 26.80, 27.60, dict(push=[1.0, 1.04], grade=[(26.8, DARK, 0.7)])),
-        ("train_q", "ft:train.mp4", 27.60, 28.10, dict(ms=0.2, push=[1.1, 1.14], grade=[(27.6, DARK, 0.7)])),
-        ("catch", "3d:s_catch", 28.66, 32.60, dict(punch=1.03)),
-        ("train", "ft:train.mp4", 32.60, 43.04, dict(ms=1.0, push=[1.0, 1.07], grade=[(32.6, DARK, 0.7), (33.4, 1.0, 1.0, "power3.out")])),
-        ("field_b", "ft:field.mp4", 43.04, 47.60, dict(ms=7.0, push=[1.08, 1.0], pushEase="power1.out")),
-        ("hero", "3d:s_hero", 47.00, 50.20, dict(fadeIn=0.6, push=[1.0, 1.04], shift=[0, -11])),
+        ("ridge", "ft:ridge.mp4", 8.6, 12.6, dict(push=[1.04, 1.0], pushEase="power1.out")),
+        ("dusk", "ft:dusk.mp4", 12.6, 15.2, dict(push=[1.0, 1.04])),
+        ("sink", "ft:sink.mp4", 15.2, 18.2, dict(push=[1.0, 1.05], grade=[(15.2, 1.0, 1.0), (16.4, 1.0, 1.0), (17.4, 0.6, 0.8, "power2.inOut")])),
+        ("cloud", "ft:cloud.mp4", 18.2, 19.5, dict(push=[1.0, 1.03], grade=[(18.2, 0.75, 0.85)])),
+        ("door", "ft:door.mp4", 19.5, 20.6, dict(push=[1.02, 1.0], grade=[(19.5, 0.8, 0.85)])),
+        ("sunset", "ft:sunset.mp4", 20.6, 22.25, dict(push=[1.0, 1.03], grade=[(20.6, 0.85, 0.9)])),
+        ("gone", "ft:gone.mp4", 22.25, 24.1, dict(push=[1.0, 1.04], grade=[(22.25, 0.8, 0.85), (23.0, 0.8, 0.85), (24.1, 0.0, 0.6, "power2.in")])),
+        ("catch", "3d:s_catch", 24.5, 28.5, dict(fadeIn=0.35, push=[1.0, 1.03])),
+        ("lens", "ft:lens.mp4", 28.5, 30.75, dict(push=[1.0, 1.04])),
+        ("city", "ft:city.mp4", 30.75, 32.75, dict(push=[1.0, 1.03])),
+        ("monitor", "ft:monitor.mp4", 32.75, 34.5, dict(push=[1.03, 1.0])),
+        ("frame", "ft:frame.mp4", 34.5, 37.9, dict(push=[1.0, 1.04])),
+        ("horses", "ft:horses.mp4", 37.9, 41.0, dict(push=[1.0, 1.03])),
+        ("hero", "3d:s_hero", 41.0, 46.0, dict(push=[1.0, 1.04], shift=[0, -6])),
+        ("wave", "ft:wave.mp4", 46.0, 48.6, dict(push=[1.0, 1.03], fadeOut=0.5)),
     ],
     words=[
-        dict(at=3.18, to=8.9, style="quote", html="There is nothing in this world", y=45, cut=True),
-        dict(at=6.02, to=8.9, style="quote", html="that does not have a <em>decisive moment.</em>", y=55, cut=True),
-        dict(at=8.98, to=10.8, style="name", html="Cardinal de Retz", cut=True),
-        dict(at=13.82, to=16.7, style="line", html="The light won’t wait.", cut=True),
-        dict(at=22.7, to=25.5, style="line", html="Neither will the moment.", cut=True),
-        dict(at=43.5, to=47.3, style="line", html="What if your camera had", y=45, cut=True),
-        dict(at=43.5, to=47.3, style="line", html="a <em>cinematographer</em> inside it?", y=56, cut=True),
-        dict(at=50.2, to=55.0, style="title", html="Exposure, <em>Handled</em>.", y=46, cut=True, out=False),
-        dict(at=51.6, to=55.0, style="link", html=SITE_URL, y=60, cut=True, out=False),
+        dict(at=3.1, to=4.8, style="line", html="The light", cut=True),
+        dict(at=5.0, to=7.6, style="line", html="won’t wait.", cut=True),
+        dict(at=48.6, to=55.0, style="title", html="Exposure, <em>Handled</em>.", y=46, cut=True, out=False),
+        dict(at=50.8, to=55.0, style="link", html=SITE_URL, y=60, cut=True, out=False),
     ],
-    voice=[("h01", 20.2), ("h04", 30.2), ("v3a", 47.8)],
-    sfx=[(28.66, "impactPunch_heavy_002.ogg", -14), (43.04, "lowFrequency_explosion_000.ogg", -8)],
-    flashes=[(28.66, 0.35, 0.3), (43.04, 0.7, 0.6)],
-    cards=[(0.0, 10.98), (50.2, 55.0)],
-    dims=[(13.6, 13.9, 0.0, 0.3), (16.5, 16.78, 0.3, 0.0), (22.5, 22.8, 0.0, 0.3), (25.35, 25.6, 0.3, 0.0),
-          (43.2, 43.5, 0.0, 0.35), (47.0, 47.4, 0.35, 0.0)],
+    voice=[("s1", 0.7), ("s2", 9.1), ("s3", 15.4), ("s4", 18.4), ("s5", 25.0), ("s6", 29.0), ("s7", 36.6), ("s8", 49.1)],
+    voice_dir="v2",
+    sfx=[],
+    flashes=[(41.0, 0.35, 0.6)],
+    cards=[(24.1, 24.5), (48.6, 55.0)],
+    dims=[],
     blacks=[(53.8, 55.0, 0.0, 1.0)],
 )
 FILMS = {"v1": V1, "v2": V2, "v3": V3}
@@ -275,8 +295,8 @@ def footage(name, dst):
     muted colour, cool shadows and warm highlights. HLG sources are brought to Rec.709 first (approximately)."""
     if dst.exists():
         return
-    src, t0, t1, crop, kind = FOOTAGE[name.rsplit(".", 1)[0]]
-    vf = ",".join(x for x in (crop, (HLG if kind == "hlg" else "") + LOOK, "scale=3840:2160:flags=lanczos", "format=yuv420p") if x)
+    src, t0, t1, crop, kind, extra = FOOTAGE[name.rsplit(".", 1)[0]]
+    vf = ",".join(x for x in (extra, crop, (HLG if kind == "hlg" else "") + LOOK, "scale=3840:2160:flags=lanczos", "fps=24", "format=yuv420p") if x)
     dst.parent.mkdir(parents=True, exist_ok=True)
     run(["nice", "-n", "10", "ffmpeg", "-v", "error", "-y", "-ss", str(t0), "-t", str(t1 - t0), "-i", str(src), "-an", "-vf", vf,
          "-c:v", "libx264", "-preset", "medium", "-crf", "15", "-g", "24", "-keyint_min", "24",
@@ -327,6 +347,8 @@ def prep(F):
         link(f, a / "fonts" / f.name)
     link(HYPE / "vendor" / "gsap.min.js", a / "vendor" / "gsap.min.js")
     link(HYPE / "grain.png", a / "grain.png")
+    if F.get("horizon"):                            # the opening's paper texture (made by tools/make_paper.py)
+        link(V / "v1-abstract" / "assets" / "art" / "paper.png", a / "art" / "paper.png")
     (d / "meta.json").write_text(json.dumps({"id": "exposure-handled-" + F["dir"], "name": "exposure-handled-" + F["dir"],
                                              "createdAt": "2026-10-22T05:00:00.000Z"}, indent=2) + "\n")
     (d / "package.json").write_text(json.dumps({"name": "camera-agent-" + F["dir"], "private": True, "type": "module", "scripts": {
