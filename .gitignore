@@ -74,3 +74,18 @@ video/hype/assets/audio/
 video/hype/assets/voice/
 video/hype/renders/
 video/hype/.hyperframes/
+
+# reference films (study only, never published)
+refs/
+# the three brag films (2026-10-21 night): media stays out of git
+video/blender/out/
+video/blender/cache/
+video/v[123]-*/assets/music/
+video/v[123]-*/assets/voice/
+video/v[123]-*/assets/audio/
+video/v[123]-*/assets/sfx/
+video/v[123]-*/assets/3d/
+video/v[123]-*/assets/footage/
+video/v[123]-*/renders/
+video/v[123]-*/.hyperframes/
+video/music-candidates/
