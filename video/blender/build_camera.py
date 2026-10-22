@@ -176,8 +176,18 @@ def build_materials():
         im = D.images.load(str(img_path))
         im.pack()
         tx = node(nt, "ShaderNodeTexImage", image=im)
+        tc = node(nt, "ShaderNodeTexCoord")                     # the glass has no UVs: map its box (x across, z up),
+        sp = node(nt, "ShaderNodeSeparateXYZ")                  # mirrored in x because it is seen from behind
+        link(nt, tc.outputs["Generated"], sp.inputs["Vector"])
+        inv = node(nt, "ShaderNodeMath", operation="SUBTRACT")
+        inv.inputs[0].default_value = 1.0
+        link(nt, sp.outputs["X"], inv.inputs[1])
+        cb = node(nt, "ShaderNodeCombineXYZ")
+        link(nt, inv.outputs["Value"], cb.inputs["X"])
+        link(nt, sp.outputs["Z"], cb.inputs["Y"])
+        link(nt, cb.outputs["Vector"], tx.inputs["Vector"])
         link(nt, tx.outputs["Color"], p.inputs["Emission Color"])
-        p.inputs["Emission Strength"].default_value = 0.35
+        p.inputs["Emission Strength"].default_value = 0.9
     M["screen"] = lcd
     M["agent_shell"] = mat("agent shell", **{"Base Color": (*ORANGE, 1), "Roughness": 0.3, "Coat Weight": 0.8, "Coat Roughness": 0.08,
                                              "Subsurface Weight": 0.15})

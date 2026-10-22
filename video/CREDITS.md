@@ -1,5 +1,34 @@
 # Brag video credits
 
+## The three launch films (2026-10-22, `v1-abstract/`, `v2-hype/`, `v3-story/`)
+
+The films carry no credits or small print on screen (the director's rule); these lines go wherever a film is posted
+(video description, the website's Nerd mode).
+
+**Narration:** an AI voice (text-to-speech, the ElevenLabs engine through Higgsfield; voice "Imogen"), speaking as the
+agent, in short lines. Nothing it says claims more than the logs show (see `FILMS.md`).
+
+**Music:**
+- Calm film: "Petrichor" by Scott Buckley, https://www.scottbuckley.com.au/library/petrichor/, CC BY 4.0. Used from 2:03.0, 50 s.
+- Hype film: "Beast" by Sascha Ende, https://ende.app/en/song/10415-beast, CC BY 4.0. Same edit as the hype draft (0:12.55–0:45.94, then the last bar from 2:38.64).
+- Story film: "Cassini" by Scott Buckley, https://www.scottbuckley.com.au/library/cassini/, CC BY 4.0. Used from 3:00.4, 55 s.
+- On YouTube, Scott Buckley's own credit line goes in the description: 'Petrichor' (or 'Cassini') by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+- None of the three tracks is used in another of Saad's projects. (The robot's film used a different Scott Buckley track, "Meanwhile".)
+
+**Quotes (real, verified):**
+- "I propose to consider the question, 'Can machines think?'" Alan Turing, "Computing Machinery and Intelligence", *Mind*, 1950 (its opening sentence).
+- "There is nothing in this world that does not have a decisive moment." Cardinal de Retz, the epigraph Henri Cartier-Bresson chose for *The Decisive Moment* (1952).
+
+**Sound effects** (CC0): Kenney "Impact Sounds" and "Sci-fi Sounds" (kenney.nl), "Swishes Sound Pack" by artisticdude (opengameart.org).
+
+**Pictures:**
+- 3D: an original camera (no maker's name or logo, not a copy of any product), modelled from code and path-traced in Blender Cycles (`blender/build_camera.py`, `blender/shots.py`). The orange agents inside it are an illustration: the real agent runs on a laptop and talks to the camera over USB.
+- Story footage: Saad's own (no client work, no faces). The light dropping in the story is done in the grade, to illustrate.
+
+**Type:** Instrument Serif and D-DIN, SIL Open Font License 1.1.
+
+**Tools:** Blender (GPL), HyperFrames, GSAP, FFmpeg.
+
 ## The hype cut (`hype/`, current)
 
 **Narration:** an AI voice (text-to-speech, the ElevenLabs engine through Higgsfield; draft voice "Imogen"), speaking as the agent. Its lines retell what the logs show (`HYPE.md`). The end card says it's an AI voice.

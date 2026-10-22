@@ -31,11 +31,13 @@
       /* words: solid colour only, never a gradient */
       .word { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); z-index: 30; text-align: center; opacity: 0;
         color: var(--ink); text-shadow: 0 0 50px rgba(0, 0, 0, .5); }
-      .word.huge { font: 700 200px/0.92 var(--wide); letter-spacing: -.01em; text-transform: uppercase; white-space: nowrap; }
+      .word.huge { font: 700 300px/0.9 var(--sans); letter-spacing: -.012em; text-transform: uppercase; white-space: nowrap;
+        text-shadow: 0 0 36px rgba(255, 255, 255, .22), 0 0 140px rgba(255, 106, 26, .16); }
       .word.serif { font: 400 150px/1 var(--serif); letter-spacing: -.012em; white-space: nowrap; }
       .word.serif em, .word.title em, .word.line em, .word.quote em { font-style: italic; }
-      .word.quote { left: 50%; right: auto; width: 1320px; margin-left: -660px; font: 400 76px/1.18 var(--serif); letter-spacing: -.005em; }
-      .word.line { left: 50%; right: auto; width: 1600px; margin-left: -800px; font: 400 104px/1.06 var(--serif); letter-spacing: -.01em; }
+      .word.quote { font: 400 78px/1 var(--serif); letter-spacing: -.005em; white-space: nowrap; }
+      .word.name { font: 400 56px/1 var(--serif); letter-spacing: .005em; white-space: nowrap; }
+      .word.line { font: 400 96px/1 var(--serif); letter-spacing: -.01em; white-space: nowrap; }
       .word.title { font: 400 176px/1 var(--serif); letter-spacing: -.014em; white-space: nowrap; }
       .word.link { font: 400 40px/1 var(--sans); letter-spacing: .04em; white-space: nowrap; }
 
@@ -112,6 +114,11 @@
         E.words.forEach(function (w) {
           var d = mk("div", "word " + w.style, w.html, $("#words"));
           if (w.y != null) d.style.top = w.y + "%";
+          if (w.size) d.style.fontSize = w.size + "px";
+          if (w.cut) {                                   // hard on, hard off, on a cut: the calm films never animate their words
+            tl.set(d, { autoAlpha: 0 }, 0); tl.set(d, { autoAlpha: 1 }, w.at); if (w.out !== false) tl.set(d, { autoAlpha: 0 }, w.to);
+            return;
+          }
           if (w.style === "huge" || w.style === "serif") {
             later(d, { opacity: 0, scale: 1.12, filter: "blur(14px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.24, ease: "power3.out" }, w.at);
             later(d, { scale: 1 }, { scale: 0.97, duration: Math.max(0.1, w.to - w.at - 0.24), ease: "none" }, w.at + 0.24);

@@ -534,7 +534,7 @@ def a_form(t, X):
     cam(pos, tgt, 50, 5.6)
 
 
-@shot("a_solid", 9.0)
+@shot("a_solid", 9.0, spp=16)
 def a_solid(t, X):
     """The same move as a_form, the real camera: crossfaded in over the particles in the edit."""
     rig.explode(0)
@@ -546,7 +546,7 @@ def a_solid(t, X):
     cam(pos, tgt, 50, 5.6)
 
 
-@shot("a_open", 8.0)
+@shot("a_open", 8.0, spp=16)
 def a_open(t, X):
     """The camera opens slowly, like a flower; the crew glows inside like fireflies. Soft light, lots of space."""
     rig.explode(kf(t, [(0, 0.0, "lin"), (6.5, 1.0, "io")]), spin=0.6)
@@ -563,7 +563,7 @@ def a_open(t, X):
 SHOTS["a_open"]["setup"] = lambda X: X.update(crew=Crew(90, seed=21))
 
 
-@shot("a_agent", 7.0)
+@shot("a_agent", 7.0, spp=16)
 def a_agent(t, X):
     """One agent, close: it looks at the sensor, the histogram in its visor moves, it makes a small adjustment."""
     rig.explode(1.0)
@@ -587,7 +587,7 @@ def a_agent(t, X):
 SHOTS["a_agent"]["setup"] = lambda X: X.update(hero=hero_agent("hero calm"), crew=Crew(10, seed=12, kinds=["sensor package"]))
 
 
-@shot("a_close", 12.0)
+@shot("a_close", 12.0, spp=16)
 def a_close(t, X):
     """The camera closes again, gently, the crew settling back inside, and the light comes to rest on it."""
     rig.explode(kf(t, [(0, 0.6, "lin"), (7.0, 0.0, "io")]), spin=0.6)
@@ -604,7 +604,7 @@ def a_close(t, X):
 SHOTS["a_close"]["setup"] = lambda X: X.update(crew=Crew(60, seed=22))
 
 
-@shot("a_end", 9.2)
+@shot("a_end", 9.2, spp=16)
 def a_end(t, X):
     """The end frame of the calm film: the camera low in frame, turning a few degrees, room above it for the line."""
     rig.explode(0)
@@ -642,7 +642,7 @@ def s_catch(t, X):
 SHOTS["s_catch"]["setup"] = lambda X: X.update(hero=hero_agent("hero catch"), crew=Crew(10, seed=33, kinds=["sensor package", "stabiliser plate"]))
 
 
-@shot("s_hero", 8.0)
+@shot("s_hero", 8.0, spp=16)
 def s_hero(t, X):
     """The camera, assembled, very slow push in warm-and-cool light: the end frame for the story."""
     rig.explode(0)
@@ -652,6 +652,29 @@ def s_hero(t, X):
     tgt = Vector((0.0, -0.03, 0.025))
     pos = orbit(tgt, yaw, 0.1, kf(t, [(0, 0.52, "lin"), (8, 0.45, "io")]))
     cam(pos, tgt, 50, 8.0)
+
+
+# --- stills ---------------------------------------------------------------------------------------------------------
+@shot("p_hero", 1.0, blur=False)
+def p_hero(t, X):
+    """The product still: three-quarter front, centred, hard rim light, the orange ring catching."""
+    rig.explode(0)
+    rig.iris(2.8)
+    lights(key=0.6, top=1.0, rim_left=1.8, rim_right=1.4, card=0.7)
+    tgt = Vector((0.0, -0.035, 0.0))
+    pos = orbit(tgt, -0.58, 0.16, 0.47)
+    cam(pos, tgt, 60, 9.0, focus=(Vector(pos) - Vector((-0.02, -0.06, 0.0))).length)
+
+
+@shot("p_rear", 1.0, blur=False)
+def p_rear(t, X):
+    """The back: the screen showing a real frame from the camera's live view, the dials, the thumb rest."""
+    rig.explode(0)
+    rig.iris(4)
+    lights(key=0.7, top=1.0, rim_left=1.6, rim_right=1.4, card=0.4)
+    tgt = Vector((0.0, 0.0, 0.0))
+    pos = orbit(tgt, math.pi + 0.55, 0.22, 0.4)
+    cam(pos, tgt, 60, 9.0)
 
 
 # ---------------------------------------------------------------- particles (V1)

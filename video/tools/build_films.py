@@ -37,26 +37,32 @@ def s(beat):
 # times are seconds of the film; "ms" = where in the source to start.
 V1 = dict(
     dir="v1-abstract", title="Exposure, Handled. (calm)", duration=50.0,
-    music=dict(file=V / "music-candidates/film1/petrichor-scott-buckley/sb_petrichor.mp3", start=123.0, fade_in=1.5, fade_out=(47.0, 3.0), gain=0.0),
+    # the agent speaks first, almost alone (the bed far under it), the bed swells under its last line, then 0.75 s of
+    # silence, and the camera lands on the hit
+    music=dict(file=V / "music-candidates/film1/petrichor-scott-buckley/sb_petrichor.mp3", start=123.0, fade_in=1.5, fade_out=(48.6, 1.9), gain=0.0,
+               env=[(0, -15), (6.2, -15), (6.8, -11), (14.4, -11), (15.3, -1), (15.65, -1), (15.8, -45), (16.45, -45), (16.5, 0)]),
     shots=[
-        ("form", "3d:a_form", 0.0, 9.0, dict(push=[1.0, 1.0])),
-        ("solid", "3d:a_solid", 6.6, 9.0, dict(ms=6.6, fadeIn=2.0, push=[1.0, 1.0])),
-        ("open", "3d:a_open", 8.4, 16.4, dict(fadeIn=0.6, push=[1.0, 1.02])),
-        ("agent", "3d:a_agent", 15.8, 22.8, dict(fadeIn=0.6, push=[1.0, 1.03])),
-        ("close", "3d:a_close", 22.2, 34.2, dict(fadeIn=0.6, push=[1.0, 1.02])),
-        ("end", "3d:a_end", 33.6, 42.8, dict(fadeIn=0.6, push=[1.0, 1.03])),
+        ("form", "3d:a_form", 6.75, 15.75, dict(push=[1.0, 1.03])),
+        ("solid", "3d:a_solid", 16.5, 19.4, dict(ms=6.1, push=[1.0, 1.02])),
+        ("open", "3d:a_open", 19.0, 27.0, dict(fadeIn=0.4, push=[1.0, 1.02])),
+        ("agent", "3d:a_agent", 26.6, 33.6, dict(fadeIn=0.4, push=[1.0, 1.03])),
+        ("close", "3d:a_close", 33.2, 45.2, dict(fadeIn=0.4, push=[1.0, 1.02])),
+        ("end", "3d:a_end", 44.8, 50.0, dict(fadeIn=0.4, push=[1.0, 1.02])),
     ],
     words=[
-        dict(at=1.3, to=6.0, style="quote", html="“I propose to consider the question, <em>‘Can machines think?’</em>”"),
-        dict(at=6.0, to=8.6, style="quote", html="Alan Turing, 1950"),
-        dict(at=35.6, to=41.8, style="line", html="A camera that thinks<br>like a <em>cinematographer.</em>", fin=1.2, fout=0.9, y=25),
-        dict(at=43.0, to=50.0, style="title", html="Exposure, <em>Handled</em>.", y=44, out=False),
-        dict(at=45.4, to=50.0, style="link", html=SITE_URL, y=60, out=False),
+        dict(at=0.8, to=4.9, style="quote", html="I propose to consider the question,", y=45, cut=True),
+        dict(at=2.3, to=4.9, style="quote", html="<em>‘Can machines think?’</em>", y=55, cut=True),
+        dict(at=5.1, to=6.5, style="name", html="Alan Turing, 1950", cut=True),
+        dict(at=36.6, to=41.4, style="line", html="A camera that thinks", y=45, cut=True),
+        dict(at=36.6, to=41.4, style="line", html="like a <em>cinematographer.</em>", y=56, cut=True),
+        dict(at=45.6, to=50.0, style="title", html="Exposure, <em>Handled</em>.", y=36, cut=True, out=False),
+        dict(at=47.0, to=50.0, style="link", html=SITE_URL, y=88, cut=True, out=False),
     ],
-    voice=[("v1a", 9.8), ("v1b", 13.6), ("v1c", 18.6), ("v1d", 25.6), ("h11", 43.6)],
-    sfx=[],
-    dims=[(41.8, 43.4, 0.0, 1.0)],
-    blacks=[(0.0, 1.6, 1.0, 0.0), (48.4, 50.0, 0.0, 1.0)],
+    voice=[("v1a", 7.4), ("v1b", 9.9), ("v1c", 12.3), ("v1d", 14.6), ("h11", 45.9)],
+    sfx=[(16.5, "lowFrequency_explosion_000.ogg", -12)],
+    flashes=[(16.5, 0.45, 0.6)],
+    dims=[(44.6, 45.6, 0.0, 0.45)],
+    blacks=[(48.8, 50.0, 0.0, 1.0)],
 )
 
 # The hype film keeps the hype draft's music edit: "Beast" (115 BPM), film beat 0 = track beat -16, the drop at film
@@ -86,10 +92,10 @@ V2 = dict(
     ],
     words=[
         dict(at=s(0.25), to=s(1.45), style="huge", html="A camera"),
-        dict(at=s(1.5), to=s(2.95), style="huge", html="that thinks"),
+        dict(at=s(1.5), to=s(2.95), style="huge", html="that thinks", size=250),
         dict(at=s(3.0), to=s(6.4), style="serif", html="like a <em>cinematographer.</em>"),
         dict(at=s(24.15), to=s(27.7), style="huge", html="It sees."),
-        dict(at=s(28.15), to=s(31.7), style="huge", html="It decides."),
+        dict(at=s(28.15), to=s(31.7), style="huge", html="It decides.", size=250),
         dict(at=s(54), to=s(70), style="title", html="Exposure, <em>Handled</em>.", y=24, out=False),
         dict(at=s(64), to=s(70), style="link", html=SITE_URL, y=82, out=False),
     ],
@@ -179,10 +185,11 @@ def glow(shot):
     if dst.exists() and dst.stat().st_mtime > src.stat().st_mtime:
         return dst
     dst.parent.mkdir(parents=True, exist_ok=True)
+    # then up to 3840x2160 (lanczos, a touch of sharpening): the moving 3D is path-traced at 1920x1080 to fit the night
     g = ("[0:v]format=gbrp,split[a][b];[b]colorlevels=rimin=0.55:gimin=0.55:bimin=0.55,gblur=sigma=18,colorchannelmixer=rr=1:gg=0.9:bb=0.8[g];"
-         "[a][g]blend=all_mode=screen:all_opacity=0.55,format=yuv420p")
+         "[a][g]blend=all_mode=screen:all_opacity=0.55,scale=3840:2160:flags=lanczos,unsharp=5:5:0.45,format=yuv420p")
     run(["nice", "-n", "10", "ffmpeg", "-v", "error", "-y", "-i", str(src), "-filter_complex", g, "-c:v", "libx264", "-preset", "medium",
-         "-crf", "13", "-movflags", "+faststart", str(dst)])
+         "-crf", "15", "-movflags", "+faststart", str(dst)])
     return dst
 
 
@@ -269,6 +276,15 @@ def ts(x):
     return "%02d:%02d:%06.3f" % (x // 3600, x // 60 % 60, x % 60)
 
 
+def envelope(pts):
+    """[(t, dB), ...] -> an ffmpeg expression for the gain at time t (linear in dB between points, flat outside)."""
+    expr = "%.6f" % (10 ** (pts[-1][1] / 20))
+    for (t0, d0), (t1, d1) in reversed(list(zip(pts, pts[1:]))):
+        seg = "pow(10,(%.3f+(%.3f)*(t-%.3f)/%.3f)/20)" % (d0, d1 - d0, t0, max(1e-3, t1 - t0))
+        expr = "if(lt(t,%.3f),%s,%s)" % (t1, seg, expr)
+    return "if(lt(t,%.3f),%.6f,%s)" % (pts[0][0], 10 ** (pts[0][1] / 20), expr)
+
+
 def mix(F):
     d = V / F["dir"] / "assets"
     m = F["music"]
@@ -286,9 +302,10 @@ def mix(F):
     else:
         inputs += ["-i", str(m["file"])]
         fo = m["fade_out"]
-        g.append("[0:a]atrim=start=%.3f:duration=%.3f,asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,volume=%sdB,"
+        env = "volume=eval=frame:volume='%s'," % envelope(m["env"]) if m.get("env") else ""
+        g.append("[0:a]atrim=start=%.3f:duration=%.3f,asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,volume=%sdB,%s"
                  "afade=t=in:st=0:d=%.2f,afade=t=out:st=%.3f:d=%.3f,apad=whole_dur=%.3f,atrim=duration=%.3f[mus]"
-                 % (m["start"], D, m.get("gain", 0.0), m["fade_in"], fo[0], fo[1], D, D))
+                 % (m["start"], D, m.get("gain", 0.0), env, m["fade_in"], fo[0], fo[1], D, D))
     n = len(inputs) // 2
     fx = []
     for b, f, gain in F["sfx"]:
@@ -313,10 +330,18 @@ def mix(F):
         g.append("[md][sfx][vo2]amix=inputs=3:normalize=0,atrim=duration=%.3f[mx]" % D)
     else:
         g.append("[md][vo2]amix=inputs=2:normalize=0,atrim=duration=%.3f[mx]" % D)
-    g.append("[mx]loudnorm=I=-14:TP=-1.2:LRA=9,aresample=48000[out]")
+    g.append("[mx]aresample=48000[out]")
     out = d / "audio" / "mix.m4a"
     out.parent.mkdir(parents=True, exist_ok=True)
-    run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(g), "-map", "[out]", "-c:a", "aac", "-b:a", "256k", str(out)])
+    pre = d / "audio" / "premaster.wav"
+    run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(g), "-map", "[out]", "-c:a", "pcm_s24le", str(pre)])
+    # two passes, so the designed dynamics survive (single-pass loudnorm pumps the quiet parts and fills the silences):
+    # measure the whole mix, then one fixed gain to -14 LUFS and a peak limiter
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(pre), "-af", "ebur128", "-f", "null", "-"], capture_output=True, text=True)
+    lufs = float([ln for ln in r.stderr.splitlines() if ln.strip().startswith("I:")][-1].split()[1])
+    run(["ffmpeg", "-v", "error", "-y", "-i", str(pre), "-af", "volume=%.2fdB,alimiter=limit=0.87:attack=3:release=60:level=disabled" % (-14.0 - lufs),
+         "-c:a", "aac", "-b:a", "256k", str(out)])
+    pre.unlink()
     print("mix %s: %.2f s, %d voice lines, %d effects" % (F["dir"], duration(out), len(vo), len(fx)))
 
 
