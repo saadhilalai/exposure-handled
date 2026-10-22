@@ -47,21 +47,21 @@ V1 = dict(
         ("open", "3d:a_open", 19.0, 27.0, dict(fadeIn=0.4, push=[1.0, 1.02])),
         ("agent", "3d:a_agent", 26.6, 33.6, dict(fadeIn=0.4, push=[1.0, 1.03])),
         ("close", "3d:a_close", 33.2, 45.2, dict(fadeIn=0.4, push=[1.0, 1.02])),
-        ("end", "3d:a_end", 44.8, 50.0, dict(fadeIn=0.4, push=[1.0, 1.02])),
     ],
+    cards=[(0.0, 6.75), (45.2, 50.0)],
     words=[
         dict(at=0.8, to=4.9, style="quote", html="I propose to consider the question,", y=45, cut=True),
         dict(at=2.3, to=4.9, style="quote", html="<em>‘Can machines think?’</em>", y=55, cut=True),
         dict(at=5.1, to=6.5, style="name", html="Alan Turing, 1950", cut=True),
         dict(at=36.6, to=41.4, style="line", html="A camera that thinks", y=45, cut=True),
         dict(at=36.6, to=41.4, style="line", html="like a <em>cinematographer.</em>", y=56, cut=True),
-        dict(at=45.6, to=50.0, style="title", html="Exposure, <em>Handled</em>.", y=36, cut=True, out=False),
-        dict(at=47.0, to=50.0, style="link", html=SITE_URL, y=88, cut=True, out=False),
+        dict(at=45.6, to=50.0, style="title", html="Exposure, <em>Handled</em>.", y=46, cut=True, out=False),
+        dict(at=47.0, to=50.0, style="link", html=SITE_URL, y=60, cut=True, out=False),
     ],
     voice=[("v1a", 7.4), ("v1b", 9.9), ("v1c", 12.3), ("v1d", 14.6), ("h11", 45.9)],
     sfx=[(16.5, "lowFrequency_explosion_000.ogg", -12)],
     flashes=[(16.5, 0.45, 0.6)],
-    dims=[(44.6, 45.6, 0.0, 0.45)],
+    dims=[(44.4, 45.2, 0.0, 0.6)],
     blacks=[(48.8, 50.0, 0.0, 1.0)],
 )
 
@@ -88,19 +88,19 @@ V2 = dict(
         ("iris2", "3d:h_iris", s(44), s(47), dict(ms=0.0, punch=1.04)),
         ("kill", "3d:h_kill", s(47), s(50), dict(punch=1.02)),
         ("slam", "3d:h_slam", s(50), s(58), dict(push=[1.0, 1.03])),
-        ("title", "3d:h_title", s(58), s(66), dict(push=[1.0, 1.03])),
     ],
+    cards=[(s(58), s(70))],
     words=[
         dict(at=s(0.25), to=s(1.45), style="huge", html="A camera"),
         dict(at=s(1.5), to=s(2.95), style="huge", html="that thinks", size=250),
         dict(at=s(3.0), to=s(6.4), style="serif", html="like a <em>cinematographer.</em>"),
         dict(at=s(24.15), to=s(27.7), style="huge", html="It sees."),
         dict(at=s(28.15), to=s(31.7), style="huge", html="It decides.", size=250),
-        dict(at=s(54), to=s(70), style="title", html="Exposure, <em>Handled</em>.", y=24, out=False),
-        dict(at=s(64), to=s(70), style="link", html=SITE_URL, y=82, out=False),
+        dict(at=s(58), to=s(70), style="title", html="Exposure, <em>Handled</em>.", y=46, cut=True, out=False),
+        dict(at=s(62), to=s(70), style="link", html=SITE_URL, y=60, cut=True, out=False),
     ],
     voice=[("h01", s(8.2)), ("v2a", s(12.2)), ("v2b", s(29.4)), ("v2c", s(30.9)), ("h06", s(33.2)), ("h07", s(44.2)),
-           ("h08", s(46.2)), ("h09", s(48.35)), ("h10", s(50.3)), ("h11", s(54.6))],
+           ("h08", s(46.2)), ("h09", s(48.35)), ("h10", s(50.3)), ("h11", s(58.3))],
     sfx=[(0, "impactPunch_heavy_000.ogg", -6), (0, "swish-7.wav", -9), (4, "impactMetal_light_001.ogg", -12), (5.5, "swish-3.wav", -12),
          (7, "impactMetal_light_003.ogg", -12), (8, "swish-11.wav", -10), (12, "swish-7.wav", -11),
          (16, "lowFrequency_explosion_000.ogg", -3), (16, "impactPunch_heavy_002.ogg", -6), (24, "impactMetal_002.ogg", -12),
@@ -108,11 +108,11 @@ V2 = dict(
          (36, "swish-3.wav", -10), (40, "swish-7.wav", -10), (45, "impactMetal_002.ogg", -13), (46, "impactMetal_002.ogg", -13),
          (48, "lowFrequency_explosion_001.ogg", -4), (48, "impactPlate_heavy_002.ogg", -8),
          (52, "lowFrequency_explosion_000.ogg", -2), (52, "impactMetal_heavy_001.ogg", -8), (52, "explosionCrunch_002.ogg", -10),
-         (54, "impactBell_heavy_001.ogg", -15)],
+         (58, "impactBell_heavy_001.ogg", -14), (58, "impactPunch_heavy_000.ogg", -10)],
     flashes=[(s(16), 0.85, 0.35), (s(24), 0.35, 0.2), (s(28), 0.3, 0.2), (s(36), 0.4, 0.25), (s(52), 0.9, 0.5)],
     streaks=[(s(8), 38, 1), (s(16.02), 52, -1), (s(36), 30, 1), (s(52.02), 60, -1)],
     kill=(s(48), s(50)),
-    dims=[(s(54), s(55), 0.0, 0.25), (s(63.5), s(64.5), 0.25, 0.55)],
+    dims=[],
     blacks=[(s(68.6), s(70), 0.0, 1.0)],
 )
 
@@ -142,7 +142,7 @@ V3 = dict(
         ("catch", "3d:s_catch", 28.66, 32.60, dict(punch=1.03)),
         ("train", "ft:train.mp4", 32.60, 43.04, dict(ms=1.0, push=[1.0, 1.07], grade=[(32.6, DARK, 0.7), (33.4, 1.0, 1.0, "power3.out")])),
         ("field_b", "ft:field.mp4", 43.04, 47.60, dict(ms=7.0, push=[1.08, 1.0], pushEase="power1.out")),
-        ("hero", "3d:s_hero", 47.00, 55.00, dict(fadeIn=0.6, push=[1.0, 1.04])),
+        ("hero", "3d:s_hero", 47.00, 50.20, dict(fadeIn=0.6, push=[1.0, 1.04])),
     ],
     words=[
         dict(at=3.18, to=8.9, style="quote", html="There is nothing in this world", y=45, cut=True),
@@ -152,14 +152,15 @@ V3 = dict(
         dict(at=22.7, to=25.5, style="line", html="Neither will the moment.", cut=True),
         dict(at=43.5, to=47.3, style="line", html="What if your camera had", y=45, cut=True),
         dict(at=43.5, to=47.3, style="line", html="a <em>cinematographer</em> inside it?", y=56, cut=True),
-        dict(at=50.2, to=55.0, style="title", html="Exposure, <em>Handled</em>.", y=40, cut=True, out=False),
-        dict(at=51.6, to=55.0, style="link", html=SITE_URL, y=82, cut=True, out=False),
+        dict(at=50.2, to=55.0, style="title", html="Exposure, <em>Handled</em>.", y=46, cut=True, out=False),
+        dict(at=51.6, to=55.0, style="link", html=SITE_URL, y=60, cut=True, out=False),
     ],
     voice=[("h01", 20.2), ("h04", 30.2), ("v3a", 47.8)],
     sfx=[(28.66, "impactPunch_heavy_002.ogg", -14), (43.04, "lowFrequency_explosion_000.ogg", -8)],
     flashes=[(28.66, 0.35, 0.3), (43.04, 0.7, 0.6)],
+    cards=[(0.0, 10.98), (50.2, 55.0)],
     dims=[(13.6, 13.9, 0.0, 0.3), (16.5, 16.78, 0.3, 0.0), (22.5, 22.8, 0.0, 0.3), (25.35, 25.6, 0.3, 0.0),
-          (43.2, 43.5, 0.0, 0.35), (47.0, 47.4, 0.35, 0.0), (49.6, 50.6, 0.0, 0.45)],
+          (43.2, 43.5, 0.0, 0.35), (47.0, 47.4, 0.35, 0.0)],
     blacks=[(53.8, 55.0, 0.0, 1.0)],
 )
 FILMS = {"v1": V1, "v2": V2, "v3": V3}
@@ -306,7 +307,7 @@ def edit(F):
     E = dict(duration=round(F["duration"], 3), shots=shots,
              words=[dict(w, at=round(w["at"], 3), to=round(w["to"], 3)) for w in F["words"]],
              flashes=F.get("flashes", []), streaks=F.get("streaks", []), kill=F.get("kill"), dims=F.get("dims", []), blacks=F.get("blacks", []),
-             letterbox=F.get("letterbox", False))
+             letterbox=F.get("letterbox", False), cards=F.get("cards", []))
     (d / "edit.js").write_text("// Made by video/tools/build_films.py. Don't edit by hand.\nwindow.EDIT = %s;\n" % json.dumps(E, ensure_ascii=False, indent=1))
     page = (V / "tools" / "films_template.html").read_text().replace("{{DURATION}}", str(round(F["duration"], 3))).replace("{{SHOTS}}", "\n".join(html))
     (d / "index.html").write_text(page)

@@ -113,15 +113,6 @@ window.EDIT = {
     1.0,
     1.03
    ]
-  },
-  {
-   "id": "title",
-   "at": 30.261,
-   "to": 34.435,
-   "push": [
-    1.0,
-    1.03
-   ]
   }
  ],
  "words": [
@@ -158,19 +149,21 @@ window.EDIT = {
    "size": 250
   },
   {
-   "at": 28.174,
+   "at": 30.261,
    "to": 36.522,
    "style": "title",
    "html": "Exposure, <em>Handled</em>.",
-   "y": 24,
+   "y": 46,
+   "cut": true,
    "out": false
   },
   {
-   "at": 33.391,
+   "at": 32.348,
    "to": 36.522,
    "style": "link",
    "html": "s4dai-exposure-handled.static.hf.space",
-   "y": 82,
+   "y": 60,
+   "cut": true,
    "out": false
   }
  ],
@@ -227,26 +220,20 @@ window.EDIT = {
   25.043,
   26.087
  ],
- "dims": [
-  [
-   28.174,
-   28.696,
-   0.0,
-   0.25
-  ],
-  [
-   33.13,
-   33.652,
-   0.25,
-   0.55
-  ]
- ],
+ "dims": [],
  "blacks": [
   [
    35.791,
    36.522,
    0.0,
    1.0
+  ]
+ ],
+ "letterbox": false,
+ "cards": [
+  [
+   30.261,
+   36.522
   ]
  ]
 };

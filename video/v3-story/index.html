@@ -54,6 +54,7 @@
         background: radial-gradient(ellipse at center, rgba(0,0,0,0) 58%, rgba(0,0,0,.45) 100%); }
       #grain { position: absolute; inset: -10%; z-index: 50; pointer-events: none; opacity: .06; background: url("assets/grain.png");
         background-size: 320px; }
+      #card { position: absolute; inset: 0; z-index: 29; background: #000; opacity: 0; pointer-events: none; }   /* text-only cards: pure black */
       #black { position: absolute; inset: 0; z-index: 60; background: #000; opacity: 0; pointer-events: none; }
     </style>
   </head>
@@ -68,11 +69,12 @@
       <div class="shot" id="catch"><video id="v_catch" class="clip" src="assets/3d/s_catch.mp4" data-start="28.66" data-duration="3.94" data-media-start="0.0" data-track-index="7" muted playsinline></video></div>
       <div class="shot" id="train"><video id="v_train" class="clip" src="assets/footage/train.mp4" data-start="32.6" data-duration="10.44" data-media-start="1.0" data-track-index="8" muted playsinline></video></div>
       <div class="shot" id="field_b"><video id="v_field_b" class="clip" src="assets/footage/field.mp4" data-start="43.04" data-duration="4.56" data-media-start="7.0" data-track-index="9" muted playsinline></video></div>
-      <div class="shot" id="hero"><video id="v_hero" class="clip" src="assets/3d/s_hero.mp4" data-start="47.0" data-duration="8.0" data-media-start="0.0" data-track-index="10" muted playsinline></video></div>
+      <div class="shot" id="hero"><video id="v_hero" class="clip" src="assets/3d/s_hero.mp4" data-start="47.0" data-duration="3.2" data-media-start="0.0" data-track-index="10" muted playsinline></video></div>
       <div id="dim"></div>
       <div class="bar top"></div><div class="bar bot"></div>
       <div class="vignette"></div>
       <div id="redwash"></div>
+      <div id="card"></div>
       <div id="words"></div>
       <div id="flash"></div>
       <div class="streak" id="streak1"></div>
@@ -159,9 +161,14 @@
 
         if (E.letterbox) document.querySelectorAll(".bar").forEach(function (b) { b.style.display = "block"; });   // 2.39:1
 
-        // ---------- grain: the site's tile, stepped 8 times a second ----------
+        // ---------- text-only cards: pure black (#000) behind the words, and no grain on them ----------
+        var inCard = function (t) { return (E.cards || []).some(function (c) { return t >= c[0] && t < c[1]; }); };
+        (E.cards || []).forEach(function (c) { tl.set("#card", { opacity: 1 }, c[0]); tl.set("#card", { opacity: 0 }, c[1]); });
+
+        // ---------- grain: the site's tile, stepped 8 times a second (off on the black cards) ----------
         var G = [[0, 0], [-3, 2], [2, -4], [-4, -2], [3, 3], [-1, 4], [4, -1], [-2, -3]];
-        for (var gi = 0; gi < Math.ceil(E.duration * 8); gi++) tl.set("#grain", { xPercent: G[gi % 8][0], yPercent: G[(gi * 3 + 1) % 8][1] }, gi / 8);
+        for (var gi = 0; gi < Math.ceil(E.duration * 8); gi++)
+          tl.set("#grain", { xPercent: G[gi % 8][0], yPercent: G[(gi * 3 + 1) % 8][1], opacity: inCard(gi / 8) ? 0 : 0.06 }, gi / 8);
 
         window.__timelines = window.__timelines || {};
         window.__timelines["main"] = tl;

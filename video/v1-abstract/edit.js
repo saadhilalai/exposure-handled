@@ -49,16 +49,6 @@ window.EDIT = {
     1.02
    ],
    "fadeIn": 0.4
-  },
-  {
-   "id": "end",
-   "at": 44.8,
-   "to": 50.0,
-   "push": [
-    1.0,
-    1.02
-   ],
-   "fadeIn": 0.4
   }
  ],
  "words": [
@@ -106,7 +96,7 @@ window.EDIT = {
    "to": 50.0,
    "style": "title",
    "html": "Exposure, <em>Handled</em>.",
-   "y": 36,
+   "y": 46,
    "cut": true,
    "out": false
   },
@@ -115,7 +105,7 @@ window.EDIT = {
    "to": 50.0,
    "style": "link",
    "html": "s4dai-exposure-handled.static.hf.space",
-   "y": 88,
+   "y": 60,
    "cut": true,
    "out": false
   }
@@ -131,10 +121,10 @@ window.EDIT = {
  "kill": null,
  "dims": [
   [
-   44.6,
-   45.6,
+   44.4,
+   45.2,
    0.0,
-   0.45
+   0.6
   ]
  ],
  "blacks": [
@@ -145,5 +135,15 @@ window.EDIT = {
    1.0
   ]
  ],
- "letterbox": false
+ "letterbox": false,
+ "cards": [
+  [
+   0.0,
+   6.75
+  ],
+  [
+   45.2,
+   50.0
+  ]
+ ]
 };

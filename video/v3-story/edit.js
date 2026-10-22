@@ -136,7 +136,7 @@ window.EDIT = {
   {
    "id": "hero",
    "at": 47.0,
-   "to": 55.0,
+   "to": 50.2,
    "push": [
     1.0,
     1.04
@@ -203,7 +203,7 @@ window.EDIT = {
    "to": 55.0,
    "style": "title",
    "html": "Exposure, <em>Handled</em>.",
-   "y": 40,
+   "y": 46,
    "cut": true,
    "out": false
   },
@@ -212,7 +212,7 @@ window.EDIT = {
    "to": 55.0,
    "style": "link",
    "html": "s4dai-exposure-handled.static.hf.space",
-   "y": 82,
+   "y": 60,
    "cut": true,
    "out": false
   }
@@ -267,12 +267,6 @@ window.EDIT = {
    47.4,
    0.35,
    0.0
-  ],
-  [
-   49.6,
-   50.6,
-   0.0,
-   0.45
   ]
  ],
  "blacks": [
@@ -283,5 +277,15 @@ window.EDIT = {
    1.0
   ]
  ],
- "letterbox": true
+ "letterbox": true,
+ "cards": [
+  [
+   0.0,
+   10.98
+  ],
+  [
+   50.2,
+   55.0
+  ]
+ ]
 };
