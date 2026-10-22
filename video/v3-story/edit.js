@@ -273,5 +273,6 @@ window.EDIT = {
   "top1": "#c08d5c"
  },
  "film": true,
- "worlds": []
+ "worlds": [],
+ "camfx": []
 };
