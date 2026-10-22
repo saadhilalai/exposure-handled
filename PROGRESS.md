@@ -2,6 +2,21 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## ⏸️ Parked (2026-10-22, 12:05, by the director)
+
+All work stopped safely. Nothing is running; nothing was lost.
+- **Done and sent:** Calm (4K + phone copy in `~/Movies/Final Renders`).
+- **Ready but waiting on 3D:** Story and Hype are fully edited, mixed and checked with stand-ins.
+- **3D still to render (about 3 h, plug the Mac in):** s_catch (1 frame done), s_hero, h_world, h_smash, h_xray, h_irisx,
+  h_chip, h_swarm, h_kill, h_slam. All were test-rendered and approved by eye first.
+- **To resume:**
+  1. `cd ~/camera-agent && SHOTS=shots_fx.py nohup caffeinate -i video/blender/queue.sh s_catch s_hero h_world h_smash h_xray h_irisx h_chip h_swarm h_kill h_slam &`
+     (it skips finished shots and picks up from the last frame).
+  2. When s_catch and s_hero are done: `.venv/bin/python video/tools/build_films.py prep v3`, then `render v3`, then `deliver v3`.
+  3. When the h_ shots are done: the same for `v2`.
+  4. Check frames, send the phone copies, update `video/FILMS.md` and this file, commit.
+- **Open decisions for the director:** 29–34 in `docs/open-decisions.md`.
+
 ## 🎞️ The redo of all three films (2026-10-22, morning; no camera connected)
 
 The director sent three briefs (calm, hype, story). Notes: `video/FILMS.md`; credits: `video/CREDITS.md`; decisions 29–34 in
