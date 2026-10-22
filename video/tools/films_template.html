@@ -47,6 +47,8 @@
       .streak { position: absolute; left: -30%; width: 160%; height: 4px; z-index: 29; opacity: 0; pointer-events: none; mix-blend-mode: screen;
         background: linear-gradient(90deg, rgba(255, 120, 40, 0) 0%, rgba(255, 140, 60, .55) 35%, rgba(255, 236, 214, 1) 50%, rgba(255, 140, 60, .55) 65%, rgba(255, 120, 40, 0) 100%);
         box-shadow: 0 0 22px 6px rgba(255, 120, 40, .45), 0 0 80px 18px rgba(255, 106, 26, .22); }
+      .bar { position: absolute; left: 0; right: 0; height: 138px; z-index: 27; background: #000; display: none; }
+      .bar.top { top: 0; } .bar.bot { bottom: 0; }
       #dim { position: absolute; inset: 0; z-index: 25; background: #000; opacity: 0; pointer-events: none; }
       .vignette { position: absolute; inset: 0; z-index: 26; pointer-events: none;
         background: radial-gradient(ellipse at center, rgba(0,0,0,0) 58%, rgba(0,0,0,.45) 100%); }
@@ -59,6 +61,7 @@
     <div id="root" data-composition-id="main" data-start="0" data-duration="{{DURATION}}" data-width="1920" data-height="1080">
 {{SHOTS}}
       <div id="dim"></div>
+      <div class="bar top"></div><div class="bar bot"></div>
       <div class="vignette"></div>
       <div id="redwash"></div>
       <div id="words"></div>
@@ -144,6 +147,8 @@
         });
         (E.dims || []).forEach(function (d) { later("#dim", { opacity: d[2] }, { opacity: d[3], duration: d[1] - d[0], ease: "power1.inOut" }, d[0]); });
         (E.blacks || []).forEach(function (b) { later("#black", { opacity: b[2] }, { opacity: b[3], duration: b[1] - b[0], ease: "power1.inOut" }, b[0]); });
+
+        if (E.letterbox) document.querySelectorAll(".bar").forEach(function (b) { b.style.display = "block"; });   // 2.39:1
 
         // ---------- grain: the site's tile, stepped 8 times a second ----------
         var G = [[0, 0], [-3, 2], [2, -4], [-4, -2], [3, 3], [-1, 4], [4, -1], [-2, -3]];

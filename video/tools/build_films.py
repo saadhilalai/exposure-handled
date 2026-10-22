@@ -116,26 +116,50 @@ V2 = dict(
     blacks=[(s(68.6), s(70), 0.0, 1.0)],
 )
 
-# The story film: Saad's own footage (no client work, no faces), the light changing, the agent catching it.
-# Footage shots are filled in from video/v3-story/footage.json (picked from the catalogue); see FILMS.md.
+# The story film: Saad's own footage (personal days out on an Osmo Pocket 3: no client work, no faces), graded to one
+# look, the light falling in the grade, the agent catching it. Cut to the hits of "Cassini" (3.18, 6.02, 8.98, 10.98, 13.82,
+# 16.78, 19.60, 22.70, 25.60, 28.66, 37.34 and the big one at 43.04 s).
+ICLOUD = Path.home() / "Library" / "Mobile Documents" / "com~apple~CloudDocs"
+FOOTAGE = {   # id: (source, in, out, crop or None, "709" or "hlg")
+    "field": (ICLOUD / "DJI_20260430183909_0314_D.MP4", 9.0, 21.0, None, "709"),
+    "beach": (ICLOUD / "DJI_20260426192545_0352_D.MP4", 0.0, 5.0, None, "hlg"),
+    "fence": (ICLOUD / "DJI_20260428180930_0354_D.MP4", 0.5, 6.6, None, "hlg"),
+    "head": (ICLOUD / "DJI_20260425202029_0011_D.MP4", 16.2, 17.2, "crop=2560:1440:1280:720", "709"),
+    "train": (ICLOUD / "DJI_20260428180846_0353_D.MP4", 0.0, 11.6, None, "hlg"),
+}
+DARK = 0.42
 V3 = dict(
-    dir="v3-story", title="Exposure, Handled. (story)", duration=55.0,
-    music=dict(file=V / "music-candidates/film3/cassini-scott-buckley/sb_cassini.mp3", start=180.4, fade_in=0.4, fade_out=(53.6, 1.4), gain=-2.0),
-    shots=[],                                       # built in story_shots()
-    words=[
-        dict(at=0.9, to=5.4, style="quote", html="“There is nothing in this world that does not have a <em>decisive moment.</em>”"),
-        dict(at=5.4, to=7.6, style="quote", html="Cardinal de Retz"),
-        dict(at=12.4, to=15.8, style="line", html="The light won’t wait."),
-        dict(at=22.4, to=25.6, style="line", html="Neither will the moment."),
-        dict(at=43.3, to=47.6, style="line", html="What if your camera had<br>a <em>cinematographer</em> inside it?", fin=0.7),
-        dict(at=48.2, to=55.0, style="title", html="Exposure, <em>Handled</em>.", y=44, out=False),
-        dict(at=50.2, to=55.0, style="link", html=SITE_URL, y=60, out=False),
+    dir="v3-story", title="Exposure, Handled. (story)", duration=55.0, letterbox=True,
+    music=dict(file=V / "music-candidates/film3/cassini-scott-buckley/sb_cassini.mp3", start=180.4, fade_in=0.3, fade_out=(53.4, 1.6), gain=-2.0,
+               env=[(0, 0), (28.05, 0), (28.2, -26), (28.6, -26), (28.66, 0)]),
+    shots=[
+        ("field_a", "ft:field.mp4", 10.98, 16.78, dict(push=[1.0, 1.06])),
+        ("beach", "ft:beach.mp4", 16.78, 19.60, dict(ms=0.3, push=[1.04, 1.0])),
+        ("fence", "ft:fence.mp4", 19.60, 25.60, dict(push=[1.0, 1.05], grade=[(19.6, 1.0, 1.0), (20.3, 1.0, 1.0), (22.4, DARK, 0.7, "power2.inOut")])),
+        ("beach_dark", "ft:beach.mp4", 25.60, 26.80, dict(ms=3.2, push=[1.08, 1.12], grade=[(25.6, DARK, 0.7)])),
+        ("head", "ft:head.mp4", 26.80, 27.60, dict(push=[1.0, 1.04], grade=[(26.8, DARK, 0.7)])),
+        ("train_q", "ft:train.mp4", 27.60, 28.10, dict(ms=0.2, push=[1.1, 1.14], grade=[(27.6, DARK, 0.7)])),
+        ("catch", "3d:s_catch", 28.66, 32.60, dict(punch=1.03)),
+        ("train", "ft:train.mp4", 32.60, 43.04, dict(ms=1.0, push=[1.0, 1.07], grade=[(32.6, DARK, 0.7), (33.4, 1.0, 1.0, "power3.out")])),
+        ("field_b", "ft:field.mp4", 43.04, 47.60, dict(ms=7.0, push=[1.08, 1.0], pushEase="power1.out")),
+        ("hero", "3d:s_hero", 47.00, 55.00, dict(fadeIn=0.6, push=[1.0, 1.04])),
     ],
-    voice=[("h01", 20.6), ("h04", 29.6), ("v3a", 45.9), ("h11", 48.8)],
-    sfx=[(42.8, "lowFrequency_explosion_000.ogg", -8), (28.9, "forceField_001.ogg", -16)],
-    flashes=[(42.8, 0.8, 0.6)],
-    dims=[(47.8, 48.8, 0.0, 0.6)],
-    blacks=[(0.0, 0.01, 1.0, 1.0), (7.4, 8.4, 1.0, 0.0), (53.6, 55.0, 0.0, 1.0)],
+    words=[
+        dict(at=3.18, to=8.9, style="quote", html="There is nothing in this world", y=45, cut=True),
+        dict(at=6.02, to=8.9, style="quote", html="that does not have a <em>decisive moment.</em>", y=55, cut=True),
+        dict(at=8.98, to=10.8, style="name", html="Cardinal de Retz", cut=True),
+        dict(at=13.82, to=16.7, style="line", html="The light won’t wait.", cut=True),
+        dict(at=22.7, to=25.5, style="line", html="Neither will the moment.", cut=True),
+        dict(at=43.5, to=47.3, style="line", html="What if your camera had", y=45, cut=True),
+        dict(at=43.5, to=47.3, style="line", html="a <em>cinematographer</em> inside it?", y=56, cut=True),
+        dict(at=50.2, to=55.0, style="title", html="Exposure, <em>Handled</em>.", y=40, cut=True, out=False),
+        dict(at=51.6, to=55.0, style="link", html=SITE_URL, y=82, cut=True, out=False),
+    ],
+    voice=[("h01", 20.2), ("h04", 30.2), ("v3a", 47.8)],
+    sfx=[(28.66, "impactPunch_heavy_002.ogg", -14), (43.04, "lowFrequency_explosion_000.ogg", -8)],
+    flashes=[(28.66, 0.35, 0.3), (43.04, 0.7, 0.6)],
+    dims=[(49.6, 50.6, 0.0, 0.45)],
+    blacks=[(53.8, 55.0, 0.0, 1.0)],
 )
 FILMS = {"v1": V1, "v2": V2, "v3": V3}
 
@@ -189,8 +213,27 @@ def glow(shot):
     g = ("[0:v]format=gbrp,split[a][b];[b]colorlevels=rimin=0.55:gimin=0.55:bimin=0.55,gblur=sigma=18,colorchannelmixer=rr=1:gg=0.9:bb=0.8[g];"
          "[a][g]blend=all_mode=screen:all_opacity=0.55,scale=3840:2160:flags=lanczos,unsharp=5:5:0.45,format=yuv420p")
     run(["nice", "-n", "10", "ffmpeg", "-v", "error", "-y", "-i", str(src), "-filter_complex", g, "-c:v", "libx264", "-preset", "medium",
-         "-crf", "15", "-movflags", "+faststart", str(dst)])
+         "-crf", "15", "-g", "24", "-keyint_min", "24", "-movflags", "+faststart", str(dst)])
     return dst
+
+
+LOOK = ("curves=all='0/0 0.18/0.1 0.5/0.4 0.8/0.7 1/0.86',eq=saturation=0.85,"
+        "colorbalance=rs=-0.05:gs=-0.01:bs=0.06:rm=0.02:bm=-0.02:rh=0.06:gh=0.02:bh=-0.05")
+HLG = "colorspace=all=bt709:iall=bt2020:fast=1,curves=all='0/0 0.3/0.18 0.7/0.56 1/0.82',eq=saturation=1.05,"
+
+
+def footage(name, dst):
+    """Cut a story excerpt from the original 4K file (read-only), with the film's grade: a soft highlight roll-off,
+    muted colour, cool shadows and warm highlights. HLG sources are brought to Rec.709 first (approximately)."""
+    if dst.exists():
+        return
+    src, t0, t1, crop, kind = FOOTAGE[name.rsplit(".", 1)[0]]
+    vf = ",".join(x for x in (crop, (HLG if kind == "hlg" else "") + LOOK, "scale=3840:2160:flags=lanczos", "format=yuv420p") if x)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    run(["nice", "-n", "10", "ffmpeg", "-v", "error", "-y", "-ss", str(t0), "-t", str(t1 - t0), "-i", str(src), "-an", "-vf", vf,
+         "-c:v", "libx264", "-preset", "medium", "-crf", "15", "-g", "24", "-keyint_min", "24",
+         "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709",
+         "-movflags", "+faststart", str(dst)])
 
 
 # ---------------------------------------------------------------- steps
@@ -210,18 +253,24 @@ def prep(F):
         "render": "npx --yes hyperframes@0.8.167 render"}}, indent=2) + "\n")
     missing = []
     for sid, src, *_ in all_shots(F):
+        if src.startswith("ft:"):
+            footage(src[3:], a / "footage" / src[3:])
         if src.startswith("3d:"):
             g = glow(src[3:])
             if g:
                 link(g, a / "3d" / (src[3:] + ".mp4"))
-            else:
+            else:                                   # a black stand-in, so a draft can render before the shot exists
                 missing.append(src[3:])
+                ph = a / "3d" / (src[3:] + ".mp4")
+                if not ph.exists():
+                    ph.parent.mkdir(parents=True, exist_ok=True)
+                    run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=0x101010:s=1920x1080:r=24:d=12", "-c:v", "libx264",
+                         "-g", "24", "-pix_fmt", "yuv420p", str(ph)])
     print("prep %s: ready%s" % (F["dir"], ("; 3D still rendering: " + ", ".join(sorted(set(missing)))) if missing else ""))
 
 
 def all_shots(F):
-    return F["shots"] or story_shots() + [("catch", "3d:s_catch", 28.0, 32.0, dict(fadeIn=0.0, punch=1.03)),
-                                           ("hero", "3d:s_hero", 47.0, 55.0, dict(fadeIn=0.5, push=[1.0, 1.04]))]
+    return F["shots"]
 
 
 def voice_lines():
@@ -255,7 +304,8 @@ def edit(F):
         shots.append(e)
     E = dict(duration=round(F["duration"], 3), shots=shots,
              words=[dict(w, at=round(w["at"], 3), to=round(w["to"], 3)) for w in F["words"]],
-             flashes=F.get("flashes", []), streaks=F.get("streaks", []), kill=F.get("kill"), dims=F.get("dims", []), blacks=F.get("blacks", []))
+             flashes=F.get("flashes", []), streaks=F.get("streaks", []), kill=F.get("kill"), dims=F.get("dims", []), blacks=F.get("blacks", []),
+             letterbox=F.get("letterbox", False))
     (d / "edit.js").write_text("// Made by video/tools/build_films.py. Don't edit by hand.\nwindow.EDIT = %s;\n" % json.dumps(E, ensure_ascii=False, indent=1))
     page = (V / "tools" / "films_template.html").read_text().replace("{{DURATION}}", str(round(F["duration"], 3))).replace("{{SHOTS}}", "\n".join(html))
     (d / "index.html").write_text(page)
@@ -348,11 +398,11 @@ def mix(F):
 def render(F, draft=False):
     d = V / F["dir"]
     hf = ["npx", "--yes", "hyperframes@0.8.167"]
-    run(hf + ["lint"], cwd=d)
+    subprocess.run(hf + ["lint"], cwd=d)            # shown, not fatal: a draft may run before every 3D shot exists
     name = "%s-%s.mp4" % (F["dir"], "draft" if draft else "4k")
     (d / "renders").mkdir(exist_ok=True)
     args = ["render", "--fps", "24", "--workers", "2", "-o", "renders/" + name]
-    args += ["--quality", "looks"] if draft else ["--resolution", "landscape-4k", "--quality", "delivery"]
+    args += ["--quality", "looks"] if draft else ["--resolution", "landscape-4k", "--quality", "delivery", "--video-frame-format", "png"]
     run(["nice", "-n", "5"] + hf + args, cwd=d)
     print("render %s -> %s" % (F["dir"], d / "renders" / name))
 

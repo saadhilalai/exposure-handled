@@ -53,6 +53,12 @@ Everything is in `video/FILMS.md`. The renders are in `video/v1-abstract/renders
   - Cardinal de Retz, the epigraph of Cartier-Bresson's *The Decisive Moment*: "There is nothing in this world that does not have a decisive moment."
 - Names get their own card, in white, never small grey text under the quote.
 
+**28. The story film's footage.**
+- The search was read-only: 1,412 videos on the Mac, 286 camera originals checked one by one.
+- The story uses only clips that are clearly yours from personal days out (Osmo Pocket 3), with no faces. Plates and badges are cropped out.
+- Some of the most cinematic footage on the Mac was left out because it might be client work, belongs to another company of yours, or shows faces. Those clips, and why each was left out, are in a private note that stays out of git: `video/v3-story/assets/footage/NOTES.md`.
+- Say which of them are OK and I'll recut the story with them.
+
 **27. Resolution.**
 - **Now:** the moving 3D is path-traced at 1920×1080 and scaled up to 4K. Path-traced 4K is about 50 s a frame here, about 20 hours for all three films.
 - **The stills:** true 4K.

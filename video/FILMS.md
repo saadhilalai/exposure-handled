@@ -98,4 +98,20 @@ The research is in `docs/framing-research.md`.
 
 ## Film 3: Story (55 s)
 
-The cut sheet is filled in once the footage is chosen (see `v3-story/footage.json`).
+Cut to the hits of "Cassini" (3.18, 6.02, 8.98, 10.98 … 28.66, 37.34, and the big one at 43.04 s), in a 2.39:1 letterbox. The footage is graded to one look: a soft highlight roll-off, muted colour, cool shadows and warm highlights.
+
+| Time | Picture | Words / voice |
+|---|---|---|
+| 0.0 | Black | **There is nothing in this world** (then) **that does not have a *decisive moment.*** |
+| 9.0 | Black | **Cardinal de Retz** |
+| 11.0 | A huge field, one tiny figure walking out into it (Saad's own, Osmo Pocket 3) | **The light won't wait.** |
+| 16.8 | An empty grey beach | |
+| 19.6 | A freight train through a chain-link fence; the light falls (the grade drops about 1¼ stops) | "Light's changing." · **Neither will the moment.** |
+| 25.6 | Faster, darker: the beach, a headlight, the train | |
+| 28.1 | Black, and the music drops away | |
+| 28.7 | Inside the camera: an agent at the sensor sees it, whips round and reaches | "Got it." |
+| 32.6 | The train, one long take; the exposure comes back on the cut and holds as it passes | |
+| 43.0 | The big hit: the field again, wide and right | **What if your camera had / a *cinematographer* inside it?** |
+| 47.0 | The camera, assembled, a slow push | "You frame. I'll handle the light." · **Exposure, *Handled*.** · the website link |
+
+The footage sources (all read-only, cut from the 4K originals) are listed in `tools/build_films.py` (FOOTAGE).
