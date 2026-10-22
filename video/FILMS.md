@@ -15,7 +15,8 @@ All three are built the same way:
 ## The rules the films follow (from the director's brief)
 
 - **Words:** barely any, solid colour only (no gradient text).
-- **No small print:** no tags, labels or side notes, and no small grey text. The only small text is the website link at the very end. Honesty notes live here, in `CREDITS.md`, and in the website's Nerd mode when a film is published.
+- **No small print:** no tags, labels or side notes, and no small grey text. The only small text is the website link at the very end.
+- **Pure black:** every text-only card (the quotes, every "Exposure, Handled." title) sits on pure black (#000), with no grain. Honesty notes live here, in `CREDITS.md`, and in the website's Nerd mode when a film is published.
 - **The voice:** the agent's AI voice, loud and clear on top of the music, in short lines.
 - **Camera name:** the films never say "FX2". On screen it is just *the camera*; in words, "Sony cinema camera".
 - **No schedules:** no mention of upcoming shoots or schedules.
@@ -77,7 +78,7 @@ The research is in `docs/framing-research.md`.
 | 19.0 | The camera opens like a flower; the crew glows inside | |
 | 26.6 | One agent, close: its visor's histogram moving, its arm reaching to the sensor | |
 | 33.2 | The camera closes; the crew settles | **A camera that thinks / like a *cinematographer.*** (on the music's lift) |
-| 44.8 | The camera, turning slowly | **Exposure, *Handled*.** · "Exposure… handled." · the website link |
+| 45.2 | Pure black (text-only cards are always #000, no grain) | **Exposure, *Handled*.** · "Exposure… handled." · the website link |
 
 ## Film 2: Hype (36.5 s, cut on the beat of "Beast", 115 BPM)
 
@@ -93,8 +94,8 @@ The research is in `docs/framing-research.md`.
 | 16.7 | The break: the front glass, the dial, the ring | "Done." |
 | 18.8 | The crew racing round the exploded camera; the iris again | "Want it back?" · "One key." |
 | 24.5 | The kill switch: the crew freezes red, the music drops out | "Stopped." |
-| 26.1 | The parts drift, then slam home on the beat: flash, shake | "It's yours." |
-| 28.2 | The hero, turning in the dark | **Exposure, *Handled*.** · "Exposure… handled." · the website link |
+| 26.1 | The parts drift, then slam home on the beat: flash, shake; the hero turns, held | "It's yours." |
+| 30.3 | Pure black | **Exposure, *Handled*.** · "Exposure… handled." · the website link |
 
 ## Film 3: Story (55 s)
 
@@ -112,6 +113,7 @@ Cut to the hits of "Cassini" (3.18, 6.02, 8.98, 10.98 … 28.66, 37.34, and the 
 | 28.7 | Inside the camera: an agent at the sensor sees it, whips round and reaches | "Got it." |
 | 32.6 | The train, one long take; the exposure comes back on the cut and holds as it passes | |
 | 43.0 | The big hit: the field again, wide and right | **What if your camera had / a *cinematographer* inside it?** |
-| 47.0 | The camera, assembled, a slow push | "You frame. I'll handle the light." · **Exposure, *Handled*.** · the website link |
+| 47.0 | The camera, assembled, a slow push | "You frame. I'll handle the light." |
+| 50.2 | Pure black | **Exposure, *Handled*.** · the website link |
 
 The footage sources (all read-only, cut from the 4K originals) are listed in `tools/build_films.py` (FOOTAGE).
