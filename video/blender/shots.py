@@ -524,7 +524,7 @@ def h_title(t, X):
 
 
 # --- the abstract film (V1): calm, slow -----------------------------------------------------------------------------
-@shot("a_form", 9.0)
+@shot("a_form", 9.0, blur=False, spp=10)
 def a_form(t, X):
     """Particles of light drift in the dark, then gather into the camera's shape. (The solid camera fades in in the edit.)"""
     lights(key=0.0, top=0.0, rim_left=0.0, rim_right=0.0, floor=0.0, card=0.0)
@@ -568,69 +568,94 @@ def a_agent(t, X):
     """One agent, close: it looks at the sensor, the histogram in its visor moves, it makes a small adjustment."""
     rig.explode(1.0)
     rig.iris(4)
-    lights(key=0.6, top=0.4, rim_left=1.2, rim_right=1.0, card=0.3, glow=0.2)
+    lights(key=0.5, top=0.4, rim_left=1.2, rim_right=1.0, card=0.3, glow=0.0)
     die = D.objects["sensor die"]
     centre = die.matrix_world.translation
     hero, arms = X["hero"]
-    hero.location = centre + Vector((-0.003, -0.0062, 0.001 + 0.0002 * math.sin(t * 2.0)))
+    hero.location = centre + Vector((-0.003, -0.0058, 0.001 + 0.0002 * math.sin(t * 2.0)))
     hero.rotation_quaternion = Vector((0, -1, 0)).to_track_quat("Y", "Z") @ Quaternion((0, 0, 1), 0.25 * math.sin(t * 0.6))
     reach = kf(t, [(0, 0.0, "lin"), (2.5, 0.0, "lin"), (3.5, 1.0, "io"), (5.0, 1.0, "lin"), (6.0, 0.0, "io")])
     for i, (sh, el) in enumerate(arms):
         sh.rotation_euler = Euler((-1.0 * reach * (1 if i == 0 else 0.25), 0, 0))
         el.rotation_euler = Euler((-0.5 * reach * (1 if i == 0 else 0.3), 0, 0))
     histogram(t * 0.5, X["f"])
-    tgt = hero.location.copy()
-    pos = tgt + Vector((kf(t, [(0, 0.012, "lin"), (7, 0.007, "io")]), kf(t, [(0, -0.028, "lin"), (7, -0.02, "io")]), 0.003))
-    cam(pos, tgt, 100, 2.8)
+    tgt = hero.location + Vector((0.0, 0.0012, 0.0003))
+    pos = tgt + Vector((kf(t, [(0, -0.044, "lin"), (7, -0.034, "io")]), kf(t, [(0, -0.02, "lin"), (7, -0.016, "io")]), 0.005))
+    cam(pos, tgt, 100, 11.0, focus=(hero.location - pos).length)
 
 
 SHOTS["a_agent"]["setup"] = lambda X: X.update(hero=hero_agent("hero calm"), crew=Crew(10, seed=12, kinds=["sensor package"]))
 
 
-@shot("a_close", 8.0)
+@shot("a_close", 12.0)
 def a_close(t, X):
-    """The camera closes again, gently, and the light settles on it: the end frame (title above)."""
-    rig.explode(kf(t, [(0, 0.55, "lin"), (5.5, 0.0, "io")]), spin=0.6)
+    """The camera closes again, gently, the crew settling back inside, and the light comes to rest on it."""
+    rig.explode(kf(t, [(0, 0.6, "lin"), (7.0, 0.0, "io")]), spin=0.6)
     rig.iris(4)
-    lights(key=0.6, top=0.8, rim_left=1.3, rim_right=1.1, card=0.5)
-    yaw = kf(t, [(0, 0.75, "lin"), (8, 0.4, "io")])
-    tgt = Vector((0.0, -0.03, 0.03))
-    pos = orbit(tgt, yaw, 0.12, kf(t, [(0, 0.72, "lin"), (8, 0.62, "io")]))
+    lights(key=0.6, top=0.8, rim_left=1.3, rim_right=1.1, card=0.5, glow=kf(t, [(0, 0.5, "lin"), (6.0, 0.0, "io")]))
+    D.objects["crew glow"].location = D.objects["ai core"].matrix_world.translation
+    X["crew"].place(t * 0.5 + 4.0, speed=0.5, vis=kf(t, [(0, 1.0, "lin"), (5.5, 0.0, "io")]))
+    yaw = kf(t, [(0, 0.85, "lin"), (12, 0.35, "io")])
+    tgt = Vector((0.0, -0.03, 0.0))
+    pos = orbit(tgt, yaw, kf(t, [(0, 0.16, "lin"), (12, 0.1, "io")]), kf(t, [(0, 0.78, "lin"), (12, 0.56, "io")]))
+    cam(pos, tgt, 50, 8.0)
+
+
+SHOTS["a_close"]["setup"] = lambda X: X.update(crew=Crew(60, seed=22))
+
+
+@shot("a_end", 9.2)
+def a_end(t, X):
+    """The end frame of the calm film: the camera low in frame, turning a few degrees, room above it for the line."""
+    rig.explode(0)
+    rig.iris(4)
+    lights(key=0.55, top=0.9, rim_left=1.5, rim_right=1.2, card=0.6)
+    yaw = kf(t, [(0, -0.55, "lin"), (9.2, -0.32, "io")])
+    tgt = Vector((0.0, -0.03, 0.045))
+    pos = orbit(tgt, yaw, 0.1, kf(t, [(0, 0.6, "lin"), (9.2, 0.54, "io")]))
     cam(pos, tgt, 50, 8.0)
 
 
 # --- the story film (V3) --------------------------------------------------------------------------------------------
 @shot("s_catch", 4.0)
 def s_catch(t, X):
-    """Inside the camera at the moment the light drops: the crew turns as one, the iris opens two stops."""
+    """The moment: an agent at the sensor sees the light drop (its histogram jumps), whips round and reaches; then calm."""
     rig.explode(1.0)
-    rig.iris(kf(t, [(0, 8.0, "lin"), (1.2, 8.0, "lin"), (2.0, 2.8, "xout")]))
-    lights(key=0.5, top=0.5, rim_left=1.3, rim_right=1.2, card=0.6, glow=0.8)
-    ir = D.objects["iris"].matrix_world.translation
-    D.objects["crew glow"].location = ir + Vector((0.0, 0.0, 0.03))
-    X["crew"].place(t * kf(t, [(0, 0.5, "lin"), (1.2, 0.5, "lin"), (1.6, 3.0, "out")]) if False else t, speed=kf(t, [(0, 0.5, "lin"), (1.3, 2.5, "out")]))
-    tgt = ir
-    pos = orbit(tgt, kf(t, [(0, 0.45, "lin"), (4, 0.3, "io")]), 0.2, kf(t, [(0, 0.12, "lin"), (4, 0.09, "io")]))
-    cam(pos, tgt, 60, 4.0)
+    rig.iris(4)
+    lights(key=0.5, top=0.4, rim_left=1.4, rim_right=1.2, card=0.3, glow=0.0)
+    centre = D.objects["sensor die"].matrix_world.translation
+    hero, arms = X["hero"]
+    jolt = kf(t, [(0, 0.0, "lin"), (1.1, 0.0, "lin"), (1.35, 1.0, "xout"), (3.2, 1.0, "lin"), (4.0, 0.3, "io")])
+    hero.location = centre + Vector((0.002, -0.006, 0.0015 + 0.0002 * math.sin(t * 4.0) + 0.0008 * jolt))
+    fwd = Vector((0, 1, 0)).lerp(Vector((-0.6, -0.2, 0.75)).normalized(), jolt).normalized()
+    hero.rotation_quaternion = (-fwd).to_track_quat("Y", "Z")
+    reach = kf(t, [(0, 0.0, "lin"), (1.3, 0.0, "lin"), (1.6, 1.0, "xout"), (3.0, 1.0, "lin"), (3.6, 0.2, "io")])
+    for i, (sh, el) in enumerate(arms):
+        sh.rotation_euler = Euler((-1.2 * reach + 0.1 * math.sin(t * 3 + i), 0, 0))
+        el.rotation_euler = Euler((-0.7 * reach, 0, 0))
+    histogram(t * (1.0 + 3.0 * jolt), X["f"])
+    tgt = hero.location + Vector((0.0, 0.0, 0.0003))
+    pos = tgt + Vector((kf(t, [(0, -0.03, "lin"), (4, -0.024, "io")]), kf(t, [(0, -0.034, "lin"), (4, -0.028, "io")]), 0.012))
+    cam(pos, tgt, 100, 11.0, focus=(hero.location - pos).length)
 
 
-SHOTS["s_catch"]["setup"] = lambda X: X.update(crew=Crew(30, seed=31, kinds=["iris housing", "element 3", "element 4", "aperture ring"]))
+SHOTS["s_catch"]["setup"] = lambda X: X.update(hero=hero_agent("hero catch"), crew=Crew(10, seed=33, kinds=["sensor package", "stabiliser plate"]))
 
 
-@shot("s_hero", 6.0)
+@shot("s_hero", 8.0)
 def s_hero(t, X):
     """The camera, assembled, very slow push in warm-and-cool light: the end frame for the story."""
     rig.explode(0)
     rig.iris(2.8)
     lights(key=0.55, top=0.8, rim_left=1.6, rim_right=1.0, card=0.6)
-    yaw = kf(t, [(0, -0.42, "lin"), (6, -0.3, "io")])
+    yaw = kf(t, [(0, -0.42, "lin"), (8, -0.28, "io")])
     tgt = Vector((0.0, -0.03, 0.025))
-    pos = orbit(tgt, yaw, 0.1, kf(t, [(0, 0.66, "lin"), (6, 0.58, "io")]))
+    pos = orbit(tgt, yaw, 0.1, kf(t, [(0, 0.52, "lin"), (8, 0.45, "io")]))
     cam(pos, tgt, 50, 8.0)
 
 
 # ---------------------------------------------------------------- particles (V1)
-def make_dust(n=26000, seed=4):
+def make_dust(n=16000, seed=4):
     """Points sampled on the camera's visible surfaces, each with a scattered start point and a delay; a geometry-nodes
     modifier moves them from start to surface as its 'time' input grows, and draws each as a tiny glowing bead."""
     rng = random.Random(seed)
@@ -668,9 +693,11 @@ def make_dust(n=26000, seed=4):
             u, v = 1 - u, 1 - v
         p = a + (b - a) * u + (c - a) * v
         pts.append(p)
-        d = Vector((rng.gauss(0, 1), rng.gauss(0, 1), rng.gauss(0, 0.6))).normalized() * rng.uniform(0.25, 1.1)
-        starts.append(p + d + Vector((0, 0, rng.uniform(-0.05, 0.15))))
-        delays.append(rng.uniform(0.0, 3.2) + (p.y + 0.12) * 4.0)      # the lens forms first, then the body
+        d = Vector((rng.gauss(0, 1), rng.gauss(0, 0.5), rng.gauss(0, 0.5))).normalized() * rng.uniform(0.35, 1.6)
+        if d.y < -0.25:                                                   # keep them out of the lens's face
+            d.y = -d.y * 0.5
+        starts.append(p + d)
+        delays.append(rng.uniform(0.2, 3.0) + (p.y + 0.12) * 3.0)      # the lens forms first, then the body
     me = D.meshes.new("dust")
     me.from_pydata([tuple(p) for p in pts], [], [])
     at = me.attributes.new("start", "FLOAT_VECTOR", "POINT")
@@ -705,7 +732,7 @@ def dust_nodes():
     ng.links.new(dl.outputs["Attribute"], sub.inputs[1])
     div = N.new("ShaderNodeMath")
     div.operation = "DIVIDE"
-    div.inputs[1].default_value = 2.6
+    div.inputs[1].default_value = 3.6
     div.use_clamp = True
     ng.links.new(sub.outputs["Value"], div.inputs[0])
     sm = N.new("ShaderNodeMapRange")
@@ -719,8 +746,12 @@ def dust_nodes():
     # a slow drift on top while they travel (fades out as they land)
     nz = N.new("ShaderNodeTexNoise")
     nz.noise_dimensions = "4D"
-    nz.inputs["Scale"].default_value = 3.0
-    ng.links.new(clock.outputs["Seconds"], nz.inputs["W"])
+    nz.inputs["Scale"].default_value = 2.0
+    slow = N.new("ShaderNodeMath")
+    slow.operation = "MULTIPLY"
+    slow.inputs[1].default_value = 0.12
+    ng.links.new(clock.outputs["Seconds"], slow.inputs[0])
+    ng.links.new(slow.outputs["Value"], nz.inputs["W"])
     ng.links.new(st.outputs["Attribute"], nz.inputs["Vector"])
     cen = N.new("ShaderNodeVectorMath")
     cen.operation = "SUBTRACT"
@@ -732,7 +763,7 @@ def dust_nodes():
     ng.links.new(sm.outputs["Result"], inv.inputs[1])
     amt = N.new("ShaderNodeMath")
     amt.operation = "MULTIPLY"
-    amt.inputs[1].default_value = 0.12
+    amt.inputs[1].default_value = 0.05
     ng.links.new(inv.outputs["Value"], amt.inputs[0])
     sc = N.new("ShaderNodeVectorMath")
     sc.operation = "SCALE"
@@ -746,7 +777,7 @@ def dust_nodes():
     ng.links.new(gi.outputs["Geometry"], sp.inputs["Geometry"])
     ng.links.new(add.outputs["Vector"], sp.inputs["Position"])
     m2p = N.new("GeometryNodeMeshToPoints")
-    m2p.inputs["Radius"].default_value = 0.00045
+    m2p.inputs["Radius"].default_value = 0.00032
     ng.links.new(sp.outputs["Geometry"], m2p.inputs["Mesh"])
     smat = N.new("GeometryNodeSetMaterial")
     mat = D.materials.get("dust") or _dust_mat()

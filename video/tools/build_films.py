@@ -1,0 +1,345 @@
+"""The three launch films: their edits, voice and soundtracks, as HyperFrames projects in video/v1-abstract,
+video/v2-hype and video/v3-story. The 3D shots come from video/blender/shots.py (path-traced in Blender).
+
+    python video/tools/build_films.py prep  [v1 v2 v3]    project folders, fonts, the 3D shots (with a glow pass) linked in
+    python video/tools/build_films.py voice               trim the voice lines (video/films-voice) to tight WAVs
+    python video/tools/build_films.py edit  [v1 v2 v3]    edit.js + index.html for each film
+    python video/tools/build_films.py mix   [v1 v2 v3]    music + voice (+ effects) -> assets/audio/mix.m4a
+    python video/tools/build_films.py render [v1 v2 v3] [--draft]   lint, then render (4K; --draft: 1080p)
+
+No tags, labels or small print in the films (the director's rule): the honesty notes and credits live in
+video/FILMS.md and video/CREDITS.md, and go in the website's Nerd mode when a film is published.
+"""
+import argparse
+import json
+import os
+import shutil
+import subprocess
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+V = ROOT / "video"
+OUT3D = V / "blender" / "out"
+VOICE = V / "films-voice"
+HYPE = V / "hype" / "assets"
+SITE_URL = "s4dai-exposure-handled.static.hf.space"
+
+BPM = 115.0
+B = 60.0 / BPM
+
+
+def s(beat):
+    return round(beat * B, 3)
+
+
+# ---------------------------------------------------------------- the films
+# shots: (id, source, at, to, extra); source "3d:<shot>" is a Blender render, "ft:<file>" a footage excerpt.
+# times are seconds of the film; "ms" = where in the source to start.
+V1 = dict(
+    dir="v1-abstract", title="Exposure, Handled. (calm)", duration=50.0,
+    music=dict(file=V / "music-candidates/film1/petrichor-scott-buckley/sb_petrichor.mp3", start=123.0, fade_in=1.5, fade_out=(47.0, 3.0), gain=0.0),
+    shots=[
+        ("form", "3d:a_form", 0.0, 9.0, dict(push=[1.0, 1.0])),
+        ("solid", "3d:a_solid", 6.6, 9.0, dict(ms=6.6, fadeIn=2.0, push=[1.0, 1.0])),
+        ("open", "3d:a_open", 8.4, 16.4, dict(fadeIn=0.6, push=[1.0, 1.02])),
+        ("agent", "3d:a_agent", 15.8, 22.8, dict(fadeIn=0.6, push=[1.0, 1.03])),
+        ("close", "3d:a_close", 22.2, 34.2, dict(fadeIn=0.6, push=[1.0, 1.02])),
+        ("end", "3d:a_end", 33.6, 42.8, dict(fadeIn=0.6, push=[1.0, 1.03])),
+    ],
+    words=[
+        dict(at=1.3, to=6.0, style="quote", html="“I propose to consider the question, <em>‘Can machines think?’</em>”"),
+        dict(at=6.0, to=8.6, style="quote", html="Alan Turing, 1950"),
+        dict(at=35.6, to=41.8, style="line", html="A camera that thinks<br>like a <em>cinematographer.</em>", fin=1.2, fout=0.9, y=25),
+        dict(at=43.0, to=50.0, style="title", html="Exposure, <em>Handled</em>.", y=44, out=False),
+        dict(at=45.4, to=50.0, style="link", html=SITE_URL, y=60, out=False),
+    ],
+    voice=[("v1a", 9.8), ("v1b", 13.6), ("v1c", 18.6), ("v1d", 25.6), ("h11", 43.6)],
+    sfx=[],
+    dims=[(41.8, 43.4, 0.0, 1.0)],
+    blacks=[(0.0, 1.6, 1.0, 0.0), (48.4, 50.0, 0.0, 1.0)],
+)
+
+# The hype film keeps the hype draft's music edit: "Beast" (115 BPM), film beat 0 = track beat -16, the drop at film
+# beat 16, a splice at film beat 64 to the track's last bar, and the music dropping out for the kill switch.
+V2 = dict(
+    dir="v2-hype", title="Exposure, Handled. (hype)", duration=s(70),
+    music=dict(file=HYPE / "music" / "beast.mp3", beast=True),
+    shots=[
+        ("reveal", "3d:h_reveal", 0, s(4), dict(push=[1.0, 1.04])),
+        ("dial", "3d:h_dial", s(4), s(5.5), dict(punch=1.06)),
+        ("vents", "3d:h_vents", s(5.5), s(7), dict(punch=1.06)),
+        ("ring", "3d:h_ring", s(7), s(8), dict(ms=s(0.5), punch=1.06)),
+        ("orbit", "3d:h_orbit", s(8), s(12), dict(punch=1.04)),
+        ("smash", "3d:h_smash", s(12), s(16), dict(push=[1.0, 1.12], pushEase="power2.in")),
+        ("burst", "3d:h_burst", s(16), s(24), dict(punch=1.08)),
+        ("iris", "3d:h_iris", s(24), s(28), dict(punch=1.05)),
+        ("agent", "3d:h_agent", s(28), s(32), dict(punch=1.04)),
+        ("eye", "3d:h_eye", s(32), s(34), dict(punch=1.03)),
+        ("dial2", "3d:h_dial", s(34), s(35), dict(ms=s(0.4), punch=1.05)),
+        ("ring2", "3d:h_ring", s(35), s(36), dict(ms=s(0.4), punch=1.05)),
+        ("swarm", "3d:h_swarm", s(36), s(40), dict(punch=1.06)),
+        ("burst2", "3d:h_burst", s(40), s(44), dict(ms=s(4), punch=1.05)),
+        ("iris2", "3d:h_iris", s(44), s(47), dict(ms=0.0, punch=1.04)),
+        ("kill", "3d:h_kill", s(47), s(50), dict(punch=1.02)),
+        ("slam", "3d:h_slam", s(50), s(58), dict(push=[1.0, 1.03])),
+        ("title", "3d:h_title", s(58), s(66), dict(push=[1.0, 1.03])),
+    ],
+    words=[
+        dict(at=s(0.25), to=s(1.45), style="huge", html="A camera"),
+        dict(at=s(1.5), to=s(2.95), style="huge", html="that thinks"),
+        dict(at=s(3.0), to=s(6.4), style="serif", html="like a <em>cinematographer.</em>"),
+        dict(at=s(24.15), to=s(27.7), style="huge", html="It sees."),
+        dict(at=s(28.15), to=s(31.7), style="huge", html="It decides."),
+        dict(at=s(54), to=s(70), style="title", html="Exposure, <em>Handled</em>.", y=24, out=False),
+        dict(at=s(64), to=s(70), style="link", html=SITE_URL, y=82, out=False),
+    ],
+    voice=[("h01", s(8.2)), ("v2a", s(12.2)), ("v2b", s(29.4)), ("v2c", s(30.9)), ("h06", s(33.2)), ("h07", s(44.2)),
+           ("h08", s(46.2)), ("h09", s(48.35)), ("h10", s(50.3)), ("h11", s(54.6))],
+    sfx=[(0, "impactPunch_heavy_000.ogg", -6), (0, "swish-7.wav", -9), (4, "impactMetal_light_001.ogg", -12), (5.5, "swish-3.wav", -12),
+         (7, "impactMetal_light_003.ogg", -12), (8, "swish-11.wav", -10), (12, "swish-7.wav", -11),
+         (16, "lowFrequency_explosion_000.ogg", -3), (16, "impactPunch_heavy_002.ogg", -6), (24, "impactMetal_002.ogg", -12),
+         (25, "impactMetal_002.ogg", -12), (26, "impactMetal_002.ogg", -12), (27, "impactMetal_002.ogg", -11), (28, "forceField_001.ogg", -14),
+         (36, "swish-3.wav", -10), (40, "swish-7.wav", -10), (45, "impactMetal_002.ogg", -13), (46, "impactMetal_002.ogg", -13),
+         (48, "lowFrequency_explosion_001.ogg", -4), (48, "impactPlate_heavy_002.ogg", -8),
+         (52, "lowFrequency_explosion_000.ogg", -2), (52, "impactMetal_heavy_001.ogg", -8), (52, "explosionCrunch_002.ogg", -10),
+         (54, "impactBell_heavy_001.ogg", -15)],
+    flashes=[(s(16), 0.85, 0.35), (s(24), 0.35, 0.2), (s(28), 0.3, 0.2), (s(36), 0.4, 0.25), (s(52), 0.9, 0.5)],
+    streaks=[(s(8), 38, 1), (s(16.02), 52, -1), (s(36), 30, 1), (s(52.02), 60, -1)],
+    kill=(s(48), s(50)),
+    dims=[(s(54), s(55), 0.0, 0.25), (s(63.5), s(64.5), 0.25, 0.55)],
+    blacks=[(s(68.6), s(70), 0.0, 1.0)],
+)
+
+# The story film: Saad's own footage (no client work, no faces), the light changing, the agent catching it.
+# Footage shots are filled in from video/v3-story/footage.json (picked from the catalogue); see FILMS.md.
+V3 = dict(
+    dir="v3-story", title="Exposure, Handled. (story)", duration=55.0,
+    music=dict(file=V / "music-candidates/film3/cassini-scott-buckley/sb_cassini.mp3", start=180.4, fade_in=0.4, fade_out=(53.6, 1.4), gain=-2.0),
+    shots=[],                                       # built in story_shots()
+    words=[
+        dict(at=0.9, to=5.4, style="quote", html="“There is nothing in this world that does not have a <em>decisive moment.</em>”"),
+        dict(at=5.4, to=7.6, style="quote", html="Cardinal de Retz"),
+        dict(at=12.4, to=15.8, style="line", html="The light won’t wait."),
+        dict(at=22.4, to=25.6, style="line", html="Neither will the moment."),
+        dict(at=43.3, to=47.6, style="line", html="What if your camera had<br>a <em>cinematographer</em> inside it?", fin=0.7),
+        dict(at=48.2, to=55.0, style="title", html="Exposure, <em>Handled</em>.", y=44, out=False),
+        dict(at=50.2, to=55.0, style="link", html=SITE_URL, y=60, out=False),
+    ],
+    voice=[("h01", 20.6), ("h04", 29.6), ("v3a", 45.9), ("h11", 48.8)],
+    sfx=[(42.8, "lowFrequency_explosion_000.ogg", -8), (28.9, "forceField_001.ogg", -16)],
+    flashes=[(42.8, 0.8, 0.6)],
+    dims=[(47.8, 48.8, 0.0, 0.6)],
+    blacks=[(0.0, 0.01, 1.0, 1.0), (7.4, 8.4, 1.0, 0.0), (53.6, 55.0, 0.0, 1.0)],
+)
+FILMS = {"v1": V1, "v2": V2, "v3": V3}
+
+
+def story_shots():
+    """The story's picture: footage picked in video/v3-story/footage.json ({"shots": [[id, file, at, to, ms, grade?], ...]}),
+    plus the 3D moment inside the camera."""
+    f = V / "v3-story" / "footage.json"
+    if not f.exists():
+        return []
+    spec = json.loads(f.read_text())
+    out = []
+    for row in spec["shots"]:
+        sid, src, at, to, ms = row[:5]
+        extra = dict(ms=ms, push=row[6] if len(row) > 6 else [1.0, 1.04], fadeIn=row[7] if len(row) > 7 else 0)
+        if len(row) > 5 and row[5]:
+            extra["grade"] = row[5]
+        out.append((sid, src, at, to, extra))
+    return out
+
+
+# ---------------------------------------------------------------- helpers
+def run(cmd, **kw):
+    return subprocess.run(cmd, check=True, **kw)
+
+
+def duration(path):
+    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)], capture_output=True, text=True)
+    return float(r.stdout.strip() or 0)
+
+
+def link(src, dst):
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists():
+        dst.unlink()
+    try:
+        os.link(src, dst)                           # a hard link: no extra disk
+    except OSError:
+        shutil.copy2(src, dst)
+
+
+def glow(shot):
+    """A gentle bloom on the 3D render (the crew's glow, the speculars): highlights blurred and screened back on."""
+    src, dst = OUT3D / (shot + ".mp4"), OUT3D / "glow" / (shot + ".mp4")
+    if not src.exists():
+        return None
+    if dst.exists() and dst.stat().st_mtime > src.stat().st_mtime:
+        return dst
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    g = ("[0:v]format=gbrp,split[a][b];[b]colorlevels=rimin=0.55:gimin=0.55:bimin=0.55,gblur=sigma=18,colorchannelmixer=rr=1:gg=0.9:bb=0.8[g];"
+         "[a][g]blend=all_mode=screen:all_opacity=0.55,format=yuv420p")
+    run(["nice", "-n", "10", "ffmpeg", "-v", "error", "-y", "-i", str(src), "-filter_complex", g, "-c:v", "libx264", "-preset", "medium",
+         "-crf", "13", "-movflags", "+faststart", str(dst)])
+    return dst
+
+
+# ---------------------------------------------------------------- steps
+def prep(F):
+    d = V / F["dir"]
+    a = d / "assets"
+    for sub in ("fonts", "vendor"):
+        (a / sub).mkdir(parents=True, exist_ok=True)
+    for f in (HYPE / "fonts").iterdir():
+        link(f, a / "fonts" / f.name)
+    link(HYPE / "vendor" / "gsap.min.js", a / "vendor" / "gsap.min.js")
+    link(HYPE / "grain.png", a / "grain.png")
+    (d / "meta.json").write_text(json.dumps({"id": "exposure-handled-" + F["dir"], "name": "exposure-handled-" + F["dir"],
+                                             "createdAt": "2026-10-22T05:00:00.000Z"}, indent=2) + "\n")
+    (d / "package.json").write_text(json.dumps({"name": "camera-agent-" + F["dir"], "private": True, "type": "module", "scripts": {
+        "dev": "npx --yes hyperframes@0.8.167 preview", "check": "npx --yes hyperframes@0.8.167 check",
+        "render": "npx --yes hyperframes@0.8.167 render"}}, indent=2) + "\n")
+    missing = []
+    for sid, src, *_ in all_shots(F):
+        if src.startswith("3d:"):
+            g = glow(src[3:])
+            if g:
+                link(g, a / "3d" / (src[3:] + ".mp4"))
+            else:
+                missing.append(src[3:])
+    print("prep %s: ready%s" % (F["dir"], ("; 3D still rendering: " + ", ".join(sorted(set(missing)))) if missing else ""))
+
+
+def all_shots(F):
+    return F["shots"] or story_shots() + [("catch", "3d:s_catch", 28.0, 32.0, dict(fadeIn=0.0, punch=1.03)),
+                                           ("hero", "3d:s_hero", 47.0, 55.0, dict(fadeIn=0.5, push=[1.0, 1.04]))]
+
+
+def voice_lines():
+    out = VOICE / "lines"
+    out.mkdir(parents=True, exist_ok=True)
+    trim = ("silenceremove=start_periods=1:start_threshold=-48dB:start_silence=0.01,areverse,"
+            "silenceremove=start_periods=1:start_threshold=-48dB:start_silence=0.04,areverse,highpass=f=80,"
+            "equalizer=f=3200:t=q:w=1.2:g=2.5,acompressor=threshold=0.12:ratio=3:attack=4:release=60:makeup=1.6")
+    srcs = {p.stem: p for p in VOICE.glob("*.mp3")}
+    for p in (HYPE / "voice" / "takes" / "imogen").glob("h*.mp3"):
+        srcs.setdefault(p.stem, p)
+    for k, p in sorted(srcs.items()):
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(p), "-af", trim, "-ar", "48000", "-ac", "1", str(out / (k + ".wav"))])
+    print("voice: %d lines -> %s" % (len(srcs), out.relative_to(ROOT)))
+
+
+def edit(F):
+    d = V / F["dir"]
+    shots, html = [], []
+    for i, (sid, src, at, to, ex) in enumerate(all_shots(F)):
+        e = dict(id=sid, at=round(at, 3), to=round(to, 3))
+        for k in ("push", "punch", "fadeIn", "fadeOut", "origin", "grade", "pushEase"):
+            if k in ex:
+                e[k] = ex[k]
+        kind, name = src.split(":", 1)
+        path = "3d/%s.mp4" % name if kind == "3d" else "footage/%s" % name
+        ms = ex.get("ms", 0.0)
+        html.append('      <div class="shot" id="%s"><video id="v_%s" class="clip" src="assets/%s" data-start="%s" data-duration="%s" '
+                    'data-media-start="%s" data-track-index="%d" muted playsinline></video></div>'
+                    % (sid, sid, path, round(at, 3), round(to - at, 3), round(ms, 3), i + 1))
+        shots.append(e)
+    E = dict(duration=round(F["duration"], 3), shots=shots,
+             words=[dict(w, at=round(w["at"], 3), to=round(w["to"], 3)) for w in F["words"]],
+             flashes=F.get("flashes", []), streaks=F.get("streaks", []), kill=F.get("kill"), dims=F.get("dims", []), blacks=F.get("blacks", []))
+    (d / "edit.js").write_text("// Made by video/tools/build_films.py. Don't edit by hand.\nwindow.EDIT = %s;\n" % json.dumps(E, ensure_ascii=False, indent=1))
+    page = (V / "tools" / "films_template.html").read_text().replace("{{DURATION}}", str(round(F["duration"], 3))).replace("{{SHOTS}}", "\n".join(html))
+    (d / "index.html").write_text(page)
+    vtt = ["WEBVTT", ""]
+    texts = {"v1a": "I watch the light.", "v1b": "I read it in stops.", "v1c": "I keep your look.", "v1d": "You keep the moment.",
+             "v2a": "On it.", "v2b": "Highlights first.", "v2c": "Faces next.", "v3a": "You frame. I'll handle the light.",
+             "h01": "Light's changing.", "h04": "Got it.", "h06": "Done.", "h07": "Want it back?", "h08": "One key.", "h09": "Stopped.",
+             "h10": "It's yours.", "h11": "Exposure… handled."}
+    for vid, at in F["voice"]:
+        f = VOICE / "lines" / (vid + ".wav")
+        dur = duration(f) if f.exists() else 1.0
+        vtt += ["%s --> %s" % (ts(at), ts(at + dur + 0.3)), texts[vid], ""]
+    (d / "captions.vtt").write_text("\n".join(vtt))
+    print("edit %s: %d shots, %.2f s" % (F["dir"], len(shots), F["duration"]))
+
+
+def ts(x):
+    return "%02d:%02d:%06.3f" % (x // 3600, x // 60 % 60, x % 60)
+
+
+def mix(F):
+    d = V / F["dir"] / "assets"
+    m = F["music"]
+    D = F["duration"] + 0.5
+    inputs, g = [], []
+    if m.get("beast"):                             # the hype draft's edit of "Beast", with the kill drop-out
+        drop, film0, splice, kill = 20.90, -16, (64, 264), 48
+        a0, seg1, b0 = drop + film0 * B, splice[0] * B, drop + splice[1] * B
+        vol = "if(lt(t,{a}),1,if(lt(t,{b}),0.04,if(lt(t,{c}),0.04+0.96*(t-{b})/({c}-{b}),1)))".format(a=s(kill), b=s(kill + 3), c=s(kill + 4))
+        inputs += ["-i", str(m["file"]), "-i", str(m["file"])]
+        g += ["[0:a]atrim=start=%.3f:duration=%.3f,asetpts=PTS-STARTPTS[m1]" % (a0, seg1 + 0.03),
+              "[1:a]atrim=start=%.3f,asetpts=PTS-STARTPTS[m2]" % b0,
+              "[m1][m2]acrossfade=d=0.03:c1=tri:c2=tri,aresample=48000,aformat=channel_layouts=stereo,"
+              "volume=eval=frame:volume='%s',afade=t=out:st=%.3f:d=%.3f,atrim=duration=%.3f[mus]" % (vol, s(68.6), s(70) - s(68.6) + 0.5, D)]
+    else:
+        inputs += ["-i", str(m["file"])]
+        fo = m["fade_out"]
+        g.append("[0:a]atrim=start=%.3f:duration=%.3f,asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,volume=%sdB,"
+                 "afade=t=in:st=0:d=%.2f,afade=t=out:st=%.3f:d=%.3f,apad=whole_dur=%.3f,atrim=duration=%.3f[mus]"
+                 % (m["start"], D, m.get("gain", 0.0), m["fade_in"], fo[0], fo[1], D, D))
+    n = len(inputs) // 2
+    fx = []
+    for b, f, gain in F["sfx"]:
+        inputs += ["-i", str(HYPE / "sfx" / f)]
+        at = s(b) if m.get("beast") else b
+        ms = int(at * 1000)
+        g.append("[%d:a]aresample=48000,aformat=channel_layouts=stereo,volume=%sdB,adelay=%d|%d[x%d]" % (n, gain, ms, ms, n))
+        fx.append("[x%d]" % n)
+        n += 1
+    vo = []
+    for vid, at in F["voice"]:
+        f = VOICE / "lines" / (vid + ".wav")
+        inputs += ["-i", str(f)]
+        ms = int(at * 1000)
+        g.append("[%d:a]aresample=48000,aformat=channel_layouts=stereo,adelay=%d|%d[v%d]" % (n, ms, ms, n))
+        vo.append("[v%d]" % n)
+        n += 1
+    g.append("%samix=inputs=%d:normalize=0,apad=whole_dur=%.3f,atrim=duration=%.3f,volume=2.2,asplit=2[vo1][vo2]" % ("".join(vo), len(vo), D, D))
+    g.append("[mus][vo1]sidechaincompress=threshold=0.02:ratio=7:attack=10:release=320:makeup=1[md]")
+    if fx:
+        g.append("%samix=inputs=%d:normalize=0,apad=whole_dur=%.3f,atrim=duration=%.3f[sfx]" % ("".join(fx), len(fx), D, D))
+        g.append("[md][sfx][vo2]amix=inputs=3:normalize=0,atrim=duration=%.3f[mx]" % D)
+    else:
+        g.append("[md][vo2]amix=inputs=2:normalize=0,atrim=duration=%.3f[mx]" % D)
+    g.append("[mx]loudnorm=I=-14:TP=-1.2:LRA=9,aresample=48000[out]")
+    out = d / "audio" / "mix.m4a"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(g), "-map", "[out]", "-c:a", "aac", "-b:a", "256k", str(out)])
+    print("mix %s: %.2f s, %d voice lines, %d effects" % (F["dir"], duration(out), len(vo), len(fx)))
+
+
+def render(F, draft=False):
+    d = V / F["dir"]
+    hf = ["npx", "--yes", "hyperframes@0.8.167"]
+    run(hf + ["lint"], cwd=d)
+    name = "%s-%s.mp4" % (F["dir"], "draft" if draft else "4k")
+    (d / "renders").mkdir(exist_ok=True)
+    args = ["render", "--fps", "24", "--workers", "2", "-o", "renders/" + name]
+    args += ["--quality", "looks"] if draft else ["--resolution", "landscape-4k", "--quality", "delivery"]
+    run(["nice", "-n", "5"] + hf + args, cwd=d)
+    print("render %s -> %s" % (F["dir"], d / "renders" / name))
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("step", choices=["prep", "voice", "edit", "mix", "render"])
+    ap.add_argument("films", nargs="*", default=["v1", "v2", "v3"])
+    ap.add_argument("--draft", action="store_true")
+    a = ap.parse_args()
+    if a.step == "voice":
+        voice_lines()
+    for k in a.films if a.step != "voice" else []:
+        F = FILMS[k]
+        {"prep": prep, "edit": edit, "mix": mix, "render": lambda F: render(F, a.draft)}[a.step](F)
