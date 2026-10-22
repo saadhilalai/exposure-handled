@@ -48,9 +48,9 @@ V1 = dict(
     shots=[
         ("sil", "3d:c_silhouette", 38.5, 43.5, dict(cls="paper")),
         ("mg1", "3d:c_glint", 43.5, 44.65, dict()),
-        ("mg2", "3d:c_iris", 45.65, 46.5, dict()),
+        ("mg2", "3d:c_ring", 45.65, 46.5, dict()),
         ("mg3", "3d:c_dial", 47.25, 47.9, dict()),
-        ("mg4", "3d:c_ring", 48.5, 49.05, dict()),
+        ("mg4", "3d:c_glint", 48.5, 49.05, dict(ms=0.8)),
     ],
     blackCards=[(49.05, 51.55), (54.26, 58.6)],
     words=[
