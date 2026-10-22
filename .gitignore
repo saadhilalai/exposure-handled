@@ -90,3 +90,5 @@ video/v[123]-*/renders/
 video/v[123]-*/.hyperframes/
 video/music-candidates/
 video/films-voice/
+video/stock/
+video/v[123]-*/assets/art/

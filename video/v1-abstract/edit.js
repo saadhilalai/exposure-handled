@@ -1,298 +1,211 @@
 // Made by video/tools/build_films.py. Don't edit by hand.
 window.EDIT = {
- "duration": 52.0,
+ "duration": 58.6,
+ "calm": {
+  "A": [
+   0.0,
+   8.6
+  ],
+  "C": [
+   12.2,
+   19.0
+  ],
+  "D": [
+   19.0,
+   25.0
+  ],
+  "E": [
+   25.0,
+   32.5
+  ],
+  "F": [
+   32.5,
+   38.5
+  ],
+  "flashes": [
+   [
+    "#m1",
+    44.65,
+    45.65
+   ],
+   [
+    "#m2",
+    46.5,
+    47.25
+   ],
+   [
+    "#m3",
+    47.9,
+    48.5
+   ]
+  ]
+ },
  "shots": [
   {
-   "id": "form",
-   "at": 6.75,
-   "to": 14.0,
-   "push": [
-    1.0,
-    1.04
-   ]
+   "id": "sil",
+   "at": 38.5,
+   "to": 43.5
   },
   {
-   "id": "m_eye",
-   "at": 14.0,
-   "to": 14.85,
-   "push": [
-    1.0,
-    1.02
-   ]
+   "id": "mg1",
+   "at": 43.5,
+   "to": 44.65
   },
   {
-   "id": "m_iris1",
-   "at": 14.85,
-   "to": 15.55,
-   "push": [
-    1.0,
-    1.02
-   ]
+   "id": "mg2",
+   "at": 45.65,
+   "to": 46.5
   },
   {
-   "id": "m_dial",
-   "at": 15.55,
-   "to": 16.1
+   "id": "mg3",
+   "at": 47.25,
+   "to": 47.9
   },
   {
-   "id": "m_ring",
-   "at": 16.1,
-   "to": 16.55
-  },
-  {
-   "id": "m_iris2",
-   "at": 16.55,
-   "to": 16.9
-  },
-  {
-   "id": "m_agent",
-   "at": 16.9,
-   "to": 17.2
-  },
-  {
-   "id": "m_iris3",
-   "at": 17.2,
-   "to": 17.45
-  },
-  {
-   "id": "solid",
-   "at": 18.2,
-   "to": 21.1,
-   "push": [
-    1.0,
-    1.02
-   ]
-  },
-  {
-   "id": "open",
-   "at": 20.7,
-   "to": 28.7,
-   "push": [
-    1.0,
-    1.02
-   ],
-   "fadeIn": 0.4
-  },
-  {
-   "id": "agent",
-   "at": 28.3,
-   "to": 35.3,
-   "push": [
-    1.0,
-    1.03
-   ],
-   "fadeIn": 0.4
-  },
-  {
-   "id": "close",
-   "at": 34.9,
-   "to": 43.875,
-   "push": [
-    1.0,
-    1.02
-   ],
-   "fadeIn": 0.4
+   "id": "mg4",
+   "at": 48.5,
+   "to": 49.05
   }
  ],
  "words": [
   {
-   "at": 0.8,
-   "to": 4.9,
-   "style": "quote",
-   "html": "I propose to consider the question,",
-   "y": 45,
-   "cut": true
+   "at": 8.6,
+   "to": 12.2,
+   "cls": "name",
+   "html": "Alan Turing"
   },
   {
-   "at": 2.3,
-   "to": 4.9,
-   "style": "quote",
-   "html": "<em>‘Can machines think?’</em>",
-   "y": 55,
-   "cut": true
+   "at": 16.4,
+   "to": 18.9,
+   "html": "Light",
+   "y": 86
   },
   {
-   "at": 5.1,
-   "to": 6.5,
-   "style": "name",
-   "html": "Alan Turing, 1950",
-   "cut": true
+   "at": 21.4,
+   "to": 24.8,
+   "html": "Never still",
+   "y": 86
   },
   {
-   "at": 36.6,
-   "to": 41.4,
-   "style": "line",
-   "html": "A camera that thinks",
-   "y": 45,
-   "cut": true
+   "at": 33.4,
+   "to": 35.6,
+   "html": "Every stop",
+   "y": 9.5
   },
   {
-   "at": 36.6,
-   "to": 41.4,
-   "style": "line",
-   "html": "like a <em>cinematographer.</em>",
-   "y": 56,
-   "cut": true
+   "at": 35.8,
+   "to": 38.3,
+   "html": "Your look",
+   "y": 9.5
   },
   {
-   "at": 47.0,
-   "to": 52.0,
-   "style": "title",
+   "at": 41.0,
+   "to": 43.3,
+   "html": "The moment",
+   "y": 86
+  },
+  {
+   "at": 54.26,
+   "to": 58.6,
+   "cls": "title",
    "html": "Exposure, <em>Handled</em>.",
    "y": 46,
-   "size": 112,
-   "cut": true,
    "out": false
   },
   {
-   "at": 48.6,
-   "to": 52.0,
-   "style": "link",
+   "at": 55.9,
+   "to": 58.6,
+   "cls": "link",
    "html": "s4dai-exposure-handled.static.hf.space",
    "y": 58,
-   "size": 34,
-   "cut": true,
    "out": false
   }
  ],
- "flashes": [
-  [
-   18.2,
-   0.45,
-   0.6
-  ]
- ],
- "streaks": [],
- "kill": null,
- "dims": [
-  [
-   36.3,
-   36.6,
-   0.0,
-   0.45
-  ],
-  [
-   41.4,
-   41.7,
-   0.45,
-   0.0
-  ]
- ],
- "blacks": [
-  [
-   50.8,
-   52.0,
-   0.0,
-   1.0
-  ]
- ],
- "letterbox": false,
- "cards": [
-  [
-   0.0,
-   6.75
-  ],
-  [
-   17.45,
-   18.2
-  ],
-  [
-   47.0,
-   52.0
-  ]
- ],
- "look": "sepia(0.28) saturate(0.82) contrast(1.06) brightness(1.04)",
  "panels": [
   {
-   "at": 43.875,
-   "to": 44.295,
-   "cls": "p-news grainy",
+   "cls": "p-news",
    "html": "Exposure, Handled.",
-   "dx": -60
+   "dx": -60,
+   "at": 51.55,
+   "to": 51.97
   },
   {
-   "at": 44.295,
-   "to": 44.675,
-   "cls": "p-code",
-   "html": "<i>&lt;title&gt;</i>Exposure, Handled.<i>&lt;/title&gt;</i>",
-   "dx": 40
-  },
-  {
-   "at": 44.675,
-   "to": 45.015,
-   "cls": "p-type grainy",
+   "cls": "p-type",
    "html": "EXPOSURE, HANDLED.",
-   "dx": 0
+   "dx": 0,
+   "at": 51.97,
+   "to": 52.35
   },
   {
-   "at": 45.015,
-   "to": 45.315,
-   "cls": "p-bauhaus",
+   "cls": "p-clay",
    "html": "Exposure, Handled.",
-   "dx": -30
+   "dx": 20,
+   "at": 52.35,
+   "to": 52.69
   },
   {
-   "at": 45.315,
-   "to": 45.585,
    "cls": "p-chalk",
    "html": "Exposure, Handled.",
-   "dx": 20
+   "dx": 0,
+   "at": 52.69,
+   "to": 52.99
   },
   {
-   "at": 45.585,
-   "to": 45.825,
-   "cls": "p-readme",
-   "html": "<i>#</i> Exposure, Handled.",
-   "dx": 70
+   "cls": "p-sage",
+   "html": "Exposure, Handled.",
+   "dx": 10,
+   "at": 52.99,
+   "to": 53.26
   },
   {
-   "at": 45.825,
-   "to": 46.045,
    "cls": "p-note",
    "html": "Exposure, Handled.",
-   "dx": -20
+   "dx": -20,
+   "at": 53.26,
+   "to": 53.5
   },
   {
-   "at": 46.045,
-   "to": 46.245,
-   "cls": "p-cyan",
+   "cls": "p-ochre",
    "html": "Exposure, Handled.",
-   "dx": 0
+   "dx": -30,
+   "at": 53.5,
+   "to": 53.72
   },
   {
-   "at": 46.245,
-   "to": 46.425,
    "cls": "p-term",
    "html": "<b>$</b> exposure, handled<u></u>",
-   "dx": -40
+   "dx": -40,
+   "at": 53.72,
+   "to": 53.92
   },
   {
-   "at": 46.425,
-   "to": 46.585,
-   "cls": "p-enso grainy",
+   "cls": "p-dusk",
    "html": "Exposure, Handled.",
-   "dx": 10
+   "dx": 0,
+   "at": 53.92,
+   "to": 54.1
   },
   {
-   "at": 46.585,
-   "to": 46.725,
-   "cls": "p-tape",
-   "html": "EXPOSURE, HANDLED.",
-   "dx": 0
-  },
-  {
-   "at": 46.725,
-   "to": 46.855,
-   "cls": "p-blue",
+   "cls": "p-umber",
    "html": "Exposure, Handled.",
-   "dx": -20
-  },
-  {
-   "at": 46.855,
-   "to": 46.98,
-   "cls": "p-menu",
-   "html": "Exposure · Handled",
-   "dx": 0
+   "dx": 0,
+   "at": 54.1,
+   "to": 54.26
   }
+ ],
+ "blackCards": [
+  [
+   49.05,
+   51.55
+  ],
+  [
+   54.26,
+   58.6
+  ]
+ ],
+ "dark": [],
+ "fadeOut": [
+  57.6,
+  58.6
  ]
 };

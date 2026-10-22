@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Exposure, Handled.</title>
+    <!-- The calm film: art first. Hand-made shapes on warm paper (a horizon, a sun, light that becomes a lens, an eye,
+         a frame), the camera shown sparingly as art, one or two words at a time. Made by video/tools/build_films.py
+         from this template; the times live in CALM below. Every line wobbles a little (an SVG displacement whose seed
+         steps 8 times a second), like ink drawn by hand. -->
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="edit.js"></script>
+    <style>
+      @font-face { font-family: "Instrument Serif"; src: url("assets/fonts/InstrumentSerif-Regular.woff2") format("woff2"); }
+      @font-face { font-family: "Instrument Serif"; src: url("assets/fonts/InstrumentSerif-Italic.woff2") format("woff2"); font-style: italic; }
+      @font-face { font-family: "D-DIN"; src: url("assets/fonts/D-DIN.woff2") format("woff2"); }
+      @font-face { font-family: "D-DIN Exp"; src: url("assets/fonts/D-DINExp-Bold.woff2") format("woff2"); font-weight: 700; }
+      :root { --paper: #ede6d8; --ink: #26221e; --ochre: #c89a45; --clay: #b0664b; --sage: #8e9b7c; --umber: #3f332a; --dusk: #5e6d78;
+        --bone: #e6dccb; --serif: "Instrument Serif", "Times New Roman", serif; --sans: "D-DIN", "Helvetica Neue", Arial, sans-serif;
+        --wide: "D-DIN Exp", "D-DIN", sans-serif; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; }
+      #art { position: absolute; inset: 0; z-index: 2; }
+      .clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .shot { position: absolute; inset: 0; z-index: 5; overflow: hidden; visibility: hidden; }
+      .shot.paper { background: var(--paper); }
+      #tex { position: absolute; inset: 0; z-index: 20; pointer-events: none; mix-blend-mode: multiply; background: url("assets/art/paper.png") center / cover; }
+      #fleck { position: absolute; inset: 0; z-index: 21; pointer-events: none; mix-blend-mode: screen; opacity: 0; background: url("assets/art/flecks.png") center / cover; }
+      .word { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); z-index: 30; text-align: center; white-space: nowrap;
+        font: 400 128px/1 var(--serif); letter-spacing: -.012em; color: var(--ink); visibility: hidden; }
+      .word em { font-style: italic; }
+      .word.light { color: #f2ece2; }
+      .word.name { font-size: 104px; }
+      .word.title { font-size: 120px; color: #f4f3ef; }
+      .word.link { font: 400 34px/1 var(--sans); letter-spacing: .04em; color: #f4f3ef; }
+      /* "same words, many surfaces", in the film's earthy palette */
+      .panel { position: absolute; inset: 0; z-index: 28; overflow: hidden; visibility: hidden; }
+      .panel .ph { position: absolute; left: 50%; top: 47%; transform: translate(calc(-50% + var(--dx, 0px)), -50%); white-space: nowrap; }
+      .p-news { background: #ebe6db; color: #1d1a17; } .p-news .ph { font: 700 250px/1 "Big Caslon", Baskerville, serif; letter-spacing: -.02em; }
+      .p-type { background: #e9dfc9; color: #2a251f; } .p-type .ph { font: 400 170px/1 "American Typewriter", "Courier New", monospace; }
+      .p-type::before { content: ""; position: absolute; left: 0; right: 0; top: 61%; height: 3px; background: #2a251f; opacity: .8; }
+      .p-clay { background: #b0664b; color: #f1e9dc; } .p-clay .ph { font: italic 400 220px/1 Didot, "Bodoni 72", serif; }
+      .p-chalk { background: #000; color: #efe9df; } .p-chalk .ph { font: 400 190px/1 Chalkduster, "Marker Felt", sans-serif; }
+      .p-sage { background: #8e9b7c; color: #1f231b; }
+      .p-sage::before { content: ""; position: absolute; left: 50%; top: 50%; width: 820px; height: 820px; border-radius: 50%; border: 34px solid #1f231b;
+        border-right-color: transparent; transform: translate(-50%, -50%) rotate(28deg); opacity: .85; }
+      .p-sage .ph { font: italic 400 210px/1 Baskerville, "Big Caslon", serif; }
+      .p-note { background: #000; color: #2a251f; }
+      .p-note::before { content: ""; position: absolute; left: 50%; top: 50%; width: 1500px; height: 1500px; background: #e7c873; transform: translate(-50%, -50%) rotate(-3deg); }
+      .p-note .ph { font: 700 200px/1 Noteworthy, "Marker Felt", sans-serif; transform: translate(calc(-50% + var(--dx, 0px)), -50%) rotate(-3deg); }
+      .p-ochre { background: #e9e0cf; color: #1d1a17; }
+      .p-ochre::before { content: ""; position: absolute; width: 760px; height: 760px; border-radius: 50%; background: #c89a45; left: 58%; top: 50%; transform: translate(-50%, -50%); }
+      .p-ochre .ph { font: 700 210px/1 Futura, "Avenir Next", sans-serif; letter-spacing: -.02em; }
+      .p-term { background: #000; color: #efe9df; } .p-term .ph { font: 400 92px/1 Menlo, monospace; } .p-term .ph b { color: #c89a45; font-weight: 400; }
+      .p-term .ph u { text-decoration: none; display: inline-block; width: .6em; height: 1em; background: #efe9df; vertical-align: -.12em; margin-left: .1em; }
+      .p-dusk { background: #5e6d78; color: #f0ebe2; } .p-dusk .ph { font: 600 200px/1 "Avenir Next", Avenir, sans-serif; letter-spacing: -.01em; }
+      .p-umber { background: #3f332a; color: #ede6d8; } .p-umber .ph { font: 400 230px/1 var(--serif); }
+      #card { position: absolute; inset: 0; z-index: 29; background: #000; visibility: hidden; }
+      #fade { position: absolute; inset: 0; z-index: 60; background: #000; opacity: 0; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="{{DURATION}}" data-width="1920" data-height="1080">
+      <svg id="art" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="hand" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence id="handNoise" type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="1" />
+            <feDisplacementMap in="SourceGraphic" scale="5" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+          <filter id="soft"><feGaussianBlur stdDeviation="22" /></filter>
+          <clipPath id="sky"><path d="M0,0 L1920,0 L1920,640 Q960,596 0,640 Z" /></clipPath>
+          <radialGradient id="glow"><stop offset="0" stop-color="#e7c27a" stop-opacity=".9" /><stop offset="1" stop-color="#e7c27a" stop-opacity="0" /></radialGradient>
+        </defs>
+        <!-- A: the horizon, and a sun rising behind it -->
+        <g id="sA">
+          <path id="aField" d="M0,640 Q960,596 1920,640 L1920,1080 L0,1080 Z" fill="#3f332a" />
+          <g clip-path="url(#sky)"><circle id="aGlow" cx="960" cy="700" r="330" fill="url(#glow)" opacity="0" />
+            <circle id="aSun" cx="960" cy="780" r="128" fill="#c89a45" filter="url(#hand)" /></g>
+          <path id="aLine" d="M-20,641 Q960,597 1940,641" fill="none" stroke="#26221e" stroke-width="3.2" stroke-linecap="round" filter="url(#hand)" />
+        </g>
+        <!-- C: light -->
+        <g id="sC">
+          <circle id="cHalo3" cx="960" cy="470" r="430" fill="#e9d3a3" opacity=".35" />
+          <circle id="cHalo2" cx="960" cy="470" r="360" fill="#e2c07c" opacity=".45" />
+          <path id="cSun" fill="#c89a45" filter="url(#hand)" />
+          <g id="cRays" stroke="#26221e" stroke-width="3" stroke-linecap="round" filter="url(#hand)"></g>
+        </g>
+        <!-- D: never still: the light breathes, a shadow drifts across -->
+        <g id="sD">
+          <path id="dBlob" fill="#c89a45" filter="url(#hand)" />
+          <path id="dShadow" fill="#3f332a" opacity=".82" filter="url(#hand)" />
+          <path id="dLine" fill="none" stroke="#26221e" stroke-width="3" filter="url(#hand)" />
+        </g>
+        <!-- E: a lens, then an eye -->
+        <g id="sE" filter="url(#hand)">
+          <circle id="eR1" cx="960" cy="520" r="300" fill="none" stroke="#26221e" stroke-width="3" />
+          <circle id="eR2" cx="960" cy="520" r="232" fill="none" stroke="#26221e" stroke-width="3" />
+          <circle id="eR3" cx="960" cy="520" r="170" fill="#c89a45" stroke="#26221e" stroke-width="3" />
+          <path id="eAp" fill="#26221e" />
+          <circle id="eSpec" cx="905" cy="470" r="18" fill="#ede6d8" />
+          <path id="eLidT" fill="none" stroke="#26221e" stroke-width="4" stroke-linecap="round" />
+          <path id="eLidB" fill="none" stroke="#26221e" stroke-width="4" stroke-linecap="round" />
+          <path id="eLid" fill="#ede6d8" />
+        </g>
+        <!-- F: a frame, the light inside it stepping through stops and settling -->
+        <g id="sF">
+          <g id="fScene"><rect x="410" y="210" width="1100" height="620" fill="#e6dccb" />
+            <rect id="fSky" x="410" y="210" width="1100" height="410" fill="#c89a45" />
+            <circle id="fSun" cx="960" cy="620" r="110" fill="#e7c27a" />
+            <rect x="410" y="620" width="1100" height="210" fill="#3f332a" /></g>
+          <g id="fCorners" fill="none" stroke="#26221e" stroke-width="5" stroke-linecap="round" filter="url(#hand)">
+            <path d="M410,300 L410,210 L520,210" /><path d="M1400,210 L1510,210 L1510,300" /><path d="M1510,740 L1510,830 L1400,830" /><path d="M520,830 L410,830 L410,740" /></g>
+          <g id="fTicks" stroke="#26221e" stroke-width="3" filter="url(#hand)"></g>
+          <path id="fNeedle" d="M960,868 L944,898 L976,898 Z" fill="#b0664b" />
+        </g>
+        <!-- montage art flashes -->
+        <g id="m1"><rect width="1920" height="1080" fill="#c89a45" /><circle cx="960" cy="540" r="300" fill="none" stroke="#26221e" stroke-width="6" filter="url(#hand)" />
+          <circle cx="960" cy="540" r="200" fill="none" stroke="#26221e" stroke-width="6" filter="url(#hand)" /></g>
+        <g id="m2"><rect width="1920" height="1080" fill="#3f332a" /><path d="M520,540 Q960,200 1400,540 Q960,880 520,540 Z" fill="none" stroke="#ede6d8" stroke-width="6" filter="url(#hand)" />
+          <circle cx="960" cy="540" r="150" fill="#c89a45" filter="url(#hand)" /></g>
+        <g id="m3"><rect width="1920" height="1080" fill="#8e9b7c" /><g fill="none" stroke="#26221e" stroke-width="7" stroke-linecap="round" filter="url(#hand)">
+          <path d="M410,300 L410,210 L520,210" /><path d="M1400,210 L1510,210 L1510,300" /><path d="M1510,740 L1510,830 L1400,830" /><path d="M520,830 L410,830 L410,740" /></g></g>
+      </svg>
+{{SHOTS}}
+      <div id="tex"></div>
+      <div id="fleck"></div>
+      <div id="card"></div>
+      <div id="words"></div>
+      <div id="fade"></div>
+      <audio id="mix" src="assets/audio/mix.m4a" data-start="0" data-duration="{{DURATION}}" data-media-start="0" data-track-index="40" data-volume="1"></audio>
+    </div>
+
+    <script>
+      (function () {
+        var E = window.EDIT, C = E.calm, tl = gsap.timeline({ paused: true });
+        var $ = function (s) { return document.querySelector(s); };
+        var NS = "http://www.w3.org/2000/svg";
+        function show(sel, a, b) { tl.set(sel, { visibility: "visible" }, a); if (b != null) tl.set(sel, { visibility: "hidden" }, b); }
+        function draw(el, a, d, ease) {                          // ink drawing on: dashoffset from full length to 0
+          var len = el.getTotalLength ? el.getTotalLength() : 1000;
+          gsap.set(el, { strokeDasharray: len, strokeDashoffset: len });
+          tl.to(el, { strokeDashoffset: 0, duration: d, ease: ease || "power1.inOut" }, a);
+        }
+        // a wobbly closed shape: radius r(θ) breathing with time t (pure function of t, so seeking is exact)
+        function blob(cx, cy, r, t, amp, n) {
+          var d = "", N = n || 72;
+          for (var i = 0; i <= N; i++) {
+            var th = i / N * Math.PI * 2;
+            var k = 1 + amp * (0.55 * Math.sin(3 * th + t * 0.9) + 0.3 * Math.sin(5 * th - t * 1.3 + 1.7) + 0.15 * Math.sin(2 * th + t * 0.6 + 0.4));
+            var x = cx + Math.cos(th) * r * k, y = cy + Math.sin(th) * r * k;
+            d += (i ? "L" : "M") + x.toFixed(1) + "," + y.toFixed(1);
+          }
+          return d + "Z";
+        }
+        function ngon(cx, cy, r, n, rot) {
+          var d = "";
+          for (var i = 0; i <= n; i++) { var a = rot + i / n * Math.PI * 2; d += (i ? "L" : "M") + (cx + Math.cos(a) * r).toFixed(1) + "," + (cy + Math.sin(a) * r).toFixed(1); }
+          return d + "Z";
+        }
+        // scenes are hidden until their time
+        ["#sA", "#sC", "#sD", "#sE", "#sF", "#m1", "#m2", "#m3"].forEach(function (s) { gsap.set(s, { visibility: "hidden" }); });
+
+        // ---- A: horizon and sun (0 → name card) ----
+        show("#sA", C.A[0], C.A[1]);
+        gsap.set("#aField", { y: 460 });                          // the dark field rises into place under the line
+        tl.to("#aField", { y: 0, duration: 3.2, ease: "power2.out" }, C.A[0] + 0.2);
+        draw($("#aLine"), C.A[0] + 0.4, 3.6);
+        tl.fromTo("#aSun", { attr: { cy: 790 } }, { attr: { cy: 590 }, duration: C.A[1] - C.A[0] - 1.6, ease: "sine.out" }, C.A[0] + 1.6);
+        tl.fromTo("#aGlow", { opacity: 0 }, { opacity: 0.8, duration: 4, ease: "power1.inOut" }, C.A[0] + 3);
+
+        // ---- C: light: the sun, big, rays drawn one by one ----
+        show("#sC", C.C[0], C.C[1]);
+        var rays = $("#cRays");
+        for (var i = 0; i < 14; i++) {
+          var a = i / 14 * Math.PI * 2 - Math.PI / 2, p = document.createElementNS(NS, "path");
+          p.setAttribute("d", "M" + (960 + Math.cos(a) * 330).toFixed(1) + "," + (470 + Math.sin(a) * 330).toFixed(1) + " L" + (960 + Math.cos(a) * 400).toFixed(1) + "," + (470 + Math.sin(a) * 400).toFixed(1));
+          rays.appendChild(p);
+          draw(p, C.C[0] + 1.0 + i * 0.22, 0.5, "power2.out");
+        }
+        tl.fromTo(["#cHalo2", "#cHalo3"], { scale: 0.7, svgOrigin: "960 470" }, { scale: 1.06, svgOrigin: "960 470", duration: C.C[1] - C.C[0], ease: "sine.out" }, C.C[0]);
+
+        // ---- D: never still ----
+        show("#sD", C.D[0], C.D[1]);
+        draw($("#dLine"), C.D[0] + 0.2, 2.5);
+        $("#dLine").setAttribute("d", "M-20,760 C400,700 800,820 1200,740 S1700,700 1940,770");
+
+        // ---- E: lens, aperture, then an eye that blinks ----
+        show("#sE", C.E[0], C.E[1]);
+        ["#eR1", "#eR2", "#eR3"].forEach(function (s, i) { draw($(s), C.E[0] + 0.2 + i * 0.5, 1.4); });
+        $("#eLidT").setAttribute("d", "M470,520 Q960,150 1450,520");
+        $("#eLidB").setAttribute("d", "M470,520 Q960,890 1450,520");
+        draw($("#eLidT"), C.E[0] + 3.4, 1.3); draw($("#eLidB"), C.E[0] + 3.6, 1.3);
+        tl.fromTo("#eSpec", { opacity: 0 }, { opacity: 1, duration: 0.6 }, C.E[0] + 1.6);
+
+        // ---- F: frame, stops ----
+        show("#sF", C.F[0], C.F[1]);
+        var ticks = $("#fTicks");
+        for (var j = -6; j <= 6; j++) {
+          var t = document.createElementNS(NS, "path"), x = 960 + j * 46, h = j % 3 === 0 ? 26 : 14;
+          t.setAttribute("d", "M" + x + "," + (860 - h) + " L" + x + ",860"); ticks.appendChild(t);
+          draw(t, C.F[0] + 0.8 + (j + 6) * 0.05, 0.3);
+        }
+        gsap.set("#fScene", { opacity: 0 });
+        tl.to("#fScene", { opacity: 1, duration: 0.8 }, C.F[0] + 0.2);
+        Array.prototype.forEach.call(document.querySelectorAll("#fCorners path"), function (p, i) { draw(p, C.F[0] + 0.1 + i * 0.12, 0.7, "power2.out"); });
+        // exposure: too bright, too dark, then right (the needle walks the stops back to centre)
+        var steps = [[C.F[0] + 1.2, 1.55, 3], [C.F[0] + 2.3, 0.45, -3], [C.F[0] + 3.4, 1.0, 0]];
+        tl.set("#fScene", { filter: "brightness(1)" }, C.F[0]);
+        steps.forEach(function (s) {
+          tl.to("#fScene", { filter: "brightness(" + s[1] + ")", duration: 0.5, ease: "power2.inOut" }, s[0]);
+          tl.to("#fNeedle", { x: s[2] * 46, duration: 0.5, ease: "power2.inOut" }, s[0]);
+        });
+
+        // ---- montage art flashes ----
+        (C.flashes || []).forEach(function (f) { show(f[0], f[1], f[2]); });
+
+        // ---- one clock drives the living shapes (seek-safe) ----
+        var clock = { t: 0 };
+        var cSun = $("#cSun"), dBlob = $("#dBlob"), dSh = $("#dShadow"), eAp = $("#eAp"), eLid = $("#eLid");
+        tl.to(clock, { t: E.duration, duration: E.duration, ease: "none", onUpdate: function () {
+          var t = clock.t;
+          if (t >= C.C[0] && t < C.C[1]) cSun.setAttribute("d", blob(960, 470, 300, t * 0.6, 0.012));
+          if (t >= C.D[0] && t < C.D[1]) {
+            var u = t - C.D[0];
+            dBlob.setAttribute("d", blob(960, 470, 300 + 20 * Math.sin(u * 0.8), t * 1.1, 0.06 + 0.03 * Math.sin(u * 0.5)));
+            var sx = -500 + u / (C.D[1] - C.D[0]) * 2400;                       // a shadow drifting across the light
+            dSh.setAttribute("d", blob(sx, 430, 260, t * 0.8, 0.12));
+            var warm = Math.min(1, u / 4);
+            dBlob.setAttribute("fill", "rgb(" + Math.round(200 - 24 * warm) + "," + Math.round(154 - 52 * warm) + "," + Math.round(69 + 6 * warm) + ")");
+          }
+          if (t >= C.E[0] && t < C.E[1]) {
+            var v = t - C.E[0];                                                // the aperture closes and opens, then the eye blinks
+            var ar = 120 - 70 * Math.max(0, Math.sin(Math.min(1, Math.max(0, (v - 1.6) / 2.2)) * Math.PI));
+            eAp.setAttribute("d", ngon(960, 520, ar, 11, v * 0.15));
+            var bl = (v > 5.2 && v < 5.7) ? Math.sin((v - 5.2) / 0.5 * Math.PI) : 0;
+            var top = 520 - 370 * (1 - bl), bot = 520 + 370 * (1 - bl);
+            eLid.setAttribute("d", bl > 0.01 ? "M470,520 Q960," + top + " 1450,520 Q960," + bot + " 470,520 Z M470,520 Q960,150 1450,520 Q960,890 470,520 Z" : "M0,0");
+            eLid.setAttribute("fill-rule", "evenodd");
+          }
+        } }, 0);
+
+        // ---- the hand: line boil, 8 steps a second ----
+        for (var g = 0; g < Math.ceil(E.duration * 8); g++) tl.set("#handNoise", { attr: { seed: 1 + (g % 6) } }, g / 8);
+
+        // ---- 3D shots and paper/black states ----
+        E.shots.forEach(function (s) { show("#" + s.id, s.at, s.to); });
+        (E.blackCards || []).forEach(function (c) { show("#card", c[0], c[1]); tl.set("#tex", { opacity: 0 }, c[0]); tl.set("#tex", { opacity: 1 }, c[1]); });
+        (E.dark || []).forEach(function (d) { tl.set("#tex", { opacity: 0.35 }, d[0]); tl.set("#tex", { opacity: 1 }, d[1]); });
+
+        // ---- words: hard on, hard off ----
+        E.words.forEach(function (w) {
+          var d = document.createElement("div"); d.className = "word " + (w.cls || ""); d.innerHTML = w.html; $("#words").appendChild(d);
+          if (w.y != null) d.style.top = w.y + "%";
+          show(d, w.at, w.out === false ? null : w.to);
+        });
+        // ---- the same words on many surfaces ----
+        (E.panels || []).forEach(function (p) {
+          var d = document.createElement("div"); d.className = "panel " + p.cls; d.innerHTML = '<div class="ph">' + p.html + "</div>";
+          if (p.dx) d.style.setProperty("--dx", p.dx + "px");
+          $("#root").appendChild(d); show(d, p.at, p.to);
+        });
+        if (E.fadeOut) tl.fromTo("#fade", { opacity: 0 }, { opacity: 1, duration: E.fadeOut[1] - E.fadeOut[0], ease: "power1.in", immediateRender: false }, E.fadeOut[0]);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>
