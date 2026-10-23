@@ -1,4 +1,4 @@
-// The backbone of the page: an original cinema camera, inspired by the FX2 (no maker's name, not a copy of any
+// The backbone of the page: an original cinema camera, inspired by the Sony cinema camera (no maker's name, not a copy of any
 // product), that comes apart into an exploded view as you scroll. Inside, a crew of tiny orange agents works:
 // they swarm the sensor for ISO, crank the iris for aperture, repaint the colour chip for white balance, and
 // freeze the instant the kill switch is pressed. At the end the camera snaps back together.

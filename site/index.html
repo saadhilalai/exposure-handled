@@ -89,7 +89,7 @@
     <h1 class="hero-title" id="hero-title"><span class="line">Exposure,</span> <span class="line"><em>handled.</em></span></h1>
     <div class="scroll-cue" aria-hidden="true"><i></i></div>
     <aside class="nerd note">
-      <b>Illustration.</b> A rendered scene, not footage. The real agent reads the FX2's S-Log3 live view over USB and, by default, only changes ISO. Aperture, shutter and WB need <code>--allow-exposure</code>.
+      <b>Illustration.</b> A rendered scene, not footage. The real agent reads the Sony cinema camera's S-Log3 live view over USB and, by default, only changes ISO. Aperture, shutter and WB need <code>--allow-exposure</code>.
     </aside>
   </div>
 </section>
@@ -99,7 +99,7 @@
   <div class="inside-pin">
     <div class="beat" data-beat="crew">
       <h2 class="big"><span class="line">Meet the crew</span> <span class="line"><em>inside.</em></span></h2>
-      <aside class="nerd note"><b>A picture of the idea.</b> The real agent is one Python loop that runs on every live-view frame, about 24 a second on the FX2 (Oct 19, about 10 ms per frame to see): see (OpenCV), decide (rules for your look), check (approved ranges), change (Sony's SDK). Every change is logged with time, old value, new value and reason.</aside>
+      <aside class="nerd note"><b>A picture of the idea.</b> The real agent is one Python loop that runs on every live-view frame, about 24 a second on the Sony cinema camera (Oct 19, about 10 ms per frame to see): see (OpenCV), decide (rules for your look), check (approved ranges), change (Sony's SDK). Every change is logged with time, old value, new value and reason.</aside>
     </div>
     <div class="beat" data-beat="iso">
       <h2 class="big"><span class="line">Too bright?</span> <span class="line"><em>A third of a stop down.</em></span></h2>
@@ -107,7 +107,7 @@
         <svg viewBox="0 0 300 170"><path class="track" d="M30 150 A120 120 0 0 1 270 150"/><path class="fill" id="iso-arc" d="M30 150 A120 120 0 0 1 270 150"/><g class="ticks" id="iso-ticks"></g><line class="needle" id="iso-needle" x1="150" y1="150" x2="150" y2="44"/></svg>
         <div class="gauge-read"><small>ISO</small><b id="iso-val">6400</b></div>
       </div>
-      <aside class="nerd note"><b>Real, Oct 19, FX2.</b> Starting 2 stops too bright, the agent stepped ISO 6400 → 5000 → 4000 → 3200 → 2500 → 2000, one third of a stop every ~1.7 s, until the scene sat inside its window (−1 to +1 stop). Each change was confirmed by the camera in 116–178 ms.</aside>
+      <aside class="nerd note"><b>Real, Oct 19, Sony cinema camera.</b> Starting 2 stops too bright, the agent stepped ISO 6400 → 5000 → 4000 → 3200 → 2500 → 2000, one third of a stop every ~1.7 s, until the scene sat inside its window (−1 to +1 stop). Each change was confirmed by the camera in 116–178 ms.</aside>
     </div>
     <div class="beat" data-beat="iris">
       <h2 class="big"><span class="line">Sky clipping?</span> <span class="line"><em>It closes the iris.</em></span></h2>
@@ -134,7 +134,7 @@
           <div class="gauge-read"><b id="sw-val">0</b><small>MS</small></div>
         </div>
       </div>
-      <aside class="nerd note"><b>Real: 33 ms from key press to stopped</b>, measured on Oct 19 on the FX2. In the app the kill switch is SPACE, a button on the dashboard, or <code>tools/kill_switch.py</code>. After a stop, the bridge locks: nothing changes until you hand control back.</aside>
+      <aside class="nerd note"><b>Real: 33 ms from key press to stopped</b>, measured on Oct 19 on the Sony cinema camera. In the app the kill switch is SPACE, a button on the dashboard, or <code>tools/kill_switch.py</code>. After a stop, the bridge locks: nothing changes until you hand control back.</aside>
     </div>
     <div class="inside-progress" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
   </div>
@@ -223,7 +223,7 @@
 <!-- ============ 6 · real test ============ -->
 <section class="real" id="real" aria-label="Real test">
   <header class="sec-head">
-    <span class="chip real"><i></i>Real · FX2 · Oct 19</span>
+    <span class="chip real"><i></i>Real · Sony cinema camera · Oct 19</span>
     <h2 class="big"><span class="line">Tested on</span> <span class="line"><em>a real camera.</em></span></h2>
   </header>
   <div class="real-grid">
@@ -273,7 +273,7 @@
     <button role="radio" aria-checked="false" data-shot="locked">Locked</button>
     <button role="radio" aria-checked="false" data-shot="killed">Stopped</button>
   </div>
-  <aside class="nerd note wide"><b>Placeholder:</b> screenshots of the real dashboard running against the fake camera, which speaks the same protocol as the real bridge and plays a still of this page's illustrated scene. A recording of the live dashboard on the FX2 replaces them after the shoot.</aside>
+  <aside class="nerd note wide"><b>Placeholder:</b> screenshots of the real dashboard running against the fake camera, which speaks the same protocol as the real bridge and plays a still of this page's illustrated scene. A recording of the live dashboard on the Sony cinema camera replaces them after the shoot.</aside>
 </section>
 
 <!-- ============ 9 · finale ============ -->

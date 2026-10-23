@@ -28,7 +28,7 @@ LUT = ROOT / "luts" / "2_SGamut3CineSLog3_To_LC-709TypeA.cube"
 FPS = 24
 W, H = 1600, 900
 GREY = 0.18
-TITLE = "PLACEHOLDER: made-up scene, not FX2 footage (camera-agent site draft)"
+TITLE = "PLACEHOLDER: made-up scene, not footage from the Sony cinema camera (camera-agent site)"
 
 # Light colours (linear RGB, roughly white-balanced for 5600K)
 TUNGSTEN = np.array([1.0, 0.62, 0.32], np.float32)

@@ -31,11 +31,11 @@ short_description: An AI camera assistant that sets exposure like a DP
 
 # Exposure, Handled.
 
-Camera Agent is an AI assistant for a Sony FX2 cinema camera. It reads the live picture, sets exposure the way a
+Camera Agent is an AI assistant for a Sony cinema camera. It reads the live picture, sets exposure the way a
 cinematographer would, and explains every change in one line. This page lets you play with it: break a shot and
 watch it fix it, take the exploded camera apart, or try to beat it.
 
-What's real so far is tagged on the page. **Real**: the Oct 19 closed-loop test on the FX2 (its own log).
+What's real so far is tagged on the page. **Real**: the Oct 19 closed-loop test on the Sony cinema camera (its own log).
 **Placeholder**: the dashboard screenshots and clips, until the Step 7 shoot. **Illustration**: the simulated camera
 picture and the 3D camera.
 
