@@ -2,26 +2,26 @@
 
 **Website: [s4dai-exposure-handled.static.hf.space](https://s4dai-exposure-handled.static.hf.space)**. Play with the agent in your browser: break a shot and watch it fix it, or try to beat it.
 
-**Camera Agent: an AI camera assistant that runs exposure like a cinematographer.** It watches the live image from a Sony FX2, judges it the way a DP would (in stops, protecting highlights, holding faces), sets the ISO itself, and explains every choice in one plain line. For example: *"Face −1.9 st (target +0.5): ISO 2000 → 4000 (base ISO)"*. You pick the look; it handles the rest, and you can take control back at any moment with one key.
+**Camera Agent: an AI camera assistant that runs exposure like a cinematographer.** It watches the live image from a Sony cinema camera, judges it the way a DP would (in stops, protecting highlights, holding faces), sets the ISO itself, and explains every choice in one plain line. For example: *"Face −1.9 st (target +0.5): ISO 2000 → 4000 (base ISO)"*. You pick the look; it handles the rest, and you can take control back at any moment with one key.
 
 An S4D project, directed by Saad Hilal. Code written with an AI coding assistant (see [How this was built](#how-this-was-built)).
 
 ![The dashboard on the fake camera](docs/screenshots/step6_03_desktop_auto.png)
 
 **Status (2026-10-21):**
-- Steps 1–6 and 8 are built, and the live closed-loop ISO test on the real FX2 passed (2026-10-19).
+- Steps 1–6 and 8 are built, and the live closed-loop ISO test on the real camera passed (2026-10-19).
 - The real-world comparison (Step 7) is planned and frozen. Session 1 (indoors) is shot on Saturday 2026-10-24, and session 2 on the next clear day.
 - Every result below is labeled with where it came from: **real camera**, **recorded frames**, **simulator** or **fake camera**.
 - Day-by-day log: [PROGRESS.md](PROGRESS.md).
 
 ## What it does
 
-1. **Sees.** It reads the FX2's live view over USB at 24 fps and measures it in stops vs 18% grey, using the S-Log3 curve calibrated on this camera. It measures exposure in 48 regions, clipping (ignoring small practicals like lamps), faces (OpenCV's YuNet detector) and the color of the light.
+1. **Sees.** It reads the camera's live view over USB at 24 fps and measures it in stops vs 18% grey, using the S-Log3 curve calibrated on this camera. It measures exposure in 48 regions, clipping (ignoring small practicals like lamps), faces (OpenCV's YuNet detector) and the color of the light.
 2. **Decides.** Explainable rules, no black box:
    - hold a 180° shutter
    - the aperture comes from the look
    - protect important highlights first, then faces, then the scene
-   - ISO fills the gap, preferring the FX2's base ISOs 800 and 4000
+   - ISO fills the gap, preferring the camera's base ISOs 800 and 4000
    - ND and lighting needs become **advice** ("add at least 3 stops of ND"), since the agent can't turn a physical ND
 3. **Acts, carefully.** Every change goes through one safety function. It changes **only what you've approved** (today: ISO 800–12800), never while the camera is recording, and every change is logged with time, old value, new value and reason.
 4. **Shows you.** A web dashboard in S4D style:
@@ -41,7 +41,7 @@ An S4D project, directed by Saad Hilal. Code written with an AI coding assistant
 | 180° shutter (1/48 at 23.98p) | Natural motion blur; shutter isn't an exposure tool in a cinematic look |
 | Aperture from the look | Depth of field is a creative choice, not a light meter |
 | Highlights → faces → scene | Clipped detail is gone for good; faces are what the audience watches |
-| Base ISO 800 / 4000 first | Cleanest image on the FX2 in S-Log3 (read from the camera's own menus) |
+| Base ISO 800 / 4000 first | Cleanest image on the camera in S-Log3 (read from the camera's own menus) |
 | ⅓-stop dead band, wait before reacting, small steps | A walk-by or a flicker shouldn't make the picture pump |
 | Remember what clipped | After pulling down for clipping, don't go back up unless the light really dropped |
 | Lock while recording | Nothing changes mid-take unless you allow it |
@@ -83,13 +83,13 @@ The agent is designed to expose correctly across skin tones.
 | A pumping bug | found on your real frame through the fake camera (6400 ↔ 5000), fixed, and kept as a test | fake camera |
 | Face recognition | same face matched across 2.3 stops of exposure change: 0.97 similarity (threshold 0.36) | recorded frame |
 | Automated tests | 133 passing | — |
-| **Agent vs FX2 auto vs manual, blind test** | **not done yet**: plan written and frozen before shooting ([docs/step7-test-plan.md](docs/step7-test-plan.md)) | — |
+| **Agent vs the camera's own auto vs manual, blind test** | **not done yet**: plan written and frozen before shooting ([docs/step7-test-plan.md](docs/step7-test-plan.md)) | — |
 
 Demo video: coming after Step 7.
 
 ## Set it up (macOS, Apple Silicon)
 
-You need: an FX2 (USB mode **Remote Shoot/Trn.**), CMake (`brew install cmake`), Apple's Command Line Tools, and [uv](https://docs.astral.sh/uv/) for Python.
+You need: a Sony cinema camera (USB mode **Remote Shoot/Trn.**), CMake (`brew install cmake`), Apple's Command Line Tools, and [uv](https://docs.astral.sh/uv/) for Python.
 
 ### 1. Get Sony's Camera Remote SDK
 
@@ -125,7 +125,7 @@ sh tools/fetch_models.sh          # YuNet (MIT) and SFace (Apache 2.0), checked 
 ### 3. Run it
 
 ```
-# No camera at all: a fake FX2 that speaks the bridge's protocol
+# No camera at all: a fake Sony cinema camera that speaks the bridge's protocol
 .venv/bin/python tools/run_agent.py --fake --dashboard          # then open http://127.0.0.1:8770/
 
 # Real camera, read-only first (the bridge refuses every change)
@@ -157,11 +157,11 @@ Keys: **Space** kill switch · `p` Auto on/off · `l` Lock · `m` mark an event 
 
 ## Honest limits
 
-- **Live so far: one static scene.** On 2026-10-19 the agent ran live on the FX2, pointed at a white wall lit by a lamp. That was the ISO test, a self-test of aperture, shutter and WB, and a short automatic run with all four ([docs/step5-live-test.md](docs/step5-live-test.md)). Lighting changes, people and faces haven't been tested live yet; that's Step 7.
+- **Live so far: one static scene.** On 2026-10-19 the agent ran live on the camera, pointed at a white wall lit by a lamp. That was the ISO test, a self-test of aperture, shutter and WB, and a short automatic run with all four ([docs/step5-live-test.md](docs/step5-live-test.md)). Lighting changes, people and faces haven't been tested live yet; that's Step 7.
 - **ISO** is the only setting that changes by default. Aperture (f/2.8–f/11), shutter (1/48–1/100) and WB (Auto or 2800–7500K) are approved too, but only behind a startup switch, `--allow-exposure`, that's off by default. The Step 7 test uses ISO only.
 - The WB reading is only trusted within about 100 mired of the light. If the WB is set further off than that, the agent leaves WB alone rather than guess.
 - No focus actions (by design, for now).
-- The live view is S-Log3 as the FX2 sends it; there's no viewing LUT on the dashboard yet.
+- The live view is S-Log3 as the camera sends it; there's no viewing LUT on the dashboard yet.
 - The calibration is measured from level ~82 up. The very deep shadows are extrapolated, and in a very dark room the camera's own meter and our reading differed by ~1.7 stops (likely reasons in [docs/step4-eyes.md](docs/step4-eyes.md)).
 - The eyes' rule for "small practical vs big bright area" can flip around a lamp. The brain copes (clipping memory), but the rule itself is crude.
 - The dashboard has no password, so it's for this computer only until one is added (needed for the Pi + phone plan).

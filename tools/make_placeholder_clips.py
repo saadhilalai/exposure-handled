@@ -1,4 +1,4 @@
-"""Placeholder clips for the project website (site/), until real FX2 footage exists.
+"""Placeholder clips for the project website (site/), until real camera footage exists.
 
 Every clip is a made-up scene, not camera footage, and the site labels each one PLACEHOLDER.
 They're made the way the camera would see them: the scene is built in linear light (0.18 = grey),

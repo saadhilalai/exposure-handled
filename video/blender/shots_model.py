@@ -1,4 +1,4 @@
-"""The films' 3D shots on the FX2 model (cache/fx.blend from build_fx.py), path-traced in Cycles.
+"""The films' 3D shots on the camera model (cache/model.blend from build_model.py), path-traced in Cycles.
 
 Same idea as shots.py (each shot a function of time, keyed per frame so Cycles can motion-blur it, rendered resumably),
 plus what the redo asked for:
@@ -7,7 +7,7 @@ plus what the redo asked for:
 - agents that shine: brighter emission, a little light each, and light trails (ribbons rebuilt every frame from the
   same path functions that place them).
 
-Run (inside Blender): Blender -b -P video/blender/shots_fx.py -- SHOT [SHOT ...] [--res 1920] [--spp 24] [--stills 0,1.2]
+Run (inside Blender): Blender -b -P video/blender/shots_model.py -- SHOT [SHOT ...] [--res 1920] [--spp 24] [--stills 0,1.2]
 """
 import math
 import random
@@ -22,7 +22,7 @@ import rig  # noqa: E402
 import shots as S  # noqa: E402  (kf, orbit, cam, lights, sweep_light, aim_light, freeze_mats, histogram, hero_agent)
 from mathutils import Euler, Quaternion, Vector  # noqa: E402
 
-rig.BLEND = rig.ROOT / "video" / "blender" / "cache" / "fx.blend"
+rig.BLEND = rig.ROOT / "video" / "blender" / "cache" / "model.blend"
 D, C = bpy.data, bpy.context
 FPS = 24
 OUT = rig.ROOT / "video" / "blender" / "out"
@@ -52,7 +52,7 @@ def xray(v):
 
 def tune_xray(ior=1.3, rough=0.03, glow=0.35, tint=(0.93, 0.96, 1.0)):
     """Clearer glass for the X-ray (after the test renders read as frosted acrylic): fewer, crisper reflections, fainter
-    edge glow, a cool tint. Walks each X-ray mix from the material output (see build_fx.xrayify)."""
+    edge glow, a cool tint. Walks each X-ray mix from the material output (see build_model.xrayify)."""
     for mt in D.materials:
         nt = mt.node_tree
         out = nt.nodes.get("Material Output") if nt else None

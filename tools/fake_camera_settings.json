@@ -1,5 +1,5 @@
 {
- "note": "The FX2's real settings from Step 3 (2026-10-17), trimmed to what the agent reads. Used only by tools/fake_bridge.py; the fake camera starts from these values.",
+ "note": "The camera's real settings from Step 3 (2026-10-17), trimmed to what the agent reads. Used only by tools/fake_bridge.py; the fake camera starts from these values.",
  "properties": {
   "IsoSensitivity": {
    "code": 260,

@@ -324,7 +324,7 @@ window.EDIT = {
   },
   {
    "kind": "real",
-   "text": "REAL · SONY FX2 · OCT 19 · SPED UP",
+   "text": "REAL · SONY CINEMA CAMERA · OCT 19 · SPED UP",
    "at": 4.174,
    "to": 6.261
   },
@@ -342,7 +342,7 @@ window.EDIT = {
   },
   {
    "kind": "real",
-   "text": "REAL · SONY FX2 · OCT 19 · SPED UP",
+   "text": "REAL · SONY CINEMA CAMERA · OCT 19 · SPED UP",
    "at": 19.826,
    "to": 21.391
   },
@@ -407,7 +407,7 @@ window.EDIT = {
   "n": 33,
   "at": 25.513,
   "to": 26.4,
-  "label": "KILL SWITCH · <b>REAL</b> TEST · SONY FX2 · OCT 19"
+  "label": "KILL SWITCH · <b>REAL</b> TEST · SONY CINEMA CAMERA · OCT 19"
  },
  "flashes": [
   [
@@ -543,6 +543,6 @@ window.EDIT = {
   35.791,
   36.522
  ],
- "fine": "Narration: an AI voice, speaking as the agent · Music: “Beast” by Sascha Ende (ende.app), CC BY 4.0<br>3D: illustration · REAL: the Oct 19 test on a Sony FX2, sped up · PLACEHOLDER: the real dashboard on a fake camera · STAND-IN: until Saturday’s footage",
- "source": "Real Sony FX2 over USB, 2026-10-19, white wall and one lamp, card out (2026-10-19_184821_live-selftest)"
+ "fine": "Narration: an AI voice, speaking as the agent · Music: “Beast” by Sascha Ende (ende.app), CC BY 4.0<br>3D: illustration · REAL: the Oct 19 test on a Sony cinema camera, sped up · PLACEHOLDER: the real dashboard on a fake camera · STAND-IN: until Saturday’s footage",
+ "source": "Real Sony cinema camera over USB, 2026-10-19, white wall and one lamp, card out (2026-10-19_184821_live-selftest)"
 };

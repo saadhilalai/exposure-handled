@@ -1,5 +1,5 @@
 {
-  "note": "How the FX2's 8-bit live-view JPEG relates to exposure. 'status' says how much each number is trusted. The grey card test (Step 4) replaces the guesses with measurements.",
+  "note": "How the camera's 8-bit live-view JPEG relates to exposure. 'status' says how much each number is trusted. The grey card test (Step 4) replaces the guesses with measurements.",
   "slog3": {
     "grey_level": 95.2,
     "levels_per_stop": 20.63,

@@ -3,7 +3,7 @@ for every take (agent, FX2 auto, manual).
 
 Input: a runner session folder (metrics.csv, 4 rows a second, and runner_log.jsonl with the
 operator's marks). The runner records these in every mode, including a dry run that only
-watches the FX2's own auto or your manual control, so all three are measured by the same eyes.
+watches the camera's own auto or your manual control, so all three are measured by the same eyes.
 
 Definitions (frozen in docs/step7-test-plan.md; changing them after the shoot breaks the test):
   clipping   mean % of the frame clipped in important areas, and % of the time over the look's limit
@@ -157,7 +157,7 @@ def unscorable(folder, allow_fake=False):
     if start is None:
         return "no start in runner_log.jsonl"
     if not allow_fake and (f.name.endswith("-fake") or (start.get("bridge") or {}).get("fake")):
-        return "recorded on the fake camera, not the FX2 (--allow-fake to score it anyway)"
+        return "recorded on the fake camera, not the real camera (--allow-fake to score it anyway)"
     return None
 
 

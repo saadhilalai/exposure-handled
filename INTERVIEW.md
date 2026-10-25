@@ -8,11 +8,11 @@ Ten questions you're likely to get, each with a short answer to say out loud (30
 
 ### 1. What is it, in 30 seconds?
 
-"It's an AI camera assistant for my Sony FX2. It watches the live image over USB, judges exposure the way a cinematographer does (in stops, protecting highlights and faces), and changes the ISO itself, explaining every change in one line, like 'Face −1.9 stops, target +0.5: ISO 2000 to 4000, base ISO.' I pick the look, like Cinematic 24p or Interview, and it handles exposure inside that look. One key, or one button, takes control back instantly."
+"It's an AI camera assistant for my Sony cinema camera. It watches the live image over USB, judges exposure the way a cinematographer does (in stops, protecting highlights and faces), and changes the ISO itself, explaining every change in one line, like 'Face −1.9 stops, target +0.5: ISO 2000 to 4000, base ISO.' I pick the look, like Cinematic 24p or Interview, and it handles exposure inside that look. One key, or one button, takes control back instantly."
 
 ### 2. Why not just use the camera's own auto exposure?
 
-"Camera auto exposes for 'bright enough'. A DP exposes for a look. Auto will happily change the shutter and wreck motion blur, close the iris and lose the shallow depth, or let a window blow out to brighten a face. My agent keeps the 180° shutter and the look's f-stop fixed, prefers the FX2's base ISOs for a cleaner image, protects highlights first, and tells me when it needs ND instead of cheating with the wrong setting. And it explains itself, which auto never does. Whether it actually beats auto is what my blind test is for."
+"Camera auto exposes for 'bright enough'. A DP exposes for a look. Auto will happily change the shutter and wreck motion blur, close the iris and lose the shallow depth, or let a window blow out to brighten a face. My agent keeps the 180° shutter and the look's f-stop fixed, prefers the camera's base ISOs for a cleaner image, protects highlights first, and tells me when it needs ND instead of cheating with the wrong setting. And it explains itself, which auto never does. Whether it actually beats auto is what my blind test is for."
 
 ### 3. How does it know what correct exposure is, when the picture is flat S-Log3?
 
@@ -44,12 +44,12 @@ Ten questions you're likely to get, each with a short answer to say out loud (30
 
 ### 10. How will you prove it works, and what's next?
 
-"I wrote the test plan before shooting, so I can't move the goalposts. The scenes are a backlit window, shade to sun, tungsten, low light, sunset and a static control. Each one is shot three ways (my agent, the FX2's auto, and me by hand) in a balanced random order. It measures clipping, face exposure, time to settle and flicker. Then friends rate the clips blind. [Update with the results.] Next is a Raspberry Pi 5 on the rig, powered from the V-mount, with the dashboard on my phone. It costs about $244 in parts, and the Pi looks fast enough, so no Jetson is needed."
+"I wrote the test plan before shooting, so I can't move the goalposts. The scenes are a backlit window, shade to sun, tungsten, low light, sunset and a static control. Each one is shot three ways (my agent, the camera's auto, and me by hand) in a balanced random order. It measures clipping, face exposure, time to settle and flicker. Then friends rate the clips blind. [Update with the results.] Next is a Raspberry Pi 5 on the rig, powered from the V-mount, with the dashboard on my phone. It costs about $244 in parts, and the Pi looks fast enough, so no Jetson is needed."
 
 ---
 
 ## Resume bullets (draft: real numbers only; update after Step 7)
 
-- **Directed the design of an AI exposure assistant for the Sony FX2** that reads S-Log3 live view over USB at 24 fps (~10 ms of analysis per frame on an M2) and sets ISO through Sony's Camera Remote SDK; the camera confirms changes in 119–172 ms.
+- **Directed the design of an AI exposure assistant for the Sony cinema camera** that reads S-Log3 live view over USB at 24 fps (~10 ms of analysis per frame on an M2) and sets ISO through Sony's Camera Remote SDK; the camera confirms changes in 119–172 ms.
 - **Designed explainable cinematography rules** (180° shutter, base ISO 800/4000, highlights → faces → scene) and a per-person "this face looks right" reference in place of a single skin-tone default. Validated in a 14-scenario simulator with zero exposure back-and-forth and 62 automated tests.
-- **Specified layered safety for a working camera** (approved-settings allow-list in C++ and Python, read-only mode, kill switch, runaway guard, session snapshot and restore) and a blind test, written before shooting, comparing the agent with the FX2's auto and manual exposure.
+- **Specified layered safety for a working camera** (approved-settings allow-list in C++ and Python, read-only mode, kill switch, runaway guard, session snapshot and restore) and a blind test, written before shooting, comparing the agent with the camera's auto and manual exposure.

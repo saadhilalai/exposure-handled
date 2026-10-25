@@ -24,7 +24,7 @@ tools/step7.sh S1_R1_A_agent     # window 2, each take: that take's exact run-sh
 - **At each person's first take** (S1_R1_A_agent, S1_R2_B_agent): press **"this face looks right"** and name them **A** or **B** in the face box (Clarification 2 finds their target by that name).
 - **S5 rows:** each is a 2-minute block.
 - **S6 rows:** don't press m.
-- **Every take:** write the camera's clip number in the notes column. Before the first take, check the FX2's clock against the Mac's.
+- **Every take:** write the camera's clip number in the notes column. Before the first take, check the camera's clock against the Mac's.
 
 ## 1. The recording switch (agent takes only, off by default)
 
@@ -60,9 +60,9 @@ It prints one line to copy into the plan, e.g. *"Base Look: … (User, value 0x0
   - Its header reads "Sony LookProfile LUT, SLog3SGamut3.CineToLC_709TypeA full in full out v1.04.04".
   - 33-point cube, SHA-256 `04066dc0…4c236d` (the full checksum is in the plan and in [luts/README.md](../luts/README.md)).
 - **Why this one:** the Mac had four Sony looks for S-Gamut3.Cine/S-Log3 (LC-709, LC-709TypeA, SLog2-709 and Cine+709), and no plain Rec.709 one. LC-709TypeA is the usual choice and gives an ordinary-looking finished picture, so raters judge exposure, not a style.
-- **Which gamut:** the FX2 records movies in **S-Gamut3.Cine** (`MovieShootingModeColorGamut` = 1, read 2026-10-19). The other gamut setting, `LogShootingModeColorGamut`, is for stills.
+- **Which gamut:** the camera records movies in **S-Gamut3.Cine** (`MovieShootingModeColorGamut` = 1, read 2026-10-19). The other gamut setting, `LogShootingModeColorGamut`, is for stills.
 - **Full in, full out:** it expects full-range RGB and returns full-range RGB. That's what Resolve and ffmpeg's `lut3d` give a LUT, so no level changes are needed.
-- **On the camera:** LC-709TypeA isn't one of the FX2's built-in Base Looks (s709, 709(800%)). The blind test doesn't need it there, since the clips get it afterwards.
+- **On the camera:** LC-709TypeA isn't one of the camera's built-in Base Looks (s709, 709(800%)). The blind test doesn't need it there, since the clips get it afterwards.
 - **Where it lives:** a copy in `luts/`; the original stays where it was. `luts/` stays out of the repo, like the SDK, because it's Sony's file. Only `luts/README.md` is published.
 
 ## 3. The printable run sheet

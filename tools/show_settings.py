@@ -67,7 +67,7 @@ def main():
         cam["model"], cam["connection"], snapshot["sdk_version"], snapshot["captured_at"],
         snapshot["property_count"])
     text_out.append(header)
-    md_out.append("# FX2 settings snapshot\n\n" + header + "\n")
+    md_out.append("# Sony cinema camera settings snapshot\n\n" + header + "\n")
 
     headers = ["Setting", "Current", "Changeable now", "Allowed values"]
     for group, names in KEY_GROUPS:

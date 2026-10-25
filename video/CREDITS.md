@@ -53,7 +53,7 @@ Hype film (the real places behind the camera, one beat each, out of focus):
 **Sound effects** (CC0): Kenney "Impact Sounds" and "Sci-fi Sounds" (kenney.nl), "Swishes Sound Pack" by artisticdude (opengameart.org).
 
 **3D:** the camera is a model of the Sony cinema camera this project drives, built from code from measured photos, with no
-maker's name or logo (`blender/build_fx.py`), path-traced in Blender Cycles (`blender/shots_fx.py`). The glowing helpers
+maker's name or logo (`blender/build_model.py`), path-traced in Blender Cycles (`blender/shots_model.py`). The glowing helpers
 inside it are an illustration: the real agent runs on a laptop and talks to the camera over USB.
 
 **Art (calm film):** hand-made-looking shapes drawn in SVG on a generated paper texture (`tools/calm_template.html`,
@@ -108,7 +108,7 @@ agent, in short lines. Nothing it says claims more than the logs show (see `FILM
 
 **Pictures:**
 - 3D illustration: the website's own camera, rendered frame by frame (`tools/capture_hype.py`).
-- Real: the Oct 19 test on a Sony FX2, its live-view frames and its logged settings, sped up.
+- Real: the Oct 19 test on a Sony cinema camera, its live-view frames and its logged settings, sped up.
 - Placeholder: the real dashboard on the fake camera.
 - Stand-in: the lamp-off clip, until Saturday's footage.
 
@@ -125,7 +125,7 @@ agent, in short lines. Nothing it says claims more than the logs show (see `FILM
 - Excerpt used: from 0:13.5, 70 s, raised 7 dB, ducked under the voice, with a fade in, a dip at the kill switch and a fade out. The audio isn't in git. Download the full mix from https://www.scottbuckley.com.au/library/penumbra/ and rebuild with the command in `tools/build_film.py`.
 
 **Pictures:**
-- Real: the Oct 19 test on a Sony FX2, its live-view frames and its log.
+- Real: the Oct 19 test on a Sony cinema camera, its live-view frames and its log.
 - Illustration: the website's own 3D camera and camera simulator, rendered frame by frame (`tools/capture_film.py`).
 - Placeholder: the real dashboard on the fake camera.
 - Stand-in: the "next" clip, until the Step 7 footage.

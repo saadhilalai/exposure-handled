@@ -1,4 +1,4 @@
-"""Unattended live test on the real FX2, with the dashboard up the whole time.
+"""Unattended live test on the real camera, with the dashboard up the whole time.
 
 The director's go (2026-10-19): camera on a tripod at a white wall lit by a lamp, card out,
 nothing can record; run it without typing LIVE or watching.

@@ -2,12 +2,12 @@
 
 Researched 2026-10-17; finished overnight 2026-10-17 after the dashboard was built (Step 6). Prices move fast right now (memory shortages); re-check before buying. Anything marked **UNVERIFIED** couldn't be confirmed from a reliable source. **Nothing has been bought.**
 
-## Will Sony's SDK work on a Pi 5 with the FX2?
+## Will Sony's SDK work on a Pi 5 with the camera?
 
 **Probably, with two precautions. Not proven.**
 
 - Sony ships a separate **Linux 64-bit (ARMv8)** SDK download (not in the Mac zip). Sony tested it on a **Pi 4 with Debian 12**, Jetson Nano and Jetson Orin Nano. **The Pi 5 is not on Sony's list.**
-- One public project runs Sony's SDK (v2.00) on a Pi 5 (Ubuntu 24.04, in Docker) with a Sony A1. It reads camera settings over USB, with app-level bugs still open ([DPM-V2](https://github.com/unmanned-systems-uk/DPM-V2), [issue #54](https://github.com/unmanned-systems-uk/DPM-V2/issues/54)). No FX2-on-Pi-5 report found.
+- One public project runs Sony's SDK (v2.00) on a Pi 5 (Ubuntu 24.04, in Docker) with a Sony A1. It reads camera settings over USB, with app-level bugs still open ([DPM-V2](https://github.com/unmanned-systems-uk/DPM-V2), [issue #54](https://github.com/unmanned-systems-uk/DPM-V2/issues/54)). No Sony cinema camera-on-Pi-5 report found.
 - **Precaution 1, memory page size:** the Pi 5's default kernel uses 16K memory pages, which breaks some prebuilt ARM64 programs. [Raspberry Pi itself](https://www.raspberrypi.com/news/benchmarking-raspberry-pi-5/) notes the stock Geekbench 6 build fails. Sony's libraries are prebuilt, so it's a real risk (**UNVERIFIED** either way). Fix from day one: add `kernel=kernel8.img` to `/boot/firmware/config.txt`; `getconf PAGESIZE` should then say 4096. Speed cost is negligible (774 vs 764 Geekbench single-core).
 - **Precaution 2, OS version:** current Raspberry Pi OS is Debian 13 "Trixie", but **Raspberry Pi OS (Legacy, 64-bit), i.e. Debian 12 "Bookworm", is still offered for the Pi 5** ([downloads](https://www.raspberrypi.com/software/operating-systems/)). Use Legacy Bookworm Lite 64-bit: closest to what Sony tested.
 
@@ -32,8 +32,8 @@ Researched 2026-10-17; finished overnight 2026-10-17 after the dashboard was bui
 - The Pi itself draws roughly **3–10 W** (measured: 2.8 W idle, 9.7 W max).
 - **Recommended:** D-tap → [Tilta P-Tap to 5.5/2.1 mm DC cable](https://tilta.com/shop/p-tap-to-5-5-2-1mm-dc-male-cable/) → [Geekworm Pi5 5V5A PD module](https://geekworm.com/products/rpi5-5v5a-pd) (9–24 V in, 5 V 5 A PD out; [wiki](https://wiki.geekworm.com/Pi5-5V5APD) shows a 5 A load test) → Pi 5. Not independently tested from a V-mount: **UNVERIFIED**, so bench-test it first.
 - Alternative: [52Pi EP-0225](https://52pi.com/products/52pi-pd-power-extension-adapter-board-for-raspberry-pi-5) (a forum user runs a Pi 5 from a 12 V battery with it; its DC jack size is listed inconsistently, so check before buying an adapter).
-- Simplest fallback: a D-tap → USB-C PD cable such as [Kondor Blue's 16" D-Tap to USB-C PD cable](https://kondorblue.com/products/16-d-tap-to-usb-c-9v-3a-regulated-blue-braided-straight) ($37.99). At 5 V it gives 3 A at most, so the Pi runs with the 600 mA USB limit (enough: the FX2 runs on its own battery).
-- **FX2 tip:** set the FX2's **USB Power Supply** menu so the camera doesn't try to charge from the Pi. The camera runs on its own battery.
+- Simplest fallback: a D-tap → USB-C PD cable such as [Kondor Blue's 16" D-Tap to USB-C PD cable](https://kondorblue.com/products/16-d-tap-to-usb-c-9v-3a-regulated-blue-braided-straight) ($37.99). At 5 V it gives 3 A at most, so the Pi runs with the 600 mA USB limit (enough: the camera runs on its own battery).
+- **Sony cinema camera tip:** set the camera's **USB Power Supply** menu so the camera doesn't try to charge from the Pi. The camera runs on its own battery.
 
 ## Is the Pi 5 fast enough? (Jetson needed?)
 
@@ -114,7 +114,7 @@ In this order, stopping at the first thing that fails:
 
 1. Flash **Raspberry Pi OS (Legacy, 64-bit) Lite, Bookworm**. Add `kernel=kernel8.img` to `/boot/firmware/config.txt` and `usbcore.usbfs_memory_mb=150` to `/boot/firmware/cmdline.txt`. Reboot; `getconf PAGESIZE` must say **4096**.
 2. Desk power first (27W supply). Download Sony's **Linux ARMv8** SDK onto the Pi (never into the repo).
-3. Build and run **our read-only probe** (`probe_readonly`) with the FX2 on a **blue USB 3 port**. Pass = it reads the settings and saves one live-view frame. This is the go/no-go for the whole Pi plan.
+3. Build and run **our read-only probe** (`probe_readonly`) with the camera on a **blue USB 3 port**. Pass = it reads the settings and saves one live-view frame. This is the go/no-go for the whole Pi plan.
 4. `tools/bench_eyes.py` on the Pi: replaces the ~33 ms/frame estimate with a measurement.
 5. The bridge read-only, then the runner in dry run, then the dashboard on the Pi's own screen or a laptop on the same desk.
 6. Only then: power from D-tap through the Geekworm module, on the bench, watching for the Pi's under-voltage warning (`vcgencmd get_throttled` should say `0x0`).

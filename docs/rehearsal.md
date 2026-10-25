@@ -20,11 +20,11 @@ What runs tonight:
 - **Mini three-way comparison:** one or two shots, filmed by the agent, by the camera's Auto ISO, and by hand.
 - **Problems** get logged the moment they happen.
 
-> **Decided (2026-10-20):** Saturday stays **ISO only**, like the frozen Step 7 plan, with FX2 Auto ISO for the camera takes. Tonight's all-four-settings run is rehearsal only.
+> **Decided (2026-10-20):** Saturday stays **ISO only**, like the frozen Step 7 plan, with Sony cinema camera Auto ISO for the camera takes. Tonight's all-four-settings run is rehearsal only.
 
 ## Bring
 
-- [ ] FX2, with 2+ charged batteries
+- [ ] Sony cinema camera, with 2+ charged batteries
 - [ ] Sigma 28-70 and your **variable ND**. The agent can't turn the ND, but it will tell you when you need more or less.
 - [ ] A memory card for tonight. A separate card is best; otherwise note the first clip number.
 - [ ] Tripod
@@ -49,7 +49,7 @@ What runs tonight:
    - **USB Connection Mode = Remote Shoot/Trn.** (already set from before).
    - **No phone app connected** to the camera.
    - ND set to something sensible for now. The agent will say if it needs changing.
-3. **Plug the USB-C cable** from the FX2 into the Mac. If the camera asks, choose **Remote Shoot/Trn.**
+3. **Plug the USB-C cable** from the camera into the Mac. If the camera asks, choose **Remote Shoot/Trn.**
 4. **Run the one command** in Terminal:
    ```
    ~/camera-agent/tools/rehearsal.sh
@@ -64,7 +64,7 @@ What runs tonight:
    - **Log problems the moment they happen:** press **x** in the Terminal window, or type in the dashboard's **Problems** box and press Log.
 10. **Mini three-way comparison (one shot, two if the light allows).** Same framing, about 50 s each, back to back, and slate each one. End each take with **q**, then run the next:
     - **A, agent:** `~/camera-agent/tools/rehearsal.sh REH_cmp1_A_agent`, type LIVE, press Auto, then REC.
-    - **B, camera Auto ISO:** turn the FX2's Auto ISO **on**, then `~/camera-agent/tools/rehearsal.sh REH_cmp1_B_auto`. The agent only watches, and the bridge is read-only. REC, 50 s, stop, then turn Auto ISO back **off**.
+    - **B, camera Auto ISO:** turn the camera's Auto ISO **on**, then `~/camera-agent/tools/rehearsal.sh REH_cmp1_B_auto`. The agent only watches, and the bridge is read-only. REC, 50 s, stop, then turn Auto ISO back **off**.
     - **C, by hand:** `~/camera-agent/tools/rehearsal.sh REH_cmp1_C_manual`. Watch only; expose by hand, REC, 50 s, stop.
 
     For a second shot, use `cmp2` in the names.

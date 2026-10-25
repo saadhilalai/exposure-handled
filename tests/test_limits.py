@@ -35,7 +35,7 @@ def texts(out):
 
 
 def test_wb_stops_at_2800k_and_says_the_light_is_warmer():
-    """Test 3 on the real FX2: the lamp measured about 2642K, WB went 3700K -> 2800K and stopped there."""
+    """Test 3 on the real camera: the lamp measured about 2642K, WB went 3700K -> 2800K and stopped there."""
     brain = Brain("interview", allowed=EVERYTHING)
     out, c = run(brain, cam(), 6, light_k=2642, color_confidence="medium")
     assert c.wb_kelvin == 2800

@@ -1,4 +1,4 @@
-"""A fake FX2 that speaks the bridge's language, so the runner can be tried with no camera.
+"""A fake Sony cinema camera that speaks the bridge's language, so the runner can be tried with no camera.
 
 Same socket protocol as bridge/src/camera_bridge.cpp (ping, status, settings, get, frame,
 lvstats, set, lock, quit) and the same checks before a change: read-only, kill switch,
@@ -9,7 +9,7 @@ picture is neutral; on Color Temp it gets the cast a real camera would show (war
 WB setting is above the light).
 The picture is a recorded frame (or a made-up test scene) made brighter or darker by
 the exposure change, using the measured S-Log3 calibration (20.63 levels/stop, clip 221).
-Like the real FX2 (Step 3), a change is confirmed after ~0.15 s and shows in the picture
+Like the real camera (Step 3), a change is confirmed after ~0.15 s and shows in the picture
 ~0.3 s after it's sent. Nothing here talks to a real camera.
 
 Usage:
@@ -47,7 +47,7 @@ EXPOSURE = ("IsoSensitivity", "FNumber", "ShutterSpeed")
 AWB, COLOR_TEMP = 0x0000, 0x0100
 REMEMBERED_K = 5600                              # the Kelvin the fake "remembers" for Color Temp mode
 RECORDING = 1                                    # CrMovie_Recording_State_Recording
-CONFIRM_S, SHOW_S = 0.15, 0.3                    # measured on the FX2: 119-172 ms / 272-325 ms
+CONFIRM_S, SHOW_S = 0.15, 0.3                    # measured on the camera: 119-172 ms / 272-325 ms
 CLIPPED_EXTRA_STOPS = 1.0                        # clipped areas of a recorded frame: assumed 1 stop over clip
 
 
@@ -128,7 +128,7 @@ class FakeCamera:
                           ("ShutterSpeed", shutter and (1 << 16) | int(shutter))):
             if raw is not None:
                 if raw not in self.props[name]["set_values"]:
-                    raise ValueError("the FX2 doesn't offer %s %s" % (name, raw))
+                    raise ValueError("the camera doesn't offer %s %s" % (name, raw))
                 self.props[name]["current"] = raw
         self.tm = ToneModel("slog3", load_calibration())
         if frame is not None:
@@ -242,7 +242,7 @@ class FakeCamera:
             self.pending.append((t_call + SHOW_S, name, raw))
             if name == "Colortemp":
                 self.remembered_k = raw
-            if name == "WhiteBalance":                    # like the FX2: Kelvin only exists in Color Temp mode
+            if name == "WhiteBalance":                    # like the camera: Kelvin only exists in Color Temp mode
                 kt = self.props["Colortemp"]
                 kt["current"] = self.remembered_k if raw == COLOR_TEMP else 0
                 kt["can_set_now"] = raw == COLOR_TEMP

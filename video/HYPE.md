@@ -15,7 +15,7 @@
 
 **Honesty:**
 - Every shot carries a small tag: 3D ILLUSTRATION, REAL (sped up), PLACEHOLDER or STAND-IN.
-- Every number on screen is read from `site/data/site.json`, the Oct 19 FX2 logs.
+- Every number on screen is read from `site/data/site.json`, the Oct 19 Sony cinema camera logs.
 - No "first ever" or "never seen" claims.
 
 ## The cut
@@ -49,4 +49,4 @@ Film times are seconds; a beat is 0.522 s.
 ## What changes after Saturday
 
 - **Stand-in shot:** becomes the real S3 take (the lamp going off), with its own log.
-- **Dashboard flashes:** become a recording on the FX2, and the PLACEHOLDER tag comes off.
+- **Dashboard flashes:** become a recording on the camera, and the PLACEHOLDER tag comes off.

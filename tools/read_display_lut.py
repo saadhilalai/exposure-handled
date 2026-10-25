@@ -1,4 +1,4 @@
-"""Read which LUT the FX2's Display LUT uses, read-only, for the Step 7 blind test.
+"""Read which LUT the camera's Display LUT uses, read-only, for the Step 7 blind test.
 
 The plan says every blind-test clip gets the same LUT as the camera's Display LUT, named in
 the plan before any clip is graded. This reads it from the camera:

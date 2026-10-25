@@ -23,7 +23,7 @@
 | 4 | 14.4–17.2 | Black | **"Then we tested it blind."** | — | final |
 | 5 | 17.2–25.6 | Three panes, same scene, same moment. They grow to full width at 21.4 | labels: *A* Camera auto · *B* By hand · ● *C* The agent. Status lines under each (from the results). Footnote: *One example: scene ?, round ?. Not the typical result.* | **CLIPS B1, B2, B3**: one scene and round, all three methods, from the same mark | placeholder (footage, status lines, footnote) |
 | 6 | 25.6–32.4 | Black results card | kicker ● *The agent* / a big number / what it means / a thin rule / *the numbers · 63 takes, N raters, blind* / caveat | — | placeholder (all numbers) |
-| 7 | 32.4–36.0 | Black | label: *kill switch · 33 ms · real FX2, Oct 19* / **"One key takes it back."** | — | final (33 ms is the real measurement from the Oct 19 live test) |
+| 7 | 32.4–36.0 | Black | label: *kill switch · 33 ms · real camera, Oct 19* / **"One key takes it back."** | — | final (33 ms is the real measurement from the Oct 19 live test) |
 | 8 | 36.0–40.0 | End card | **Exposure, Handled.** / Saad Hilal · S4D / github.com/saadhilalai | — | title final (director, 2026-10-21); link is a placeholder until the repo is public |
 
 **Why this order:** it shows the job in one moment (beats 2–3), then the test (5), then the result (6), then the trust line (7). It's the same shape as the robot film, which shows the skill, the test and the result.

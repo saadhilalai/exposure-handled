@@ -168,7 +168,7 @@ def test_session_end_restores_the_starting_iso_through_the_gate(fake, tmp_path):
 
 
 def test_a_dry_run_never_offers_to_put_iso_back(fake, tmp_path):
-    # An FX2-auto or manual take runs dry: if ISO was moved by hand, the session end must not send it back.
+    # A camera-auto or manual take runs dry: if ISO was moved by hand, the session end must not send it back.
     cam, path = fake(scene_offset=TOO_DARK)
     r = runner_for(cam, path, tmp_path, live=False)
     r.run(seconds=2)

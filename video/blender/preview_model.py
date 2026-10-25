@@ -1,5 +1,5 @@
-"""Quick look renders of the FX2 model (ortho front/top/side to compare with Sony's photos, and 3/4 views).
-Run: Blender -b -P video/blender/preview_fx.py -- [view ...] [--res 960] [--samples 24] [--out DIR] [--xray 0.0]"""
+"""Quick look renders of the camera model (ortho front/top/side to compare with Sony's photos, and 3/4 views).
+Run: Blender -b -P video/blender/preview_model.py -- [view ...] [--res 960] [--samples 24] [--out DIR] [--xray 0.0]"""
 import math
 import sys
 from pathlib import Path
@@ -18,7 +18,7 @@ while i < len(argv):
     else:
         views.append(argv[i])
         i += 1
-bpy.ops.wm.open_mainfile(filepath=str(ROOT / "video" / "blender" / "cache" / "fx.blend"))
+bpy.ops.wm.open_mainfile(filepath=str(ROOT / "video" / "blender" / "cache" / "model.blend"))
 pr = bpy.context.preferences.addons["cycles"].preferences
 pr.compute_device_type = "METAL"
 pr.get_devices()

@@ -31,9 +31,9 @@ engine (through Higgsfield), "Harrison": low, calm, with natural pauses and brea
 - **A (recommended):** keep Harrison.
 - **B:** a paid ElevenLabs plan, and I re-voice with Dallin.
 
-**30. Which camera.** The brief said "FX3", and also "the camera we actually used". The camera this project drives is the
-FX2, so the render is a faithful FX2 (EVF, grip, dials), without Sony's name or logo.
-- **A (recommended):** keep the FX2.
+**30. Which camera.** The brief said "FX3", and also "the camera we actually used". So the render is a faithful model
+of the Sony cinema camera this project drives (EVF, grip, dials), without Sony's name or logo.
+- **A (recommended):** keep the model of the camera we actually use.
 - **B:** model an FX3 instead.
 
 **31. The orange helpers in the calm film:** cut, so the film stays art first. They're the stars of the hype film.
@@ -182,7 +182,7 @@ Written 2026-10-21 while you were away.
 **3. Run-sheet notes. The printed sheet is frozen, so these are by hand unless you OK a reprint.**
 - S5 rows: each is a 2-minute block. The sheet's front note only says "take is 50 s (S6: 60 s)".
 - S6 rows: don't press m, even though there's an "m at event" box.
-- Write the camera's clip number in the notes column for each take, and check the FX2 clock against the Mac's before the first take. The 87 card files are otherwise matched by order and time.
+- Write the camera's clip number in the notes column for each take, and check the camera clock against the Mac's before the first take. The 87 card files are otherwise matched by order and time.
 - At each person's first take (S1_R1_A_agent, S1_R2_B_agent), press "this face looks right" first.
 - **A (recommended):** write these on the printout.
 - **B:** regenerate the sheet with them added. The take order and commands wouldn't change.

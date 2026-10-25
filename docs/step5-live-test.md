@@ -1,6 +1,6 @@
-# Step 5, live: the agent on the real FX2 (2026-10-19)
+# Step 5, live: the agent on the real camera (2026-10-19)
 
-**The director's go:** "Camera ready, and I'm leaving it to you." The FX2 was on a tripod, pointed at a white wall lit by one lamp, with the card out, so nothing could record. Tests 1–3 ran unattended, without anyone typing LIVE, and the dashboard showed the live view throughout.
+**The director's go:** "Camera ready, and I'm leaving it to you." The camera was on a tripod, pointed at a white wall lit by one lamp, with the card out, so nothing could record. Tests 1–3 ran unattended, without anyone typing LIVE, and the dashboard showed the live view throughout.
 
 Tool: `tools/live_selftest.py`. It was rehearsed end to end on the fake camera, using a frame of this same wall, before it touched the real one. Results are saved in `sessions/2026-10-19_184821_live-selftest/` (not committed). Total time: 5 min 15 s.
 

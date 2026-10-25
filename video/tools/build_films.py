@@ -78,7 +78,7 @@ V1 = dict(
 # under the voice (the director: "turn it down"), and ducking harder.
 # Beats 0-12: the camera locked in the centre while the world behind it changes on every beat: bold solid colours, then
 # real places (plates thrown out of focus, as a long lens would), then the studio. Its light, reflections and iris change
-# with each world in the render (video/blender/shots_fx.py, WORLDS).
+# with each world in the render (video/blender/shots_model.py, WORLDS).
 HYPE_WORLDS = ["#000000", "#b8791f", "#8a1b13", "#1c3893", "#78885f", "#e8e2d5", None, None, None, None, None, None]
 HYPE_PLATES = {6: "sunset", 7: "city", 8: "desert", 9: "forest", 10: "studio", 11: "stage"}     # beat: plate id (PLATES)
 # The plates: one beat each of a real place, (source, in, out, grade). Saad's own footage has none of these places without

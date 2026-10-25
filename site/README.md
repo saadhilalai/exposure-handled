@@ -21,7 +21,7 @@ You're holding a cinema camera, and the AI is your assistant inside it. People l
 | 3 | Your turn | Four camera dials and four lighting setups. Break the picture, then let the AI fix it. Change the light and it reacts. |
 | 4 | Beat the AI | 15 seconds to fix a bad shot. The AI starts from the same shot, and both get scored. |
 | 5 | See what it sees | Drag the slider: AI fix, S-Log3, false color, zebras. |
-| 6 | Tested on a real camera | The agent's own log from the Oct 19 FX2 test, as a chart and four gauges. |
+| 6 | Tested on a real camera | The agent's own log from the Oct 19 Sony cinema camera test, as a chart and four gauges. |
 | 7 | Never touch | Locked buttons you can try to press, and the approved ranges as arcs. |
 | 8 | Every decision, live | The dashboard. |
 | 9 | Finale | The camera snaps back together. |
@@ -40,9 +40,9 @@ You're holding a cinema camera, and the AI is your assistant inside it. People l
 |---|---|---|
 | The Oct 19 chart, gauges, ISO sequence, 33 ms kill switch | **Real** (teal tag) | `data/site.json`, exported from the session logs by `tools/export_site_data.py` |
 | Approved ranges and locked settings | **Real** | `config/safe_ranges.json` and the agent's safety rules |
-| Dashboard screenshots | **Placeholder** (amber tag) | `media/screens/`, the real dashboard running on the fake camera, playing a still of the site's illustrated scene; to be replaced by a recording on the FX2 |
+| Dashboard screenshots | **Placeholder** (amber tag) | `media/screens/`, the real dashboard running on the fake camera, playing a still of the site's illustrated scene; to be replaced by a recording on the camera |
 | The camera picture in the viewfinder, simulator, game and slider | **Illustration** (tagged in Nerd mode) | Rendered live in the browser by `js/sim.js`; not footage |
-| The 3D camera and its crew | Illustration | `js/camera3d.js`; an original design inspired by the FX2, with no maker's name |
+| The 3D camera and its crew | Illustration | `js/camera3d.js`; an original design inspired by the camera, with no maker's name |
 
 The simulator's AI (`js/ai.js`) is a small copy of the agent's rules for the demo:
 - a 180° shutter
@@ -55,7 +55,7 @@ It stays inside the real approved ranges. Nerd mode says so on the page.
 
 ## Still to do
 
-- Add real FX2 footage from the shoot (for example as a mode of the before/after slider), and swap the dashboard screenshots for a recording on the FX2.
+- Add real camera footage from the shoot (for example as a mode of the before/after slider), and swap the dashboard screenshots for a recording on the camera.
 - Add the Step 7 results.
 - Done at launch (2026-10-21): "See the code" points at the public repo, `noindex` and the Draft chip are gone, and the link-preview image (`media/og.jpg`, 1200×630) has its real address.
 

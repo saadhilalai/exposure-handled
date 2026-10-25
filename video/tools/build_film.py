@@ -69,7 +69,7 @@ def data():
         out[k] = {"look": t["look"], "window": t["window"], "settle_s": t["settle_s"], "settled_status": t["settled_status"],
                   "hold_s": t["hold_s"], "changes_during_hold": t["changes_during_hold"], "kill": t["kill"],
                   "changes": t["changes"], "trace": [[p[0], p[1]] for p in t["trace"]]}
-    (FILM / "data.js").write_text("// Made by video/tools/build_film.py from site/data/site.json (the Oct 19 FX2 logs). Don't edit by hand.\n"
+    (FILM / "data.js").write_text("// Made by video/tools/build_film.py from site/data/site.json (the Oct 19 Sony cinema camera logs). Don't edit by hand.\n"
                                   "window.FILMDATA = %s;\n" % json.dumps(out, ensure_ascii=False))
     print("wrote data.js from site/data/site.json (%s)" % site["source"])
 

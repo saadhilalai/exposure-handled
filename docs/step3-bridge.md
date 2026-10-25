@@ -3,13 +3,13 @@
 ## How it's built
 
 ```
-FX2 ──USB──> camera_bridge (C++) ──private socket file──> Python agent
+Sony cinema camera ──USB──> camera_bridge (C++) ──private socket file──> Python agent
               owns the Sony SDK          run/bridge.sock     agent/bridge_client.py
               live-view loop                                 agent/safety.py  (change_setting)
               allow-list + guarded_set()
 ```
 
-- **`bridge/src/camera_bridge.cpp`** stays connected to the FX2.
+- **`bridge/src/camera_bridge.cpp`** stays connected to the camera.
   - A background loop copies each new live-view JPEG from Sony's buffer.
   - It answers one-line text commands with one-line JSON: `status`, `settings`, `get`, `frame`, `lvstats`, `display_strings`, `set`, `lock`, `quit`.
 - **One way to change the camera (C++ side):** `guarded_set()` is the only place `SetDeviceProperty` appears, and the compiler is told to refuse that name for the rest of the file. It refuses unless:
@@ -29,7 +29,7 @@ FX2 ──USB──> camera_bridge (C++) ──private socket file──> Python
 | Check | Result |
 |---|---|
 | Settings changed since Step 2 | 17, all by the director during the shoot (ISO 12800 → 102400, shutter 1/250 → 1/160, zoom/focus, battery, new clips on card 1) |
-| **FX2 base ISOs in S-Log3** | **800 and 4000**, read from the camera's own menu list ("Camera Gain BaseISO": High = ISO 4000, Low = ISO 800) |
+| **Sony cinema camera base ISOs in S-Log3** | **800 and 4000**, read from the camera's own menu list ("Camera Gain BaseISO": High = ISO 4000, Low = ISO 800) |
 | Live view speed | **23.9 fps** in Python (23.8 measured inside the bridge), 0 frames missed in 10 s |
 | Frame interval | median 41.6 ms, 95% under 73.5 ms, worst 92.5 ms |
 | Frame size | 1024×576 JPEG, about 66 KB each (about 1.6 MB/s over USB 2.0) |

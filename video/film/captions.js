@@ -53,7 +53,7 @@ window.CUES = [
   "id": "06",
   "t": 22.0,
   "end": 23.85,
-  "text": "October 19. A real FX2.",
+  "text": "October 19. A real camera.",
   "sub": true
  },
  {

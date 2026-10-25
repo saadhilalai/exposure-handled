@@ -1,15 +1,15 @@
-"""Build the camera the project actually uses: a faithful model of the Sony ILME-FX2 (no logos, no printing), with a
+"""Build the camera the project actually uses: a faithful model of the Sony cinema camera (no logos, no printing), with a
 24-50 mm-class zoom, its insides (sensor, stabiliser, board with the AI core and the colour chip, fan, battery) and the
-crew of orange agents. Saves video/blender/cache/fx.blend.
+crew of orange agents. Saves video/blender/cache/model.blend.
 
-Every position comes from the measured reference table (Sony's own FX2 product photos and Help Guide drawings, scaled to
+Every position comes from the measured reference table (Sony's own Sony cinema camera product photos and Help Guide drawings, scaled to
 the official 129.7 x 77.8 mm; about +-1 mm on faces, +-2 mm in depth). Coordinates: mm, origin at the centre of the main
 body box; the lens points -Y; +X is the port/EVF side, -X the grip; +Z up.
 
 Every outer material can turn to glass ("X-ray"): a mix driven by the scene property "xray" (0..1), so a shot can fade
 the body away and show what works inside.
 
-Run: Blender -b --factory-startup -P video/blender/build_fx.py
+Run: Blender -b --factory-startup -P video/blender/build_model.py
 """
 import math
 import random
@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_camera as bc  # noqa: E402  (helpers: mat, obj, rbox, lathe, ring, ribbed, cyl, sphere, cut, cutter, bake, agents, studio)
 
 ROOT = bc.ROOT
-OUT = ROOT / "video" / "blender" / "cache" / "fx.blend"
+OUT = ROOT / "video" / "blender" / "cache" / "model.blend"
 D, C = bpy.data, bpy.context
 TAU = math.tau
 
@@ -134,21 +134,21 @@ def xrayify(mt, edge=(0.75, 0.88, 1.0), glow=0.6):
 
 
 def fx_materials(M):
-    M["body"] = sparkle_paint("fx2 sparkle paint", "#3b3c3f")
-    M["evf"] = sparkle_paint("fx2 evf housing", "#2a2b2d", rough=0.5, flake=0.12, bump=0.12)
-    M["rubber"] = pebbled("fx2 pebbled rubber", "#19191a")
-    M["plastic"] = bc.micro_bump(bc.mat("fx2 hard plastic", **{"Base Color": (*srgb("#151515"), 1), "Roughness": 0.55}), 3500, 0.08)
-    M["button"] = bc.mat("fx2 button", **{"Base Color": (*srgb("#101010"), 1), "Roughness": 0.35, "Coat Weight": 0.25})
-    M["eyecup"] = pebbled("fx2 eyecup", "#0f0f10", scale=2600, strength=0.15, rough=0.6)
-    M["bezel"] = bc.micro_bump(bc.mat("fx2 bezel", **{"Base Color": (0.006, 0.006, 0.006, 1), "Roughness": 0.7}), 4000, 0.06)
-    M["mountsteel"] = bc.radial_aniso(bc.mat("fx2 mount", **{"Base Color": (0.78, 0.78, 0.79, 1), "Metallic": 1.0, "Roughness": 0.27}), amount=0.8)
-    M["chrome"] = bc.mat("fx2 chrome", **{"Base Color": (0.9, 0.9, 0.9, 1), "Metallic": 1.0, "Roughness": 0.08})
-    M["silver"] = bc.mat("fx2 shutter", **{"Base Color": (0.55, 0.55, 0.57, 1), "Metallic": 1.0, "Roughness": 0.35})
-    M["lcdglass"] = bc.mat("fx2 lcd", **{"Base Color": (0.002, 0.002, 0.003, 1), "Roughness": 0.05, "Coat Weight": 1.0})
+    M["body"] = sparkle_paint("cam sparkle paint", "#3b3c3f")
+    M["evf"] = sparkle_paint("cam evf housing", "#2a2b2d", rough=0.5, flake=0.12, bump=0.12)
+    M["rubber"] = pebbled("cam pebbled rubber", "#19191a")
+    M["plastic"] = bc.micro_bump(bc.mat("cam hard plastic", **{"Base Color": (*srgb("#151515"), 1), "Roughness": 0.55}), 3500, 0.08)
+    M["button"] = bc.mat("cam button", **{"Base Color": (*srgb("#101010"), 1), "Roughness": 0.35, "Coat Weight": 0.25})
+    M["eyecup"] = pebbled("cam eyecup", "#0f0f10", scale=2600, strength=0.15, rough=0.6)
+    M["bezel"] = bc.micro_bump(bc.mat("cam bezel", **{"Base Color": (0.006, 0.006, 0.006, 1), "Roughness": 0.7}), 4000, 0.06)
+    M["mountsteel"] = bc.radial_aniso(bc.mat("cam mount", **{"Base Color": (0.78, 0.78, 0.79, 1), "Metallic": 1.0, "Roughness": 0.27}), amount=0.8)
+    M["chrome"] = bc.mat("cam chrome", **{"Base Color": (0.9, 0.9, 0.9, 1), "Metallic": 1.0, "Roughness": 0.08})
+    M["silver"] = bc.mat("cam shutter", **{"Base Color": (0.55, 0.55, 0.57, 1), "Metallic": 1.0, "Roughness": 0.35})
+    M["lcdglass"] = bc.mat("cam lcd", **{"Base Color": (0.002, 0.002, 0.003, 1), "Roughness": 0.05, "Coat Weight": 1.0})
     M["lensbody"] = bc.micro_bump(bc.mat("lens satin black", **{"Base Color": (0.01, 0.01, 0.011, 1), "Metallic": 0.3, "Roughness": 0.42,
                                                                  "Coat Weight": 0.15}), 3000, 0.06)
     M["lensrubber"] = bc.mat("lens ring rubber", **{"Base Color": (0.008, 0.008, 0.008, 1), "Roughness": 0.62, "Specular IOR Level": 0.4})
-    M["tallyred"] = bc.emissive("fx2 tally", (1.0, 0.05, 0.03), 0.0)
+    M["tallyred"] = bc.emissive("cam tally", (1.0, 0.05, 0.03), 0.0)
     M["white"] = bc.mat("index white", **{"Base Color": (0.85, 0.85, 0.85, 1), "Roughness": 0.4})
     M["chip_tile"] = bc.emissive("colour chip", (1.0, 0.55, 0.25), 1.5)
     for k in ("body", "evf", "rubber", "plastic", "button", "eyecup", "bezel", "lcdglass", "lensbody", "lensrubber", "mountsteel", "silver"):
@@ -521,7 +521,7 @@ def main():
     C.view_layer.layer_collection.children["crew proto"].exclude = True
     OUT.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(OUT), compress=True)
-    print("fx2 objects:", len(D.objects), "->", OUT)
+    print("camera objects:", len(D.objects), "->", OUT)
 
 
 if __name__ == "__main__":

@@ -1,14 +1,14 @@
 # Step 2: First connection (read-only)
 
-Date: 2026-10-17. Camera: ILME-FX2, firmware 1.01, USB (Remote Shoot/Trn.). Mac: macOS 27.0, Apple Silicon. SDK 2.02.00.
+Date: 2026-10-17. Camera: Sony cinema camera, firmware 1.01, USB (Remote Shoot/Trn.). Mac: macOS 27.0, Apple Silicon. SDK 2.02.00.
 
 ## What we built
 
-- **`bridge/src/probe_readonly.cpp`**: our own C++ program, written from scratch. It finds the FX2, connects, reads every setting, saves one live-view frame, reads every setting again, compares the two reads, and disconnects.
+- **`bridge/src/probe_readonly.cpp`**: our own C++ program, written from scratch. It finds the camera, connects, reads every setting, saves one live-view frame, reads every setting again, compares the two reads, and disconnects.
 - **It cannot change the camera:**
   - Sony's change functions (`SetDeviceProperty`, `SendCommand`, `ExecuteControlCode…`, settings-file upload, LUT import, clock, FTP…) are "poisoned", so the build fails if the code mentions them. Tested: a test file that calls `SetDeviceProperty` is refused by the compiler.
   - The finished program imports only these 11 Sony functions: `Init, EnumCameraObjects, Connect, GetDeviceProperties, ReleaseDeviceProperties, GetLiveViewImageInfo, GetLiveViewImage, GetSDKVersion, Disconnect, ReleaseDevice, Release` (checked with `nm`).
-  - It refuses to run unless exactly one ILME-FX2 is connected.
+  - It refuses to run unless exactly one Sony cinema camera is connected.
 - **`agent/sony_values.py`**: decodes Sony's raw numbers (f-number, shutter, angle, ISO, Kelvin, and 37 list-type settings). Value names are read from the developer's own SDK header.
 - **`tools/show_settings.py`**: prints the snapshot as tables and saves `settings_table.md`.
 
@@ -18,7 +18,7 @@ Run: `cd build/bridge && ./probe_readonly <session folder>`, then `python3 tools
 
 | Check | Result |
 |---|---|
-| Camera found over USB | ✅ ILME-FX2 (USB link at 480 Mb/s, i.e. USB 2.0 speed) |
+| Camera found over USB | ✅ Sony cinema camera (USB link at 480 Mb/s, i.e. USB 2.0 speed) |
 | Connected | ✅ first try, protocol version 300 |
 | Settings read | ✅ 452 settings |
 | Changed anything? | ✅ No. Two full reads before and after the live-view grab were identical (0 differences). |

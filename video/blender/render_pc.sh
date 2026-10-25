@@ -17,7 +17,7 @@ if [[ ! -x $BLENDER ]]; then
   tar -xf /tmp/blender.tar.xz -C "$HOME" && rm /tmp/blender.tar.xz
 fi
 command -v ffmpeg >/dev/null || { echo "Install ffmpeg first: sudo apt install -y ffmpeg"; exit 1; }
-[[ -f video/blender/cache/fx.blend ]] || { echo "Missing video/blender/cache/fx.blend: git pull first"; exit 1; }
+[[ -f video/blender/cache/model.blend ]] || { echo "Missing video/blender/cache/model.blend: git pull first"; exit 1; }
 
 BLENDER=$BLENDER bash video/blender/queue.sh $SHOTS_LIST || echo "(the queue stopped early: uploading what finished)"
 tail -n 15 video/blender/out/queue.log

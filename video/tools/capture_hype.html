@@ -220,7 +220,7 @@ window.setup = async (scale, bpm) => {
   cam3d.setQuality({ pr3d: scale, dof: true, bloom: true, agents: 380, msaa: 4, load: 1 }, 1);
   S = cam3d.state;
   A = { sensor: cam3d.anchor("sensor"), iris: cam3d.anchor("iris"), chip: cam3d.anchor("chip"), mid: cam3d.anchor("center", 1) };
-  // the rear screen shows a real live-view frame from the Oct 19 FX2 test (for the push into the viewfinder)
+  // the rear screen shows a real live-view frame from the Oct 19 Sony cinema camera test (for the push into the viewfinder)
   const img = new Image(); img.src = "/site/media/real/test1_05.jpg"; await img.decode();
   const lc = cam3d.lcdCanvas.getContext("2d");
   lc.fillStyle = "#000"; lc.fillRect(0, 0, 640, 360);

@@ -12,7 +12,7 @@
 | 3 | **Story** (`v3-story/`) | 55 s | A filmmaker, the light changing, the moment you'd miss, the helper inside the camera catching it | "Cylinder Three", Chris Zabriskie |
 
 How they're made:
-- **3D:** the camera this project drives, modelled from measured photos with no maker's name or logo (`blender/build_fx.py`), with an X-ray switch that turns every outer surface to glass. Path-traced in Blender Cycles (`blender/shots_fx.py`) at 1920×1080 and scaled to 4K with a light glow pass.
+- **3D:** the camera this project drives, modelled from measured photos with no maker's name or logo (`blender/build_model.py`), with an X-ray switch that turns every outer surface to glass. Path-traced in Blender Cycles (`blender/shots_model.py`) at 1920×1080 and scaled to 4K with a light glow pass.
 - **Edit:** HyperFrames projects, made by `tools/build_films.py` (edit, voice, mix, render). The calm film's art is SVG in `tools/calm_template.html`; the other two use `tools/films_template.html`.
 
 ## The rules the films follow (from the director's brief)
@@ -20,7 +20,7 @@ How they're made:
 - **Words:** one or two at a time, big, solid colour, never a gradient. No labels, tags or side notes.
 - **No small print:** no small grey text. The only small text is the website link at the very end.
 - **Pure black:** every text-only card sits on pure black (#000) with no grain.
-- **Camera name:** the films never say "FX2". In words, "Sony cinema camera".
+- **Camera name:** the films never name the camera model. In words, "Sony cinema camera".
 - **No schedules,** and no mention of any AI company or assistant, anywhere in the films, files or commits.
 - **Every claim true:** no "first ever". See `docs/framing-research.md`.
 - **Footage:** no client work; faces only from licensed stock.

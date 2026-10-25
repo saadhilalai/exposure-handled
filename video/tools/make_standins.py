@@ -6,7 +6,7 @@ replacing the files. This tool never overwrites a file it didn't make (each stan
 
 CLIP A (11.4 s, the S3 story): steady tungsten interior; at 3.0 s (the mark) one lamp goes off and the scene gets
 one stop darker (rendered as half the light on the sensor); the agent waits ~1.5 s, then raises ISO a third of a stop
-at a time (3200 -> 4000 -> 5000 -> 6400), the way it worked on the FX2 on Oct 19, and the picture is back by 7.9 s.
+at a time (3200 -> 4000 -> 5000 -> 6400), the way it worked on the camera on Oct 19, and the picture is back by 7.9 s.
 CLIPS B1-B3 (8.4 s): the same steady scene for all three panes, with no outcome implied.
 
 Needs the website preview running (python tools/serve_site.py) and ffmpeg.

@@ -1,6 +1,6 @@
 # Step 6: The dashboard
 
-A web page that shows what the agent sees, what it decided and why, and gives you the controls: look, Auto, Lock, "this face looks right", and the big kill switch. Built and checked on the **fake camera only** (no FX2 connected).
+A web page that shows what the agent sees, what it decided and why, and gives you the controls: look, Auto, Lock, "this face looks right", and the big kill switch. Built and checked on the **fake camera only** (no Sony cinema camera connected).
 
 ```
 python tools/run_agent.py --fake --dashboard              # fake camera, then open http://127.0.0.1:8770/
@@ -14,7 +14,7 @@ python tools/run_agent.py --live --dashboard              # live: type LIVE, the
 
 | Part | What it shows / does |
 |---|---|
-| **Live view** | The camera's live view (S-Log3, as the FX2 sends it), ~12 fps in the browser while the agent itself runs at 24. **Clean / Zebras / False color**, plus face brackets and light-source cells you can switch on and off. |
+| **Live view** | The camera's live view (S-Log3, as the camera sends it), ~12 fps in the browser while the agent itself runs at 24. **Clean / Zebras / False color**, plus face brackets and light-source cells you can switch on and off. |
 | **State badge** | One word, always with an icon: **Auto** (changing ISO), **Suggesting** (watching, nothing sent), **Locked** (you're holding everything), **Recording** (rolling: nothing changes), **Killed**. |
 | **Setting tiles** | ISO, shutter, aperture, WB, frame rate. Each says who owns it: "Agent sets this" (ISO), or "Would set 1/48 · not approved" when the brain wants a change you haven't approved. |
 | **Status + last change** | The brain's current one-line reason, the last change with its time and reason, and any advice (ND, light, WB). |
@@ -66,7 +66,7 @@ Phone: ![Phone](screenshots/step6_08_phone_top.png)
 
 ## Limits (added 2026-10-19)
 
-Your request after the live test: when the agent hits a limit, show the reason. On the real FX2 the lamp measured about 2620K, so WB stopped at your 2800K floor without saying why. Now:
+Your request after the live test: when the agent hits a limit, show the reason. On the real camera the lamp measured about 2620K, so WB stopped at your 2800K floor without saying why. Now:
 
 | What stops it | What the dashboard says | Underneath |
 |---|---|---|
@@ -93,7 +93,7 @@ Your request after the live test: when the agent hits a limit, show the reason. 
 
 ## Honest limits
 
-- Only tried on the fake camera. On the real FX2, frame timing and the browser's load are untested.
-- The live view is the flat S-Log3 picture (that's what the FX2 sends); there's no viewing LUT yet.
+- Only tried on the fake camera. On the real camera, frame timing and the browser's load are untested.
+- The live view is the flat S-Log3 picture (that's what the camera sends); there's no viewing LUT yet.
 - Face recognition is OpenCV's model at OpenCV's threshold. It hasn't been tested on more than one person, or on a range of skin tones (Step 7).
 - No password for network use (above).

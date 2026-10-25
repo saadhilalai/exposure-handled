@@ -26,7 +26,7 @@ from typing import Optional
 from agent.looks import LOOKS
 from agent.safety import RANGES_FILE
 
-BASE_ISOS = (800, 4000)       # FX2 S-Log3, read from the camera's own menu text (Step 3)
+BASE_ISOS = (800, 4000)       # Sony cinema camera S-Log3, read from the camera's own menu text (Step 3)
 SETTLE_S = 0.6                # a change shows in the picture ~0.3 s after it's sent (Step 3)
 REVERSAL_WINDOW_S = 5.0
 DEAD_BAND = 0.3               # stops; about a third of a stop

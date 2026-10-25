@@ -17,7 +17,7 @@
 
 ## Bring
 
-- [ ] FX2, with 3+ charged batteries, and enough card space for about 1.5 hours of footage at your codec
+- [ ] Sony cinema camera, with 3+ charged batteries, and enough card space for about 1.5 hours of footage at your codec
 - [ ] Lens, **variable ND**, tripod
 - [ ] **USB-C data cable** (the one from Oct 19)
 - [ ] MacBook and its **charger**, plus an outlet nearby: it's a long day
@@ -31,14 +31,14 @@
 ## Before you start (at home)
 
 - [ ] Write on the printout: the list in docs/step7-tools.md, section 0. It covers the fixed iris, naming faces A and B, no m in S6, and clip numbers. (The S5 note is for session 2.)
-- [ ] Check the FX2's clock against the Mac's.
+- [ ] Check the camera's clock against the Mac's.
 - [ ] If the robot is training on this Mac, pause it.
 - [ ] You emailed yourself the plan's fingerprint (`7b2a9e69…a2303b`).
 
 ## Camera, for every take (set by hand, the same for all three methods)
 
 - 23.98p, S-Log3 (Flexible ISO), **1/48**, **the look's f-stop** (the iris stays there, Manual included), **WB in Kelvin** for the scene, and the same starting ISO and ND.
-- **FX2 Auto ISO is on only for FX2-auto takes** (range 800–12800), and off again straight after.
+- **The camera's Auto ISO is on only for FX2-auto takes** (range 800–12800), and off again straight after.
 - USB Connection Mode **Remote Shoot/Trn.**, no phone app connected.
 
 ## Start

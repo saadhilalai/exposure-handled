@@ -1,7 +1,7 @@
 """Export the real numbers the project website shows into site/data/site.json.
 
 Everything here comes from files, not typed by hand:
-  - the Oct 19 live test on the real FX2 (sessions/<live self-test>/selftest_report.json, each
+  - the Oct 19 live test on the real camera (sessions/<live self-test>/selftest_report.json, each
     phase's metrics.csv and the bridge log), and the frame the agent was looking at for each change
   - the looks (agent/looks.py) and the approved ranges (config/safe_ranges.json)
 sessions/ stays out of the repo; site/data/site.json and the copied frames are what gets published.
@@ -78,7 +78,7 @@ def main():
     sets = [e for e in sets if e.get("event") == "set"]
     ranges = json.loads((ROOT / "config" / "safe_ranges.json").read_text())
     data = {
-        "source": "Real Sony FX2 over USB, 2026-10-19, white wall and one lamp, card out (%s)" % session.name,
+        "source": "Real Sony cinema camera over USB, 2026-10-19, white wall and one lamp, card out (%s)" % session.name,
         "date": report["started"][:10],
         "tests": {
             "test1": phase(session, 1, report, "test1", "Cinematic 24p", [-1.0, 1.0], hold_s=60),

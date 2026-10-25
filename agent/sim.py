@@ -2,7 +2,7 @@
 
 A scene is described at a reference exposure (ISO 800, f/2.8, 1/48, no ND) in the
 units the eyes measure: stops vs 18% grey. The simulated camera applies the brain's
-proposals with the delays measured on the real FX2 in Step 3: a change lands about
+proposals with the delays measured on the real camera in Step 3: a change lands about
 0.15 s after it's sent and shows in the picture about 0.3 s after.
 """
 import math
@@ -13,10 +13,10 @@ from typing import Callable, Optional
 from agent.brain import Brain, CamState, Observation
 from agent.tone import ToneModel, load_calibration
 
-FX2_ISOS = [200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400,
+CAMERA_ISOS = [200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400,
             8000, 10000, 12800, 16000, 20000, 25600, 32000, 40000, 51200, 64000, 80000, 102400]
 SIGMA_28_70_F = [2.8, 3.2, 3.5, 4.0, 4.5, 5.0, 5.6, 6.3, 7.1, 8.0, 9.0, 10.0, 11.0, 13.0, 14.0, 16.0, 18.0, 20.0, 22.0]
-FX2_SHUTTERS = [1 / d for d in (30, 40, 48, 50, 60, 80, 96, 100, 120, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000)]
+CAMERA_SHUTTERS = [1 / d for d in (30, 40, 48, 50, 60, 80, 96, 100, 120, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000)]
 CLIP_STOPS = ToneModel("slog3", load_calibration()).clip_stops
 LAND_S, SHOW_S = 0.15, 0.15          # sent -> camera (0.15 s) -> picture (another 0.15 s)
 
@@ -81,8 +81,8 @@ class SimCamera:
     def state(self):
         return CamState(iso=self.iso, fnumber=self.fnumber, shutter_s=self.shutter_s, fps=self.fps,
                         log_mode=self.log_mode, wb_mode=self.wb_mode, wb_kelvin=self.wb_kelvin,
-                        recording=self.recording, iso_options=FX2_ISOS, f_options=SIGMA_28_70_F,
-                        shutter_options=FX2_SHUTTERS)
+                        recording=self.recording, iso_options=CAMERA_ISOS, f_options=SIGMA_28_70_F,
+                        shutter_options=CAMERA_SHUTTERS)
 
 
 def measure(s, ev, t, rng, noise=0.03):

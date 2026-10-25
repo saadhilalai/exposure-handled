@@ -1,8 +1,8 @@
-// probe_readonly: first, read-only connection to a Sony ILME-FX2.
+// probe_readonly: first, read-only connection to a Sony cinema camera.
 //
 // What it does, in order:
 //   1. Start Sony's SDK and look for cameras on USB.
-//   2. Refuse to continue unless exactly one ILME-FX2 is found.
+//   2. Refuse to continue unless exactly one Sony cinema camera is found.
 //   3. Connect in Remote mode (no auto-reconnect).
 //   4. Read every camera setting and save it to <out_dir>/settings_start.json.
 //   5. Copy one live-view frame to <out_dir>/liveview.jpg.

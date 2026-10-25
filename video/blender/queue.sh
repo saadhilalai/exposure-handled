@@ -7,7 +7,7 @@
 #
 # It never restarts Blender on its own: if a shot fails or Blender is quit, the whole queue stops there.
 cd "$(dirname "$0")/../.."
-SCRIPT=video/blender/${SHOTS:-shots_fx.py}
+SCRIPT=video/blender/${SHOTS:-shots_model.py}
 LOG=video/blender/out/queue.log
 LOCK=video/blender/out/.queue.lock
 mkdir -p video/blender/out

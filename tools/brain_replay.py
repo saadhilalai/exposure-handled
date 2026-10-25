@@ -1,7 +1,7 @@
 """Replay recorded frames through the eyes + brain, with the camera's real saved settings.
 
 Nothing is sent anywhere. A "virtual camera" pretends each proposal was applied
-(0.3 s later, like the real FX2) by updating the settings and shifting the measured
+(0.3 s later, like the real camera) by updating the settings and shifting the measured
 brightness by the change's stops. That shift is an APPROXIMATION: real frames can't
 show detail that was clipped, so how much clipping appears or disappears is estimated.
 No camera involved.

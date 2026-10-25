@@ -1,6 +1,6 @@
 # Step 5: The brain (the cinematographer) and the runner
 
-The brain was built and tested with **no camera**, in a camera simulator and on recorded frames. The runner (eyes → brain → safety gate → bridge, with a kill switch) is built and tested against a **fake camera**. That was the state when this was written. **The live test has since run on the FX2 (2026-10-19): [step5-live-test.md](step5-live-test.md).**
+The brain was built and tested with **no camera**, in a camera simulator and on recorded frames. The runner (eyes → brain → safety gate → bridge, with a kill switch) is built and tested against a **fake camera**. That was the state when this was written. **The live test has since run on the camera (2026-10-19): [step5-live-test.md](step5-live-test.md).**
 
 ## How it decides (`agent/brain.py`)
 
@@ -20,7 +20,7 @@ Explainable rules, no black box. Each update looks at what the eyes measured (sm
 **Smooth behavior:**
 - **Dead band:** errors within ⅓ stop are left alone.
 - **Reaction time:** each look waits its reaction time before acting (0.5–2 s), so a walk-by or a window flash never triggers a change.
-- **Settling:** after any change, it waits ≥ 0.6 s (twice the 0.3 s the real FX2 needed to show an ISO change in Step 3), plus the look's minimum gap.
+- **Settling:** after any change, it waits ≥ 0.6 s (twice the 0.3 s the real camera needed to show an ISO change in Step 3), plus the look's minimum gap.
 - **No back-and-forth:** it won't undo a change within 5 s unless the error is big.
 - **Safety margin:** after darkening for clipping, it keeps double the safety margin for 15 s.
 - **Clipping memory (new):** after darkening because an exposure clipped, it won't go back up to that exposure for 60 s, unless the light itself has dropped (measured from the picture). Then the limit moves up by exactly that much. Status while held: *"Holding: face −0.6 st (target +0.5); any brighter would clip"*, plus "add light to the subject".
@@ -44,7 +44,7 @@ Starting points; every number is yours to tune. Exposure is in stops vs 18% grey
 
 ## Tests without a camera
 
-**Simulator (`agent/sim.py`, `agent/scenes.py`):** a fake FX2 + scene that reacts to the brain with the delays measured in Step 3 (a change lands in 0.15 s and shows 0.15 s later). It runs your Step 7 situations plus stress tests. Full log: `docs/results/step5_simulator_scenes.txt` (re-run with the +0.5 face target).
+**Simulator (`agent/sim.py`, `agent/scenes.py`):** a fake Sony cinema camera + scene that reacts to the brain with the delays measured in Step 3 (a change lands in 0.15 s and shows 0.15 s later). It runs your Step 7 situations plus stress tests. Full log: `docs/results/step5_simulator_scenes.txt` (re-run with the +0.5 face target).
 
 | Scene | Look | Changes | Back-and-forth | Clipping (s) | What it did |
 |---|---|---|---|---|---|
@@ -88,7 +88,7 @@ live view ──► eyes (10-15 ms) ──► brain ──► proposal + one-lin
                                      C++ bridge  ── checks its own compiled-in allow-list (ISO 800-12800),
                                               │      read-only flag, lock, recording, value offered
                                               ▼
-                                            FX2
+                                            Sony cinema camera
 ```
 
 **Safety, layer by layer:**
@@ -110,7 +110,7 @@ live view ──► eyes (10-15 ms) ──► brain ──► proposal + one-lin
 
 ### Tried against a fake camera (no camera)
 
-`tools/fake_bridge.py` is a fake FX2 that speaks the bridge's exact protocol, with the same checks as the real bridge. Its picture is a recorded frame made brighter or darker using the measured S-Log3 calibration, with the FX2's measured delays (confirmed in 0.15 s, visible after 0.3 s).
+`tools/fake_bridge.py` is a fake Sony cinema camera that speaks the bridge's exact protocol, with the same checks as the real bridge. Its picture is a recorded frame made brighter or darker using the measured S-Log3 calibration, with the camera's measured delays (confirmed in 0.15 s, visible after 0.3 s).
 
 **Demo on your real Step 4 frame** (ISO 1600, 1/50, f/5.6, face −2.3 st, lamp in frame), live against the fake, Cinematic look. The room light drops 1 stop at 20 s and rises at 32 s (to ½ stop brighter than the start):
 - Start: "Would change, not approved yet: 1/50 → 1/48" and "f/5.6 → f/2.8" (advice only).
@@ -118,7 +118,7 @@ live view ──► eyes (10-15 ms) ──► brain ──► proposal + one-lin
 - Light drops 1 stop → 6400 → 8000 → 10000, then holds again.
 - Light comes up → highlights clip 8% → 10000 → 8000 → 6400 in 1.7 s steps.
 - End: ISO put back to 1600 through the gate.
-- 23.9 fps, eyes 15 ms per frame. Each change confirmed in 150 ms (the fake copies the FX2's timing).
+- 23.9 fps, eyes 15 ms per frame. Each change confirmed in 150 ms (the fake copies the camera's timing).
 
 **A bug the fake camera caught (fixed):** the first run pumped 6400 ↔ 5000 three times. Cause: at ISO 6400 one more region next to your lamp counts as "very bright", so the lamp cluster grows to 5 regions, past the 4-region limit for a practical, and the lit wall suddenly counts as important clipping (0% at 5000, 1.5% at 6400). The fix is the clipping memory above, plus a permanent test (`test_no_pumping_when_one_step_brighter_clips`) that fails without it.
 
@@ -143,7 +143,7 @@ For the live test, run it in **your own Terminal window** so SPACE is under your
 
 - **Simulator and fake camera ≠ camera.** Delays come from the real Step 3 measurements, but the scene and clipping models are simplified. The fake assumes clipped areas in a recorded frame are 1 stop over clip. The real test is the live ISO test, then Step 7.
 - **The eyes' "practical vs important" split can flip** when a lit area around a lamp grows past 4 regions (seen above). The brain now copes (clipping memory), but the eyes rule itself is unchanged. Likely worth a softer rule after the live test.
-- **Frames skipped during a change:** the runner waits for the camera to confirm each change (~150 ms on the FX2), so about 4 frames are skipped each time (fps dips to ~18 for that second).
+- **Frames skipped during a change:** the runner waits for the camera to confirm each change (~150 ms on the camera), so about 4 frames are skipped each time (fps dips to ~18 for that second).
 - **Ctrl-C during a change:** the change can still land on the camera, and then it's in the bridge's own log (`bridge_log.jsonl`) but not in `changes.jsonl`.
 - **White balance** won't change on the real camera yet: not approved, and the color estimate is medium confidence at best. Today it only advises.
 - **Focus:** no focus actions (your rule).

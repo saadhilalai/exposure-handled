@@ -1,4 +1,4 @@
-// camera_bridge: holds the connection to the FX2 and serves a private local socket
+// camera_bridge: holds the connection to the camera and serves a private local socket
 // that the Python agent talks to.
 //
 // Protocol: one text command per line; every answer is one JSON line.

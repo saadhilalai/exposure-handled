@@ -10,7 +10,7 @@ Research date: 2026-10-21. About 60 web, code and paper searches, plus direct ch
 
 - Cameras have set their own exposure for decades: auto ISO, auto iris, Auto ND, face-weighted metering. Since July 2026 Sony also has an AI (deep-learning) auto white balance in the FX5. None of these works from a creative look, and none explains its choices.
 - **The closest product is FrameCoach** (iPhone app, 2026). It reads a Sony or Canon camera's live feed, Canon's cinema cameras included. You describe the look in plain English, and it gives up to three ranked changes, each with its reason. One tap sends a change to the camera. But its own support page says it **"never adjusts settings automatically"**: a person approves every change.
-- **The closest coming product is Darkgrade** (Y Combinator, Fall 2024). It's an open camera-control engine, already tested on a Sony FX2. Its roadmap lists "one tap to set lights, audio & exposure", "let AI assistants run the camera" and "AI that understands what your camera sees", all marked "on the way". It targets YouTubers and podcasters, not cinematographers.
+- **The closest coming product is Darkgrade** (Y Combinator, Fall 2024). It's an open camera-control engine, already tested on a Sony cinema camera. Its roadmap lists "one tap to set lights, audio & exposure", "let AI assistants run the camera" and "AI that understands what your camera sees", all marked "on the way". It targets YouTubers and podcasters, not cinematographers.
 - **The closest hobby project is So-DSC.** It lets a chat AI see a Sony RX100's live view and change ISO, shutter, aperture, exposure compensation and white balance itself, while chatting. It's a compact stills camera with no safety limits, and the project has 1 star.
 - **Research** has many learned auto-exposure controllers. Their goal is machine vision (robots, object detection), not a creative look. One vision-language model suggests manual settings but doesn't change the camera.
 
@@ -32,12 +32,12 @@ From `README.md`, `PROGRESS.md` and `agent/runner.py`:
 
 - **How it decides:** explainable rules ("no black box"), plus neural face detection and recognition from OpenCV. **It is not an LLM, and it isn't a trained exposure controller.** "AI assistant" is fair; "AI that learned from DPs" would not be.
 - **What it changes:**
-  - ISO, by itself, in a live closed loop on a real FX2 (passed 2026-10-19).
+  - ISO, by itself, in a live closed loop on a real camera (passed 2026-10-19).
   - All four settings (shutter 1/48, f/4, ISO, white balance 2800K), in one automatic run of the Interview look (Test 3, passed).
   - Today's approved range is ISO 800–12800.
 - **Kill switch:** the dashboard button stopped it in **33 ms** on the real camera, and the bridge locked.
 - **Restore, a correction to the brief:** the kill switch **does not** restore settings. After a kill the session is locked and nothing is sent. At the normal end of a live session, it **offers** to put your approved settings back to where they started, or does it automatically with `--restore`. So say "stops in 33 ms" and "offers to put your settings back", not "stops and restores in 33 ms".
-- **Not done yet:** the blind test against FX2 auto and manual (Step 7), and testing on a range of skin tones. **Don't claim "better than auto" or "works for every skin tone" yet.**
+- **Not done yet:** the blind test against the camera's own auto and manual (Step 7), and testing on a range of skin tones. **Don't claim "better than auto" or "works for every skin tone" yet.**
 - **No LICENSE file** in the repo, so don't call it "open source" in the film.
 
 ---
@@ -50,10 +50,10 @@ Key: **Live** = reads the live image. **Sets** = changes the camera's settings i
 
 | Thing | What it is | Live | Sets | Pro | Look / Why | Status | Source |
 |---|---|---|---|---|---|---|---|
-| Sony FX2 auto exposure | Intelligent Auto, P/A/S modes, ISO Auto, ISO Range Limit, "Face Priority in Multi Metering" | Y | Y | Y | N / N | Shipping | [FX2 Help Guide](https://helpguide.sony.net/ilc/2530/v1/en/index.html); [what Face Priority metering does (α7 IV guide)](https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000655352.html) |
+| The Sony cinema camera's own auto exposure | Intelligent Auto, P/A/S modes, ISO Auto, ISO Range Limit, "Face Priority in Multi Metering" | Y | Y | Y | N / N | Shipping | [Sony cinema camera Help Guide](https://helpguide.sony.net/ilc/2530/v1/en/index.html); [what Face Priority metering does (α7 IV guide)](https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000655352.html) |
 | Sony Auto ND (FX6, FX9, FS5, Z190/Z280…) | Electronic variable ND that "proactively and automatically" holds exposure | Y | Y | Y | N / N | Shipping (since ~2017) | [Sony Pro: Variable ND](https://pro.sony/en_IE/technology/variable-auto-nd-filter-technology) |
 | Sony FX5 "Auto Tracing White Balance" | Deep-learning light-source estimation on the new AI unit (announced 2026-07-22) | Y | Y (WB only) | Y | N / N | Shipping | [What Digital Camera](https://www.whatdigitalcamera.com/photography-news/open-gate-recording-comes-to-sony-via-fx5-with-internal-x-ocn-raw-and-16-stops-of-dynamic-range); [Fstoppers](https://fstoppers.com/gear/sony-fx5-fx3-two-features-everyone-asked-903682) |
-| Sony AI processing unit (FX2, FX3, FX5, PXW-Z300) | Subject recognition for autofocus, auto framing | Y | Focus/framing only | Y | N / N | Shipping | [Park Cameras FX2](https://www.parkcameras.com/shop/sony-fx2-full-frame-cinema-line-camera_7634619m); [CineD Z300](https://www.cined.com/sony-pxw-z300-announced-1-2-inch-4k-3-cmos-camcorder-with-17x-zoom-ai-features-and-world-first-content-authentication/embed/) |
+| Sony AI processing unit (Sony cinema cameras such as the FX3, FX5 and PXW-Z300) | Subject recognition for autofocus, auto framing | Y | Focus/framing only | Y | N / N | Shipping | [CineD Z300](https://www.cined.com/sony-pxw-z300-announced-1-2-inch-4k-3-cmos-camcorder-with-17x-zoom-ai-features-and-world-first-content-authentication/embed/) |
 | Sony Monitor & Control / Creators' App | Phone and tablet remote with waveform, false color, zebras | Y | Manual only | Y | N / N | Shipping | [Videomaker](https://www.videomaker.com/news/sony-releases-updated-monitor-control-app/) |
 | Canon Cinema EOS | Auto Iris, Push Auto Iris, Auto ISO/Gain, AE shift. C400 adds Auto Exposure Ramping Compensation (Aug 2026). | Y | Y | Y | N / N | Shipping | [Canon C200 specs](https://www.canon-europe.com/video-cameras/eos-c200/specifications/); [Canon, Aug 2026 firmware](https://www.canon.co.uk/press-centre/press-releases/2026/08/canon-enhances-cinema-eos-with-new-eos-c80-and-eos-c400-firmware-update/) |
 | Panasonic AG-CX20/CX18 | "Faces are detected… and the exposure is matched" | Y | Y | Pro camcorder | N / N | Shipping | [Panasonic manual](https://eww.pavc.panasonic.co.jp/hdw/oi/AG-CX20/html/AG-CX20_CX18_DVQP3341_eng/0091.html) |
@@ -78,7 +78,7 @@ Key: **Live** = reads the live image. **Sets** = changes the camera's settings i
 | Thing | What it is | Live | Sets | Pro | Look / Why | Status | Source |
 |---|---|---|---|---|---|---|---|
 | **FrameCoach** (FrameCoach Ltd., iPhone) | **Closest match.** Live feed over Wi-Fi from Sony (Camera Remote API bodies), Canon CCAPI bodies (including C70, C80, C300 III, C400, C500 II) or the iPhone. You describe the look ("cinematic sunset interview"); it gives 3 ranked changes, each with a reason. One-tap Apply. Analysis runs in the cloud. | Y | **Only when you tap Apply.** "FrameCoach never adjusts settings automatically." | Y (filmmakers) | **Y / Y** | Shipping, free. Versions 1.0–1.6 dated Mar 27–Jun 24 (listing © 2026). | [Site](https://www.framecoach.io/); [Support / camera list](https://www.framecoach.io/support); [App Store](https://apps.apple.com/app/id6757565363) |
-| **Darkgrade** (Y Combinator F24) | Open camera-control engine "Link" (alpha), tested on Sony FX2, A7 IV, Canon R6 III and more. "Studio" app in development. Roadmap, all "on the way": one-tap exposure, AI assistants running the camera, AI that understands what the camera sees. | Y | By code; AI exposure not yet | Creators, YouTubers | Not yet | Alpha / roadmap | [darkgrade.com](https://darkgrade.com); [Roadmap](https://darkgrade.com/roadmap); [GitHub](https://github.com/darkgrade/darkgrade); [YC](https://www.ycombinator.com/companies/darkgrade) |
+| **Darkgrade** (Y Combinator F24) | Open camera-control engine "Link" (alpha), tested on Sony cinema camera, A7 IV, Canon R6 III and more. "Studio" app in development. Roadmap, all "on the way": one-tap exposure, AI assistants running the camera, AI that understands what the camera sees. | Y | By code; AI exposure not yet | Creators, YouTubers | Not yet | Alpha / roadmap | [darkgrade.com](https://darkgrade.com); [Roadmap](https://darkgrade.com/roadmap); [GitHub](https://github.com/darkgrade/darkgrade); [YC](https://www.ycombinator.com/companies/darkgrade) |
 | Camera Intelligence "Caira" | Micro Four Thirds camera that clips onto an iPhone. Conventional AI auto exposure, voice control, and generative "exposure tuning" in the gallery *after* capture. The capture pipeline is non-generative. | Y | Its own AE | Creators | ~ / N | Kickstarter 2025, shipping 2026 | [CineD](https://www.cined.com/camera-intelligence-caira-ceo-vishal-kumar-on-the-new-ai-iphone-camera-attachment-and-lessons-from-the-alice-camera/); [PetaPixel](https://petapixel.com/2025/09/03/camera-intelligence-formerly-alice-camera-pivots-to-ai/) |
 | Kino (Lux) | iPhone video app. "AutoMotion" exposure is biased to a 180° shutter. Not AI. | Y | Y (phone) | ~ | ~ / N | Shipping | [App Store](https://apps.apple.com/app/id6472380172) |
 | Blackmagic Camera (iOS) | Tap to expose; auto exposure you can lock. Not AI. | Y | Y (phone) | ~ | N / N | Shipping | [Blackmagic forum](https://forum.blackmagicdesign.com/viewtopic.php?p=989025) |
@@ -133,7 +133,7 @@ Key: **Live** = reads the live image. **Sets** = changes the camera's settings i
 Why "first" claims are hard:
 
 - **You can't prove a negative.** These searches only cover what's public, indexed and in English. A private studio tool, a demo posted only on social media, or a non-English project wouldn't show up.
-- **The nearest competitor is one feature away.** FrameCoach already does the look, the explanation and applying changes to Canon cinema cameras. If it adds an "auto-apply" switch, a "first" line becomes false overnight. Darkgrade has AI exposure on its public roadmap and already runs on the FX2.
+- **The nearest competitor is one feature away.** FrameCoach already does the look, the explanation and applying changes to Canon cinema cameras. If it adds an "auto-apply" switch, a "first" line becomes false overnight. Darkgrade has AI exposure on its public roadmap and already runs on the camera.
 - **"First" draws "well, actually…" replies.** Built-in auto exposure has changed cinema-camera settings by itself for decades. Sony's FX5 now uses deep learning for white balance. So-DSC lets an AI see live view and change exposure. Each of these could be used to argue against a loosely worded "first".
 - **The word "AI" can be challenged.** Camera Agent decides with explainable rules plus neural face detection. That is a strength, but a "first AI" claim invites a fight over what counts as AI.
 
@@ -142,7 +142,7 @@ Why "first" claims are hard:
 > "As far as we can find (October 2026), the first assistant that runs a cinema camera's exposure on its own, from a chosen look, and explains every change in plain English."
 
 - **Confidence:** moderate that nothing public did all of this before 2026-10-21. Low that it stays true for long.
-- **Key sources:** FrameCoach's "never adjusts settings automatically" ([support](https://www.framecoach.io/support)); Darkgrade's roadmap, where AI exposure is still "on the way" ([roadmap](https://darkgrade.com/roadmap)); So-DSC is a compact camera with no look system ([GitHub](https://github.com/nananek/so-dsc)); camera-maker AE has no looks or explanations ([FX2 Help Guide](https://helpguide.sony.net/ilc/2530/v1/en/index.html), [Sony Auto ND](https://pro.sony/en_IE/technology/variable-auto-nd-filter-technology), [FX5 AI white balance](https://www.whatdigitalcamera.com/photography-news/open-gate-recording-comes-to-sony-via-fx5-with-internal-x-ocn-raw-and-16-stops-of-dynamic-range)).
+- **Key sources:** FrameCoach's "never adjusts settings automatically" ([support](https://www.framecoach.io/support)); Darkgrade's roadmap, where AI exposure is still "on the way" ([roadmap](https://darkgrade.com/roadmap)); So-DSC is a compact camera with no look system ([GitHub](https://github.com/nananek/so-dsc)); camera-maker AE has no looks or explanations ([Sony cinema camera Help Guide](https://helpguide.sony.net/ilc/2530/v1/en/index.html), [Sony Auto ND](https://pro.sony/en_IE/technology/variable-auto-nd-filter-technology), [FX5 AI white balance](https://www.whatdigitalcamera.com/photography-news/open-gate-recording-comes-to-sony-via-fx5-with-internal-x-ocn-raw-and-16-stops-of-dynamic-range)).
 
 ### Recommended: vision framing
 
@@ -164,7 +164,7 @@ Each is checked against the project's own logs (Oct 19 real-camera tests).
 
 Two more that are true and on-brand:
 - **"No black box. Every rule is a DP's rule."**
-- **"Built by a working cinematographer. Tested on a real Sony FX2."**
+- **"Built by a working cinematographer. Tested on a real Sony cinema camera."**
 
 **Avoid for now:**
 - "first" or "only" in the film;
@@ -180,4 +180,4 @@ Two more that are true and on-brand:
 
 - Searches were in English. YouTube, X and Reddit coverage through search engines is thin, and private or closed-beta tools wouldn't appear.
 - FrameCoach's own pages disagree. The website says FX3 and FX30 support is "in development", but the App Store notes for 1.6.0 list them as connecting directly. Either way, every change still needs a tap.
-- Some items rely on retailer or press pages rather than manuals: the Sony FX2 AI unit, the Canon C400 auto modes and the BRC-AM7 colour match.
+- Some items rely on retailer or press pages rather than manuals: the Sony cinema camera AI unit, the Canon C400 auto modes and the BRC-AM7 colour match.

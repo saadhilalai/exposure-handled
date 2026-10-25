@@ -10,7 +10,7 @@ All work stopped safely. Nothing is running; nothing was lost.
 - **3D still to render (about 3 h, plug the Mac in):** s_catch (1 frame done), s_hero, h_world, h_smash, h_xray, h_irisx,
   h_chip, h_swarm, h_kill, h_slam. All were test-rendered and approved by eye first.
 - **To resume:**
-  1. `cd ~/camera-agent && SHOTS=shots_fx.py nohup caffeinate -i video/blender/queue.sh s_catch s_hero h_world h_smash h_xray h_irisx h_chip h_swarm h_kill h_slam &`
+  1. `cd ~/camera-agent && SHOTS=shots_model.py nohup caffeinate -i video/blender/queue.sh s_catch s_hero h_world h_smash h_xray h_irisx h_chip h_swarm h_kill h_slam &`
      (it skips finished shots and picks up from the last frame).
   2. When s_catch and s_hero are done: `.venv/bin/python video/tools/build_films.py prep v3`, then `render v3`, then `deliver v3`.
   3. When the h_ shots are done: the same for `v2`.
@@ -21,8 +21,8 @@ All work stopped safely. Nothing is running; nothing was lost.
 
 The director sent three briefs (calm, hype, story). Notes: `video/FILMS.md`; credits: `video/CREDITS.md`; decisions 29–34 in
 `docs/open-decisions.md`. Nothing goes on the website until the director approves.
-- **The camera:** a faithful model of the FX2 this project drives (`video/blender/build_fx.py`, no maker's name or logo), with
-  an X-ray switch that turns the body to glass, and new shots (`shots_fx.py`): transparent renders with a shadow catcher,
+- **The camera:** a faithful model of the camera this project drives (`video/blender/build_model.py`, no maker's name or logo), with
+  an X-ray switch that turns the body to glass, and new shots (`shots_model.py`): transparent renders with a shadow catcher,
   helpers that shine with light trails, the iris and colour chip at work. The lens macros were reframed after a test render
   came out muddy.
 - **Calm:** rebuilt as art on warm paper (SVG): a horizon and sun, light, a breathing shape, a lens that becomes an eye, a
@@ -137,7 +137,7 @@ The director's note on the narrated film was "too slow, too many words, looks li
 
 - **Saturday (Step 7) prep.** An audit of the run sheet, start, rating page and scoring found these, now fixed and tested (126 tests pass):
   - **Dashboard port:** it defaulted to 8765, robot-walker's port, and the run sheet's commands don't pass `--port`. It now defaults to 8770. The port is checked before anything starts, so a busy port stops the take with a clear message.
-  - **Dry-run takes** (FX2 auto and manual) could offer to "put ISO back" at the end, which would have sent a change. They no longer do.
+  - **Dry-run takes** (the camera's own auto, and manual) could offer to "put ISO back" at the end, which would have sent a change. They no longer do.
   - **Bridge checks:** an old socket from a stopped bridge now gives a clear message instead of a traceback, and no empty take folder is left behind.
   - **Take names** that aren't on the run sheet are refused, with the closest matches suggested.
   - **The runner logs** when the camera starts and stops recording, needed to cut the blind-test clips from the mark.
@@ -189,7 +189,7 @@ The director's note on the narrated film was "too slow, too many words, looks li
 
 ## 📍 Where things stand (2026-10-19, evening)
 
-**The live test is done.** It ran unattended on the director's go ("Camera ready, and I'm leaving it to you"), with the FX2 on a tripod at a white wall and one lamp, card out. Details: [docs/step5-live-test.md](docs/step5-live-test.md).
+**The live test is done.** It ran unattended on the director's go ("Camera ready, and I'm leaving it to you"), with the camera on a tripod at a white wall and one lamp, card out. Details: [docs/step5-live-test.md](docs/step5-live-test.md).
 - **Test 1, live ISO: PASS.**
   - Started 2 stops too bright, it came back in 5 one-third-stop steps in 8.4 s.
   - 0 changes in the 60 s with nothing to fix.
@@ -210,7 +210,7 @@ The director's note on the narrated film was "too slow, too many words, looks li
 
 **Later the same evening (no camera): the director's four answers, built and committed.**
 - **Blind-test LUT: Sony's LC-709TypeA** (`2_SGamut3CineSLog3_To_LC-709TypeA.cube`), found on this Mac. It replaces the first pick, s709, the same evening, before any grading.
-  - Sony's official LookProfile LUT for S-Gamut3.Cine/S-Log3 (the FX2 records movies in S-Gamut3.Cine).
+  - Sony's official LookProfile LUT for S-Gamut3.Cine/S-Log3 (the camera records movies in S-Gamut3.Cine).
   - Copied into `luts/`, which stays out of the repo. The plan's LUT line names the file and its checksum. It's still the only line changed since the freeze.
 - **Rating page:**
   - **Only raters who finish every clip count.**
@@ -266,8 +266,8 @@ The director went to sleep and asked for everything that doesn't need him or the
 3. ✅ Face screenshots stay off the public repo.
 4. ✅ Allow ISO changes while recording **only for Step 7 agent takes**, behind a switch that's **off by default** (to build: brain, Python gate and C++ bridge all refuse while recording today).
 5. ✅ Pi: **4GB**.
-6. ✅ Step 7's 8 questions answered (2026-10-18): ISO only; FX2 Auto ISO only; advice not followed in scored takes + one bonus take per face scene and person; Sony's official LUT; a private rater page I build; 2+ people with different skin tones (everyone in S1 and S4, others split); dates later.
-7. ✅ Step 7 plan **approved as FINAL** (2026-10-18). LUT = the FX2's Display LUT, read from the camera (read-only) at the next connection, named in the plan before any grading. Built: the recording switch, the rater page (anonymous IDs, answers off the repo), the printable run sheet.
+6. ✅ Step 7's 8 questions answered (2026-10-18): ISO only; Sony cinema camera Auto ISO only; advice not followed in scored takes + one bonus take per face scene and person; Sony's official LUT; a private rater page I build; 2+ people with different skin tones (everyone in S1 and S4, others split); dates later.
+7. ✅ Step 7 plan **approved as FINAL** (2026-10-18). LUT = the camera's Display LUT, read from the camera (read-only) at the next connection, named in the plan before any grading. Built: the recording switch, the rater page (anonymous IDs, answers off the repo), the printable run sheet.
 
 **Needs Saad at the camera:**
 1. **Live ISO test (Step 5)**, ~10 min:
@@ -345,7 +345,7 @@ Parked 2026-10-17, 19:40 (director stepped away)
   - ✅ **Runner built (no camera):** `tools/run_agent.py` (eyes → brain → safety gate → bridge). Dry run by default; `--live` needs typing LIVE on the real camera. Kill switch: SPACE / Ctrl-C / `tools/kill_switch.py` / USB. Runaway guard (20 changes/min). Session snapshot + offer to restore ISO.
   - ✅ **Tried on a fake camera** (`tools/fake_bridge.py`, same protocol as the bridge) with your real Step 4 frame. It caught a 6400 ↔ 5000 pumping bug, fixed with a "clipping memory" rule + regression test. Keys checked in a real terminal.
   - ✅ 49 tests pass (7 eyes, 33 brain, 9 runner).
-  - ✅ **Live on the FX2 (2026-10-19), unattended on the director's go: all 3 tests PASS.** [docs/step5-live-test.md](docs/step5-live-test.md). Live ISO test, then a self-test of aperture, shutter and WB with WB calibration, then an automatic run with all four. Camera put back exactly as found each time. Static scene only: **lighting changes and faces still need Saad.**
+  - ✅ **Live on the camera (2026-10-19), unattended on the director's go: all 3 tests PASS.** [docs/step5-live-test.md](docs/step5-live-test.md). Live ISO test, then a self-test of aperture, shutter and WB with WB calibration, then an automatic run with all four. Camera put back exactly as found each time. Static scene only: **lighting changes and faces still need Saad.**
 - [x] **Step 6: The dashboard** (built overnight 2026-10-17, fake camera only). [docs/step6-dashboard.md](docs/step6-dashboard.md). *Waiting for director review.*
   - Live view (clean / zebras / false color, face brackets, light sources), setting tiles, status + last change, Auto (starts Off in live, two presses to turn on), Lock, look picker, **"this face looks right"** (per person, stored only on this computer), highlight meters, 60 s exposure chart with tooltip + table, decisions feed, big kill switch (also Space). S4D style from LANDFALL. Phone layout with the kill switch pinned.
   - Checked with screenshots driven like a person; 5 bugs found and fixed. 58 tests pass.
@@ -371,8 +371,8 @@ Parked 2026-10-17, 19:40 (director stepped away)
 ## Step 1 summary
 
 - SDK is C++ (Apple Silicon native). Bridge: small C++ helper program + Python brain over a local socket (decided).
-- FX2 over USB: ISO, base ISO (High/Low), EI, shutter speed and angle, iris, WB preset and Kelvin, focus mode/point/nudge, record state: all readable, most changeable.
-- Not on the FX2 via SDK: zebra (we draw our own), internal ND (it has none), WB tint, gain in dB.
+- Sony cinema camera over USB: ISO, base ISO (High/Low), EI, shutter speed and angle, iris, WB preset and Kelvin, focus mode/point/nudge, record state: all readable, most changeable.
+- Not on the camera via SDK: zebra (we draw our own), internal ND (it has none), WB tint, gain in dB.
 - Live view: JPEG, 640 or 1024 px wide, up to 30 fps per Sony (to measure). Whether live view shows flat log or the Display LUT image is untested.
 - License: our own code can be public and the app can be sold. Sony's files can't be published. Distributing to others requires a warranty/consent notice.
 - Risks: macOS 27 isn't on Sony's tested list (14/15/26). CMake isn't installed and full Xcode isn't either. Pi 5 isn't on Sony's tested list.
@@ -402,7 +402,7 @@ These go into the C++ allow-list. Anything not listed is blocked.
 
 Before any ISO change in Step 3:
 
-- ✅ **FX2 base ISOs for S-Log3 confirmed from the camera itself: 800 (Low) and 4000 (High).** Source: the camera's own menu text via the read-only "Camera Gain BaseISO" display-string request (2026-10-17).
+- ✅ **Sony cinema camera base ISOs for S-Log3 confirmed from the camera itself: 800 (Low) and 4000 (High).** Source: the camera's own menu text via the read-only "Camera Gain BaseISO" display-string request (2026-10-17).
 - Note: at the end of Step 2 the camera's own shutter was 1/250, outside the approved range. The range limits what the agent may *set*; it won't "correct" a value you set. How the agent should react to an out-of-range starting value is a question for Step 5.
 
 ## Ground rules (from the director, apply to every step)
