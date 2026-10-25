@@ -79,7 +79,8 @@ video/hype/.hyperframes/
 refs/
 # the three brag films (2026-10-21 night): media stays out of git
 video/blender/out/
-video/blender/cache/
+video/blender/cache/*
+!video/blender/cache/fx.blend
 video/v[123]-*/assets/music/
 video/v[123]-*/assets/voice/
 video/v[123]-*/assets/audio/

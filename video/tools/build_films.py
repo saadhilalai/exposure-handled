@@ -347,6 +347,7 @@ def src_path(src):
 
 # ---------------------------------------------------------------- steps
 def prep(F):
+    heavy_ok()                                      # it encodes (glow pass, footage, plates)
     d = V / F["dir"]
     a = d / "assets"
     for sub in ("fonts", "vendor"):
@@ -589,15 +590,31 @@ def mix(F):
     print("mix %s: %.2f s, %d voice lines, %d effects" % (F["dir"], duration(out), len(vo), len(fx)))
 
 
+def heavy_ok():
+    """One heavy job at a time on the Mac, and only when memory pressure is green (tools/heavy_ok.sh)."""
+    r = subprocess.run([str(ROOT / "tools" / "heavy_ok.sh")])
+    if r.returncode:
+        raise SystemExit("Not starting: see the line above.")
+
+
+def close_browsers():
+    """Close any headless browser a render left behind."""
+    subprocess.run(["pkill", "-f", "chrome-headless-shell|Chrome for Testing"], capture_output=True)
+
+
 def render(F, draft=False):
+    heavy_ok()
     d = V / F["dir"]
     hf = ["npx", "--yes", "hyperframes@0.8.167"]
     subprocess.run(hf + ["lint"], cwd=d)            # shown, not fatal: a draft may run before every 3D shot exists
     name = "%s-%s.mp4" % (F["dir"], "draft" if draft else "4k")
     (d / "renders").mkdir(exist_ok=True)
-    args = ["render", "--fps", "24", "--workers", "2", "-o", "renders/" + name]
+    args = ["render", "--fps", "24", "--workers", "1", "-o", "renders/" + name]
     args += ["--quality", "looks"] if draft else ["--resolution", "landscape-4k", "--quality", "delivery", "--video-frame-format", "png"]
-    run(["nice", "-n", "5"] + hf + args, cwd=d)
+    try:
+        run(["nice", "-n", "5"] + hf + args, cwd=d)
+    finally:
+        close_browsers()
     print("render %s -> %s" % (F["dir"], d / "renders" / name))
 
 
@@ -608,6 +625,7 @@ FINAL_NAMES = {"v1-abstract": "1 - Calm", "v2-hype": "2 - Hype", "v3-story": "3 
 def deliver(F):
     """A phone copy (1080p, under 30 MB) beside the 4K render, and both linked into ~/Movies/Final Renders (hard links:
     no extra disk; not the Desktop, which syncs to iCloud)."""
+    heavy_ok()
     d = V / F["dir"] / "renders"
     k4 = d / ("%s-4k.mp4" % F["dir"])
     phone = d / ("%s-phone.mp4" % F["dir"])
