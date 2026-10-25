@@ -15,14 +15,41 @@ LX, LZ = 0.008, -0.002
 MOUNT_FACE = -0.0265
 
 
+def use_gpu():
+    """Pick the GPU: Metal on the Mac; OptiX on the PC (RTX 3080), falling back to CUDA. BLENDER_DEVICE (OPTIX, CUDA,
+    METAL, CPU) forces one. Turns on that type's GPUs only, and says what it's using."""
+    import os
+    import sys
+    pr = C.preferences.addons["cycles"].preferences
+    forced = os.environ.get("BLENDER_DEVICE", "").upper()
+    order = [forced] if forced else (["METAL"] if sys.platform == "darwin" else ["OPTIX", "CUDA"])
+    for kind in order:
+        if kind == "CPU":
+            break
+        try:
+            pr.compute_device_type = kind
+        except TypeError:                                # this build doesn't offer it (e.g. METAL on Linux)
+            print("GPU: %s not available in this Blender" % kind, flush=True)
+            continue
+        pr.get_devices()
+        gpus = [d for d in pr.devices if d.type == kind]
+        if not gpus:
+            print("GPU: no %s device found" % kind, flush=True)
+            continue
+        for d in pr.devices:
+            d.use = d.type == kind
+        C.scene.cycles.device = "GPU"
+        print("DEVICE: %s (%s)" % (kind, ", ".join(d.name for d in gpus)), flush=True)
+        return kind
+    pr.compute_device_type = "NONE"
+    C.scene.cycles.device = "CPU"
+    print("DEVICE: CPU (no GPU found: this will be slow)", flush=True)
+    return "CPU"
+
+
 def load():
     bpy.ops.wm.open_mainfile(filepath=str(BLEND))
-    pr = C.preferences.addons["cycles"].preferences
-    pr.compute_device_type = "METAL"
-    pr.get_devices()
-    for d in pr.devices:
-        d.use = d.type == "METAL"
-    C.scene.cycles.device = "GPU"
+    use_gpu()
 
 
 def clamp(x, a=0.0, b=1.0):

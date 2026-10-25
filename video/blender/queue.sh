@@ -32,11 +32,24 @@ for s in "$@"; do
     echo "$(date +%T) stopped before $s: memory or another heavy job" >> $LOG
     exit 1
   fi
-  echo "$(date +%T) start $s" >> $LOG
-  if "$B" -b -noaudio --python-exit-code 1 -P $SCRIPT -- $s >> $LOG.full 2>&1; then
-    echo "$(date +%T) done $s" >> $LOG
+  echo "$(date +%T) start $s" | tee -a $LOG
+  RUN=video/blender/out/.last_run.log
+  "$B" -b -noaudio --python-exit-code 1 -P $SCRIPT -- $s > $RUN 2>&1
+  ok=$?
+  cat $RUN >> $LOG.full
+  grep -m1 "^DEVICE:" $RUN | sed "s/^/  $s: /" | tee -a $LOG
+  if [[ $ok != 0 && $(uname) != Darwin && -z $BLENDER_DEVICE ]] && grep -qi "optix" $RUN; then
+    echo "$(date +%T) $s: OptiX failed, trying CUDA once" | tee -a $LOG     # one deliberate fallback, not a loop
+    BLENDER_DEVICE=CUDA "$B" -b -noaudio --python-exit-code 1 -P $SCRIPT -- $s > $RUN 2>&1
+    ok=$?
+    cat $RUN >> $LOG.full
+  fi
+  if [[ $ok == 0 ]]; then
+    echo "$(date +%T) done $s" | tee -a $LOG
   else
-    echo "$(date +%T) FAILED $s: queue stopped (nothing restarts on its own)" >> $LOG
+    echo "$(date +%T) FAILED $s: queue stopped (nothing restarts on its own)" | tee -a $LOG
+    echo "---- last 20 lines from Blender ($s) ----"
+    tail -n 20 $RUN
     exit 1
   fi
 done

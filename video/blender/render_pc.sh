@@ -19,8 +19,9 @@ fi
 command -v ffmpeg >/dev/null || { echo "Install ffmpeg first: sudo apt install -y ffmpeg"; exit 1; }
 [[ -f video/blender/cache/model.blend ]] || { echo "Missing video/blender/cache/model.blend: git pull first"; exit 1; }
 
-BLENDER=$BLENDER bash video/blender/queue.sh $SHOTS_LIST || echo "(the queue stopped early: uploading what finished)"
-tail -n 15 video/blender/out/queue.log
+if ! BLENDER=$BLENDER bash video/blender/queue.sh $SHOTS_LIST; then
+  echo "(the queue stopped early: the error is above; uploading what finished)"
+fi
 
 echo "Uploading the finished clips to the private dataset $REPO ..."
 python3 - "$REPO" $SHOTS_LIST <<'EOF'

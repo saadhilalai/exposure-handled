@@ -632,29 +632,6 @@ def bake_shot(name, X):
     return n
 
 
-def enable_gpu():
-    """Render on the GPU: OptiX or CUDA on the gaming PC (RTX 3080), Metal on the Mac. BLENDER_DEVICE overrides."""
-    import os
-    prefs = C.preferences.addons["cycles"].preferences
-    order = [os.environ["BLENDER_DEVICE"]] if os.environ.get("BLENDER_DEVICE") else ["OPTIX", "CUDA", "METAL"]
-    for kind in order:
-        try:
-            prefs.compute_device_type = kind
-        except TypeError:
-            continue
-        prefs.get_devices()
-        gpus = [d for d in prefs.devices if d.type == kind]
-        if gpus:
-            for d in prefs.devices:
-                d.use = d.type == kind
-            C.scene.cycles.device = "GPU"
-            print("GPU:", kind, ", ".join(d.name for d in gpus), flush=True)
-            return kind
-    C.scene.cycles.device = "CPU"
-    print("GPU: none found, rendering on the CPU", flush=True)
-    return "CPU"
-
-
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     opts = {"--res": "1920", "--spp": "24", "--stills": None, "--threshold": "0.03", "--stilldir": str(OUT / "stills")}
@@ -668,7 +645,6 @@ def main():
             i += 1
     for name in names:
         rig.load()
-        enable_gpu()
         tune_xray()
         X = {}
         if "setup" in SHOTS[name]:
