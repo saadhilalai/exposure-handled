@@ -1,6 +1,6 @@
 # Exposure, Handled.: three launch films
 
-**Status:** the director's redo of all three (2026-10-22). Nothing is on the website until the director approves.
+**Status:** the director's redo of all three (2026-10-22), finished with the 3D shots from the gaming PC and the music a bit quieter in all three (2026-10-26). Nothing is on the website until the director approves.
 
 **Where they are (not in git):** `v1-abstract/renders/v1-abstract-4k.mp4`, `v2-hype/renders/v2-hype-4k.mp4`,
 `v3-story/renders/v3-story-4k.mp4`. All 3840×2160, 24 fps, stereo AAC, mixed to -14 LUFS with the voice on top.
@@ -8,7 +8,7 @@
 | | Film | Length | Feel | Music |
 |---|---|---|---|---|
 | 1 | **Calm** (`v1-abstract/`) | 58.6 s | Art first, after the AI-lab launch films: warm paper, hand-made shapes that become ideas, an old transmission of Turing's question, the camera shown once, as art | "Peace Within", Peter Rudenko |
-| 2 | **Hype** (`v2-hype/`) | 36.5 s | A product drop: the camera locked in the centre while the world changes on every beat, then the glass reveal of the helpers at work inside | "Beast", Sascha Ende (turned down) |
+| 2 | **Hype** (`v2-hype/`) | 36.5 s | A product drop: the camera locked in the centre while the world changes on every beat, then the glass reveal of the helpers at work inside | "Beast", Sascha Ende (turned down twice) |
 | 3 | **Story** (`v3-story/`) | 55 s | A filmmaker, the light changing, the moment you'd miss, the helper inside the camera catching it | "Cylinder Three", Chris Zabriskie |
 
 How they're made:
@@ -23,7 +23,7 @@ How they're made:
 - **Camera name:** the films never name the camera model. In words, "Sony cinema camera".
 - **No schedules,** and no mention of any AI company or assistant, anywhere in the films, files or commits.
 - **Every claim true:** no "first ever". See `docs/framing-research.md`.
-- **Footage:** no client work; faces only from licensed stock.
+- **Footage:** no client work; faces only from licensed stock. No beach, shore or train shots.
 - **Honesty notes** live here, in `CREDITS.md` and in the website's Nerd mode, never on screen.
 
 ## Honesty notes (for Nerd mode and the credits)
@@ -79,9 +79,9 @@ How they're made:
 | 18.2 | A cloud over the sun · blinds closing on a face · a setting sun · gulls in the last light, fading to black | "A cloud. A door. A setting sun. And the moment is gone." |
 | 24.5 | Inside the glass camera: a helper at the sensor sees the light drop, whips round and reaches | "Unless someone is watching the light... with you." |
 | 28.5 | A lens ring turning · a city going from day to night · a monitor on set | "It reads every stop. It moves when the light moves. And it tells you why." |
-| 34.5 | A photographer framing at the sea · a photographer and horses in golden dust | "You frame the shot. It handles the light." |
+| 34.5 | A photographer framing under a red sky · a photographer and horses in golden dust | "You frame the shot. It handles the light." |
 | 41.0 | The camera, a slow push (on the music's second lift) | |
-| 46.0 | A wave catching the low sun | |
+| 46.0 | Sunbeams through a forest | |
 | 48.6 | Pure black | **Exposure, *Handled*.** · "Exposure... handled." · the website link |
 
 ## The overnight drafts (replaced)

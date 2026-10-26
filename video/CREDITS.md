@@ -35,9 +35,9 @@ Story film:
 | Close-up Footage of a Person Adjusting the Lens of a Camera | Ron Lach | https://www.pexels.com/video/close-up-footage-of-a-person-adjusting-the-lens-of-a-camera-8089525/ |
 | Day to Night Cycle in City (sped up) | Matheus De Moraes Gugelmim | https://www.pexels.com/video/day-to-night-cycle-in-city-14549980/ |
 | A Cameraman Filming a Production using a Video Camera | Ron Lach | https://www.pexels.com/video/a-cameraman-filming-a-production-using-a-video-camera-8089229/ |
-| Silhouette Photography at Sunset by the Sea | Sururi Ballıdağ | https://www.pexels.com/video/silhouette-photography-at-sunset-by-the-sea-28941862/ |
+| Woman Watching Sunset | Артём Старшинов | https://www.pexels.com/video/woman-watching-sunset-11197001/ |
 | A man taking a photo of horses in the desert | thecactusena | https://www.pexels.com/video/a-man-taking-a-photo-of-horses-in-the-desert-26791738/ |
-| Golden Sunset Waves Glistening on the Shore | Mario Krimer | https://www.pexels.com/video/golden-sunset-waves-glistening-on-the-shore-32779591/ |
+| Sunbeams Through Forest Trees in Drenthe | Matthias Groeneveld | https://www.pexels.com/video/sunbeams-through-forest-trees-in-drenthe-31807870/ |
 
 Hype film (the real places behind the camera, one beat each, out of focus):
 

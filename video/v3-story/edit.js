@@ -161,7 +161,7 @@ window.EDIT = {
    ]
   },
   {
-   "id": "frame",
+   "id": "framer",
    "at": 34.5,
    "to": 37.9,
    "push": [
@@ -192,7 +192,7 @@ window.EDIT = {
    ]
   },
   {
-   "id": "wave",
+   "id": "beams",
    "at": 46.0,
    "to": 48.6,
    "push": [
