@@ -437,7 +437,50 @@ def voice_v2():
     print("voice v2: %d lines (clean + radio) -> %s" % (n, out.relative_to(ROOT)))
 
 
+V3DIR = VOICE / "v3"
+# The opening quote as a mission radio call: only the middle of the voice (300-3000 Hz, cut steeply), pushed into a
+# compressor and soft clipping with a touch of bit-crush for the crunch, the band cut again after the distortion.
+NASA = ("highpass=f=300,highpass=f=300,lowpass=f=3000,lowpass=f=3000,equalizer=f=1700:t=q:w=1.1:g=5,"
+        "acompressor=threshold=0.04:ratio=9:attack=1:release=45:makeup=5,volume=5dB,asoftclip=type=atan,"
+        "acrusher=bits=9:mode=log:mix=0.3:aa=0.5,highpass=f=300,highpass=f=300,lowpass=f=3000,lowpass=f=3000,lowpass=f=3200,alimiter=limit=0.7:level=disabled")
+QUINDAR = 0.25                                       # each beep, s (the in-tone 2525 Hz, the out-tone 2475 Hz, as on mission audio)
+
+
+def voice_v3():
+    """The narrator for all three films (ElevenLabs v4, voice "Jazzo": relaxed, conversational, not a narrator read):
+    trim the dead air at the ends, keep the breaths, a light clean-up. The calm film's opening quote also gets a mission
+    radio version (c0_nasa): a tone, the line through the radio chain over band-limited static and crackle, a tone.
+    Every sound in it is made here (filters, noise and sine tones), nothing borrowed."""
+    src, out = V3DIR / "lines", V3DIR / "proc"
+    out.mkdir(parents=True, exist_ok=True)
+    clean = ("silenceremove=start_periods=1:start_threshold=-55dB:start_silence=0.05,areverse,"
+             "silenceremove=start_periods=1:start_threshold=-55dB:start_silence=0.2,areverse,highpass=f=65,"
+             "acompressor=threshold=0.18:ratio=2:attack=8:release=120:makeup=1.3")
+    for p in sorted(src.glob("*.mp3")):
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(p), "-af", clean, "-ar", "48000", "-ac", "1", str(out / (p.stem + ".wav"))])
+    c0 = out / "c0.wav"
+    if c0.exists():
+        lead, gap, tail = 0.15, 0.12, 0.35
+        v0 = lead + QUINDAR + gap                    # the voice starts here
+        b2 = v0 + duration(c0) + 0.15                # the out-tone
+        D = b2 + QUINDAR + tail
+        tone = "aevalsrc='0.22*sin(2*PI*%d*t)':d=%.2f:s=48000,afade=t=in:d=0.006,afade=t=out:st=%.3f:d=0.006,adelay=%d|%d"
+        g = ";".join([
+            "[0:a]%s,adelay=%d,apad=whole_dur=%.3f[v]" % (NASA, v0 * 1000, D),
+            "anoisesrc=c=white:a=0.07:d=%.3f:r=48000,highpass=f=300,highpass=f=300,lowpass=f=3000,lowpass=f=3000,tremolo=f=6:d=0.35[n]" % D,
+            "aevalsrc='if(gt(random(0),0.9975),0.6*(random(1)-0.5),0)':d=%.3f:s=48000,highpass=f=300,highpass=f=300,lowpass=f=3000,lowpass=f=3000[c]" % D,
+            (tone % (2525, QUINDAR, QUINDAR - 0.006, lead * 1000, lead * 1000)) + "[t1]",
+            (tone % (2475, QUINDAR, QUINDAR - 0.006, b2 * 1000, b2 * 1000)) + "[t2]",
+            "[v][n][c][t1][t2]amix=inputs=5:normalize=0,afade=t=in:d=0.08,afade=t=out:st=%.3f:d=0.2,atrim=duration=%.3f" % (D - 0.2, D)])
+        run(["ffmpeg", "-v", "error", "-y", "-i", str(c0), "-filter_complex", g, "-ar", "48000", "-ac", "1", str(out / "c0_nasa.wav")])
+        print("c0_nasa: %.2f s, voice from %.2f s" % (D, v0))
+    print("voice v3: %d lines -> %s" % (len(list(src.glob("*.mp3"))), out.relative_to(ROOT)))
+
+
 def voice_file(F, vid, fx=None):
+    if F.get("voice_dir") == "v3":
+        f = V3DIR / "proc" / (vid + ("_" + fx if fx else "") + ".wav")
+        return f
     if F.get("voice_dir") == "v2":
         base = V2DIR / "proc"
         for stem in (vid, vid + "_a"):
@@ -494,7 +537,7 @@ def edit(F):
              "v2a": "On it.", "v2b": "Highlights first.", "v2c": "Faces next.", "v3a": "You frame. I'll handle the light.",
              "h01": "Light's changing.", "h04": "Got it.", "h06": "Done.", "h07": "Want it back?", "h08": "One key.", "h09": "Stopped.",
              "h10": "It's yours.", "h11": "Exposure… handled."}
-    if F.get("voice_dir") == "v2":
+    if F.get("voice_dir") in ("v2", "v3"):
         texts = {"h1": "New light.", "h2": "New place.", "h3": "Got it.", "h4": "Sensor.", "h5": "Iris.", "h6": "Color.", "h7": "Want it back?",
                  "h8": "One key.", "h9": "Stopped.", "h10": "It's yours.", "h11": "Exposure. Handled.",
                  "s1": "Every filmmaker knows this feeling.", "s2": "You're alone. The light is perfect…", "s3": "and then… it isn't.",
@@ -642,7 +685,7 @@ def deliver(F):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("step", choices=["prep", "voice", "voice2", "edit", "mix", "render", "deliver"])
+    ap.add_argument("step", choices=["prep", "voice", "voice2", "voice3", "edit", "mix", "render", "deliver"])
     ap.add_argument("films", nargs="*", default=["v1", "v2", "v3"])
     ap.add_argument("--draft", action="store_true")
     a = ap.parse_args()
@@ -650,6 +693,8 @@ if __name__ == "__main__":
         voice_lines()
     if a.step == "voice2":
         voice_v2()
-    for k in a.films if a.step not in ("voice", "voice2") else []:
+    if a.step == "voice3":
+        voice_v3()
+    for k in a.films if a.step not in ("voice", "voice2", "voice3") else []:
         F = FILMS[k]
         {"prep": prep, "edit": edit, "mix": mix, "render": lambda F: render(F, a.draft), "deliver": deliver}[a.step](F)
