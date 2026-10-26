@@ -2,19 +2,15 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
-## ⏸️ Parked (2026-10-22, 12:05, by the director)
+## 🎞️ All three films finished (2026-10-26), waiting for the director's approval
 
-All work stopped safely. Nothing is running; nothing was lost.
-- **Done and sent:** Calm (4K + phone copy in `~/Movies/Final Renders`).
-- **Ready but waiting on 3D:** Story and Hype are fully edited, mixed and checked with stand-ins.
-- **3D still to render (about 3 h, plug the Mac in):** s_catch (1 frame done), s_hero, h_world, h_smash, h_xray, h_irisx,
-  h_chip, h_swarm, h_kill, h_slam. All were test-rendered and approved by eye first.
-- **To resume:**
-  1. `cd ~/camera-agent && SHOTS=shots_model.py nohup caffeinate -i video/blender/queue.sh s_catch s_hero h_world h_smash h_xray h_irisx h_chip h_swarm h_kill h_slam &`
-     (it skips finished shots and picks up from the last frame).
-  2. When s_catch and s_hero are done: `.venv/bin/python video/tools/build_films.py prep v3`, then `render v3`, then `deliver v3`.
-  3. When the h_ shots are done: the same for `v2`.
-  4. Check frames, send the phone copies, update `video/FILMS.md` and this file, commit.
+- The 10 remaining 3D shots were rendered on the gaming PC and fetched (`tools/fetch_renders.py`). Each was checked: full frame
+  count, no black, frozen or glitched frames.
+- Music a bit quieter in all three (about 3 dB under the voice). Calm keeps its picture; only its audio was remixed.
+- Story: the two seaside shots (waves on a shore, a photographer at a sea railing) swapped for a photographer under a red sky and
+  sunbeams in a forest.
+- Story and Hype rendered at 4K one at a time, checked frame by frame, phone copies made. All six files are in `~/Movies/Final Renders`.
+- Nothing is on the website or anywhere public until the director approves.
 - **Open decisions for the director:** 29–34 in `docs/open-decisions.md`.
 
 ## 🎞️ The redo of all three films (2026-10-22, morning; no camera connected)
