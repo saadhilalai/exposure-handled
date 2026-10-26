@@ -43,7 +43,7 @@ V1 = dict(
               flashes=[["#m1", 44.65, 45.65], ["#m2", 46.5, 47.25], ["#m3", 47.9, 48.5]]),
     # "Peace Within" (Peter Rudenko): its lift (1:13.3 in the track) lands on the hit after the black hold
     music=dict(file=V / "music-candidates/round2/calm/peace-within-rudenko/rudenko_peace-within.mp3", start=21.75, fade_in=1.5,
-               fade_out=(57.2, 1.4), gain=0.0,
+               fade_out=(57.2, 1.4), gain=-2.5,
                env=[(0, -12), (7.5, -12), (9.0, -6), (43.5, -4), (48.8, -1), (49.05, -45), (51.5, -45), (51.55, 1), (54.2, 1), (54.7, -9)]),
     shots=[
         ("sil", "3d:c_silhouette", 38.5, 43.5, dict(cls="paper")),
@@ -75,7 +75,7 @@ V1 = dict(
 
 # The hype film keeps the hype draft's music edit: "Beast" (115 BPM), film beat 0 = track beat -16, the drop at film
 # beat 16, a splice at film beat 64 to the track's last bar, and the music dropping out for the kill switch. Now quieter
-# under the voice (the director: "turn it down"), and ducking harder.
+# under the voice (the director: "turn it down", then "a bit quieter" again), and ducking harder.
 # Beats 0-12: the camera locked in the centre while the world behind it changes on every beat: bold solid colours, then
 # real places (plates thrown out of focus, as a long lens would), then the studio. Its light, reflections and iris change
 # with each world in the render (video/blender/shots_model.py, WORLDS).
@@ -102,7 +102,7 @@ HYPE_CAMFX = {0: "none", 1: "sepia(.18) saturate(1.15)", 2: "sepia(.12) saturate
 ALPHA = {"c_silhouette", "h_world"}           # 3D shots rendered with a transparent background (VP9 + alpha)
 V2 = dict(
     dir="v2-hype", title="Exposure, Handled. (hype)", duration=s(70),
-    music=dict(file=HYPE / "music" / "beast.mp3", beast=True, gain=-9.0),
+    music=dict(file=HYPE / "music" / "beast.mp3", beast=True, gain=-11.5),
     worlds=[dict(at=s(i), to=s(i + 1), color=c) for i, c in enumerate(HYPE_WORLDS) if c],
     camfx=[dict(id="world", at=s(i), f=f) for i, f in HYPE_CAMFX.items()],
     shots=[("pl_" + k, "pl:" + k, s(i), s(i + 1), dict(cls="plate", css=PLATE_CSS.get(k))) for i, k in HYPE_PLATES.items()] + [
@@ -147,7 +147,7 @@ V2 = dict(
     blacks=[(s(68.6), s(70), 0.0, 1.0)],
 )
 
-# The story film. The director cut the old footage ("not cinematic"; no train, no beach). Saad's Mac was searched again:
+# The story film. The director cut the old footage ("not cinematic"; no train, no beach: no shore or seaside shots either). Saad's Mac was searched again:
 # nothing of his own met the bar without client work or faces, so the picture is licensed stock from Pexels (licences
 # and links in video/stock/STOCK.md and CREDITS.md), graded to one look, plus the 3D camera. Letterboxed 2.39:1, an old-film
 # texture over everything. Opens on two flat earthy fields under a curved horizon (after the AI-lab launch film's opening),
@@ -165,15 +165,15 @@ FOOTAGE = {   # id: (source, in, out, crop or None, "709" or "hlg", extra filter
     "lens": (STOCK / "s-op_px8089525_close-up-footage-of-a-person-adjusting-the-lens-.mp4", 0.5, 3.0, "crop=3840:2160:128:0", "709", None),
     "city": (STOCK / "s-li_px14549980_day-to-night-cycle-in-city.mp4", 10.0, 30.0, None, "709", "setpts=PTS/9"),
     "monitor": (STOCK / "s-op_px8089229_a-cameraman-filming-a-production-using-a-video-c.mp4", 4.0, 6.0, "crop=3840:2160:128:0", "709", None),
-    "frame": (STOCK / "s-op_px28941862_silhouette-photography-at-sunset-by-the-sea.mp4", 0.5, 4.2, None, "709", None),
+    "framer": (STOCK / "s-mo_px11197001_woman-watching-sunset.mp4", 0.0, 3.5, "scale=3840:-2,pad=3840:2160:0:(oh-ih)/2", "709", None),
     "horses": (STOCK / "s-op_px26791738_a-man-taking-a-photo-of-horses-in-the-desert.mp4", 0.0, 3.4, None, "709", None),
-    "wave": (STOCK / "s-mo_px32779591_golden-sunset-waves-glistening-on-the-shore.mp4", 5.0, 8.0, None, "709", None),
+    "beams": (STOCK / "p-forest_px31807870_sunbeams-through-forest-trees-in-drenthe.mp4", 4.0, 7.0, None, "709", None),
 }
 V3 = dict(
     dir="v3-story", title="Exposure, Handled. (story)", duration=55.0, letterbox=True, film=True,
     horizon=dict(to=8.6, top0="#b07f55", top1="#c08d5c"),
     music=dict(file=V / "music-candidates/round2/story/cylinder-three-zabriskie/zabriskie_cylinder-three.flac", start=0.0, fade_in=0.05,
-               fade_out=(53.2, 1.8), gain=-3.0, env=[(0, -2), (23.6, -2), (24.1, -9), (24.5, -1), (40.8, -1), (41.0, 1), (48.4, 1), (48.6, -4)],
+               fade_out=(53.2, 1.8), gain=-5.5, env=[(0, -2), (23.6, -2), (24.1, -9), (24.5, -1), (40.8, -1), (41.0, 1), (48.4, 1), (48.6, -4)],
                duck="threshold=0.012:ratio=12:attack=6:release=300"),
     shots=[
         ("ridge", "ft:ridge.mp4", 8.6, 12.6, dict(push=[1.04, 1.0], pushEase="power1.out")),
@@ -187,10 +187,10 @@ V3 = dict(
         ("lens", "ft:lens.mp4", 28.5, 30.75, dict(push=[1.0, 1.04])),
         ("city", "ft:city.mp4", 30.75, 32.75, dict(push=[1.0, 1.03])),
         ("monitor", "ft:monitor.mp4", 32.75, 34.5, dict(push=[1.03, 1.0])),
-        ("frame", "ft:frame.mp4", 34.5, 37.9, dict(push=[1.0, 1.04])),
+        ("framer", "ft:framer.mp4", 34.5, 37.9, dict(push=[1.0, 1.04])),
         ("horses", "ft:horses.mp4", 37.9, 41.0, dict(push=[1.0, 1.03])),
         ("hero", "3d:s_hero", 41.0, 46.0, dict(push=[1.0, 1.04], shift=[0, -6])),
-        ("wave", "ft:wave.mp4", 46.0, 48.6, dict(push=[1.0, 1.03], fadeOut=0.5)),
+        ("beams", "ft:beams.mp4", 46.0, 48.6, dict(push=[1.0, 1.03], fadeOut=0.5)),
     ],
     words=[
         dict(at=3.1, to=4.8, style="line", html="The light", cut=True),
