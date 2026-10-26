@@ -1,9 +1,9 @@
 # Exposure, Handled.: three launch films
 
-**Status:** the director's redo of all three (2026-10-22), finished with the 3D shots from the gaming PC and the music a bit quieter in all three (2026-10-26). Nothing is on the website until the director approves.
+**Status:** the director's redo of all three (2026-10-22), finished with the 3D shots from the gaming PC (2026-10-26). After the director's review: a new, less robotic narrator, the voice a touch quieter and the music a bit louder, and the calm opening as a mission radio call. Picture, cuts and timing unchanged. Nothing is on the website until the director approves.
 
 **Where they are (not in git):** `v1-abstract/renders/v1-abstract-4k.mp4`, `v2-hype/renders/v2-hype-4k.mp4`,
-`v3-story/renders/v3-story-4k.mp4`. All 3840×2160, 24 fps, stereo AAC, mixed to -14 LUFS with the voice on top.
+`v3-story/renders/v3-story-4k.mp4`. All 3840×2160, 24 fps, stereo AAC; the narration sits at the same level (about -14.5 LUFS) in all three, voice on top.
 
 | | Film | Length | Feel | Music |
 |---|---|---|---|---|
@@ -28,7 +28,7 @@ How they're made:
 
 ## Honesty notes (for Nerd mode and the credits)
 
-- **The narrator is an AI-generated voice** (MiniMax engine through Higgsfield, voice "Harrison"). The calm film's opening reads Alan Turing's real 1950 sentence through a vintage-radio filter, so it sounds like an old transmission read aloud, not like Turing.
+- **The narrator is an AI-generated voice** (Seed Audio 1.0 through Higgsfield, voice "Julian"). The calm film opens with Alan Turing's real 1950 sentence as a mission radio call, read by a different AI voice (ElevenLabs, "Jazzo") through a radio chain, so it sounds like a transmission, not like Turing.
 - **The 3D camera** is a model of the real camera, without its maker's name or logo.
 - **The glowing helpers inside it are an illustration.** The real agent runs on a laptop and talks to the camera over USB. What's real:
   - it reads the live image and decides exposure by the chosen look;
@@ -41,7 +41,7 @@ How they're made:
 
 | Time | Picture | Words / voice |
 |---|---|---|
-| 0.0 | Paper. A dark field rises to meet a pencil horizon; a sun rises behind it | The radio-filtered voice: "I propose to consider the question... 'Can machines think?'" |
+| 0.0 | Paper. A dark field rises to meet a pencil horizon; a sun rises behind it | A radio tone, then over static: "I propose to consider the question... 'Can machines think?'", a tone |
 | 8.6 | Paper | **Alan Turing** (held 3.6 s) |
 | 12.2 | A sun, its halos and rays drawn in | "Every image you've ever loved... started with light." · **Light** |
 | 19.0 | A breathing shape, a shadow drifting across it | "And light... never holds still." · **Never still** |

@@ -2,13 +2,15 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
-## 🎙️ In progress: new voice, quieter voice, louder music, radio opening (director's review of the films)
+## 🎙️ The director's sound notes, done (2026-10-26)
 
-- Picture, cuts and timing stay exactly as they are; only the sound changes, swapped onto the existing 4K picture.
-- New narrator: ElevenLabs v4 voice "Jazzo" (picked by measured pitch, loudness and pacing variety against three others).
-  Lines go in `video/films-voice/v3/lines/` (not in git). Done: c0 c1 c2 c3 c4 c6 s6. Still to make: c5, h1-h11, s1-s5, s7, s8.
-  The free ElevenLabs account rate-limits generation; retry one line at a time.
-- Then: `build_films.py voice3`, `mix v1 v2 v3`, swap the audio onto each 4K render (video copied as-is), check, `deliver`.
+- Picture, cuts and timing untouched (the video streams are byte-identical; only the audio was swapped).
+- New narrator: Seed Audio "Julian" through Higgsfield. ElevenLabs "Jazzo" measured slightly more natural, but the free
+  ElevenLabs account was blocked for "unusual activity" partway through; only the radio quote uses a Jazzo take.
+- Voice about 2.5 dB quieter and music about 2.5 dB louder than in the delivered cuts (measured per film); the narration sits
+  at the same level in all three. No clipping (peaks -0.7 to -1.2 dBFS). Every line checked with speech recognition.
+- Calm's opening is a mission radio call (300-3000 Hz, crunch, static, a tone before and after).
+- The old-voice 4K renders are kept beside the new ones as `*-4k-oldvoice.mp4`.
 
 ## 🎞️ All three films finished (2026-10-26), waiting for the director's approval
 

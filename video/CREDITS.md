@@ -5,10 +5,11 @@
 The films carry no credits or small print on screen (the director's rule). These lines go wherever a film is posted
 (the video description, the website's Nerd mode).
 
-**Narration: an AI-generated voice.** Text-to-speech by the MiniMax engine (through Higgsfield), preset voice "Harrison",
-directed for natural pauses and breaths. In the calm film's opening, the Alan Turing quote is read by the same voice through
-a vintage-radio filter (band-limited, a little crackle and room), so it plainly sounds like an old transmission read aloud,
-not like Turing himself. It is not his voice and doesn't imitate it.
+**Narration: an AI-generated voice.** Text-to-speech by Seed Audio 1.0 (ByteDance, through Higgsfield), preset voice
+"Julian". In the calm film's opening, the Alan Turing quote is a different AI-generated voice (ElevenLabs v4, library voice
+"Jazzo") heard as a mission radio call: only the middle of the voice (300-3000 Hz), some crunch, radio static and a short
+tone before and after, all made with filters and synthesized tones (no borrowed audio). It is not Turing's voice and doesn't
+imitate it.
 
 **Music** (each different from every other S4D film):
 - **Calm:** "Peace Within" by Peter Rudenko, from the album *Inner Mechanics*. Licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Source: https://freemusicarchive.org/music/Peter_Rudenko/Inner_Mechanics/Peace_Within/. Excerpt used, with fades.
