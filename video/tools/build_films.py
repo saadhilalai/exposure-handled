@@ -43,7 +43,7 @@ V1 = dict(
               flashes=[["#m1", 44.65, 45.65], ["#m2", 46.5, 47.25], ["#m3", 47.9, 48.5]]),
     # "Peace Within" (Peter Rudenko): its lift (1:13.3 in the track) lands on the hit after the black hold
     music=dict(file=V / "music-candidates/round2/calm/peace-within-rudenko/rudenko_peace-within.mp3", start=21.75, fade_in=1.5,
-               fade_out=(57.2, 1.4), gain=-2.5,
+               fade_out=(57.2, 1.4), gain=0.0,
                env=[(0, -12), (7.5, -12), (9.0, -6), (43.5, -4), (48.8, -1), (49.05, -45), (51.5, -45), (51.55, 1), (54.2, 1), (54.7, -9)]),
     shots=[
         ("sil", "3d:c_silhouette", 38.5, 43.5, dict(cls="paper")),
@@ -69,8 +69,8 @@ V1 = dict(
         ("p-ochre", "Exposure, Handled.", -30), ("p-term", "<b>$</b> exposure, handled<u></u>", -40), ("p-dusk", "Exposure, Handled.", 0),
         ("p-umber", "Exposure, Handled.", 0)]],
     panel_start=51.55, panel_durs=[0.42, 0.38, 0.34, 0.30, 0.27, 0.24, 0.22, 0.20, 0.18, 0.16],
-    voice=[("c0_b", 0.9, "radio", 8.0), ("c1", 12.7), ("c2", 19.6), ("c3_a", 25.6), ("c4", 33.4), ("c5", 39.2), ("c6_b", 54.8)],
-    voice_dir="v2", sfx=[], fadeOut=(57.6, 58.6),
+    voice=[("c0", 0.38, "nasa", 6.0), ("c1", 12.7), ("c2", 19.6), ("c3", 25.6), ("c4", 33.4), ("c5", 39.2), ("c6", 54.8)],
+    voice_dir="v3", sfx=[], fadeOut=(57.6, 58.6),
 )
 
 # The hype film keeps the hype draft's music edit: "Beast" (115 BPM), film beat 0 = track beat -16, the drop at film
@@ -102,7 +102,7 @@ HYPE_CAMFX = {0: "none", 1: "sepia(.18) saturate(1.15)", 2: "sepia(.12) saturate
 ALPHA = {"c_silhouette", "h_world"}           # 3D shots rendered with a transparent background (VP9 + alpha)
 V2 = dict(
     dir="v2-hype", title="Exposure, Handled. (hype)", duration=s(70),
-    music=dict(file=HYPE / "music" / "beast.mp3", beast=True, gain=-11.5),
+    music=dict(file=HYPE / "music" / "beast.mp3", beast=True, gain=-9.0),
     worlds=[dict(at=s(i), to=s(i + 1), color=c) for i, c in enumerate(HYPE_WORLDS) if c],
     camfx=[dict(id="world", at=s(i), f=f) for i, f in HYPE_CAMFX.items()],
     shots=[("pl_" + k, "pl:" + k, s(i), s(i + 1), dict(cls="plate", css=PLATE_CSS.get(k))) for i, k in HYPE_PLATES.items()] + [
@@ -130,7 +130,7 @@ V2 = dict(
     ],
     voice=[("h1", s(1.15)), ("h2", s(6.15)), ("h3", s(10.15)), ("h4", s(20.15)), ("h5", s(24.15)), ("h6", s(28.15)),
            ("h7", s(44.2)), ("h8", s(46.2)), ("h9", s(48.35)), ("h10", s(53.0)), ("h11", s(58.3))],
-    voice_dir="v2",
+    voice_dir="v3",
     sfx=[(0, "impactPunch_heavy_000.ogg", -8), (0, "swish-7.wav", -11)]
         + [(b, "impactMetal_light_00%d.ogg" % (b % 2 * 2 + 1), -21) for b in range(1, 12)]
         + [(12, "swish-7.wav", -11), (16, "lowFrequency_explosion_000.ogg", -3), (16, "impactPunch_heavy_002.ogg", -6),
@@ -173,7 +173,7 @@ V3 = dict(
     dir="v3-story", title="Exposure, Handled. (story)", duration=55.0, letterbox=True, film=True,
     horizon=dict(to=8.6, top0="#b07f55", top1="#c08d5c"),
     music=dict(file=V / "music-candidates/round2/story/cylinder-three-zabriskie/zabriskie_cylinder-three.flac", start=0.0, fade_in=0.05,
-               fade_out=(53.2, 1.8), gain=-5.5, env=[(0, -2), (23.6, -2), (24.1, -9), (24.5, -1), (40.8, -1), (41.0, 1), (48.4, 1), (48.6, -4)],
+               fade_out=(53.2, 1.8), gain=-3.0, env=[(0, -2), (23.6, -2), (24.1, -9), (24.5, -1), (40.8, -1), (41.0, 1), (48.4, 1), (48.6, -4)],
                duck="threshold=0.012:ratio=12:attack=6:release=300"),
     shots=[
         ("ridge", "ft:ridge.mp4", 8.6, 12.6, dict(push=[1.04, 1.0], pushEase="power1.out")),
@@ -199,7 +199,7 @@ V3 = dict(
         dict(at=50.8, to=55.0, style="link", html=SITE_URL, y=60, cut=True, out=False),
     ],
     voice=[("s1", 0.7), ("s2", 9.1), ("s3", 15.4), ("s4", 18.4), ("s5", 25.0), ("s6", 29.0), ("s7", 36.6), ("s8", 49.1)],
-    voice_dir="v2",
+    voice_dir="v3",
     sfx=[],
     flashes=[(41.0, 0.35, 0.6)],
     cards=[(24.1, 24.5), (48.6, 55.0)],
@@ -566,6 +566,10 @@ def envelope(pts):
     return "if(lt(t,%.3f),%.6f,%s)" % (pts[0][0], 10 ** (pts[0][1] / 20), expr)
 
 
+# the voice bus (the director, after the review: the voice a touch quieter, about 2.5 dB; the music back up by as much)
+VOICE_GAIN = 2.2 * 10 ** (-2.5 / 20)
+
+
 def mix(F):
     d = V / F["dir"] / "assets"
     m = F["music"]
@@ -610,7 +614,7 @@ def mix(F):
         g.append("[%d:a]aresample=48000,aformat=channel_layouts=stereo,volume=%sdB,adelay=%d|%d[v%d]" % (n, gain, ms, ms, n))
         vo.append("[v%d]" % n)
         n += 1
-    g.append("%samix=inputs=%d:normalize=0,apad=whole_dur=%.3f,atrim=duration=%.3f,volume=2.2,asplit=2[vo1][vo2]" % ("".join(vo), len(vo), D, D))
+    g.append("%samix=inputs=%d:normalize=0,apad=whole_dur=%.3f,atrim=duration=%.3f,volume=%.3f,asplit=2[vo1][vo2]" % ("".join(vo), len(vo), D, D, VOICE_GAIN))
     duck = m.get("duck", "threshold=0.015:ratio=10:attack=8:release=280")
     g.append("[mus][vo1]sidechaincompress=%s:makeup=1[md]" % duck)
     if fx:

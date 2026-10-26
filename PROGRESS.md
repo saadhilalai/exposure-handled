@@ -2,6 +2,14 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
+## 🎙️ In progress: new voice, quieter voice, louder music, radio opening (director's review of the films)
+
+- Picture, cuts and timing stay exactly as they are; only the sound changes, swapped onto the existing 4K picture.
+- New narrator: ElevenLabs v4 voice "Jazzo" (picked by measured pitch, loudness and pacing variety against three others).
+  Lines go in `video/films-voice/v3/lines/` (not in git). Done: c0 c1 c2 c3 c4 c6 s6. Still to make: c5, h1-h11, s1-s5, s7, s8.
+  The free ElevenLabs account rate-limits generation; retry one line at a time.
+- Then: `build_films.py voice3`, `mix v1 v2 v3`, swap the audio onto each 4K render (video copied as-is), check, `deliver`.
+
 ## 🎞️ All three films finished (2026-10-26), waiting for the director's approval
 
 - The 10 remaining 3D shots were rendered on the gaming PC and fetched (`tools/fetch_renders.py`). Each was checked: full frame
