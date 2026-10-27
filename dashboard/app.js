@@ -9,7 +9,7 @@ const WINDOW_S = 60;                  // chart time window
 const KIND = {
   change: "Changed", would_change: "Would change", advice: "Advice", kill: "Kill switch", pause: "Auto",
   lock: "Lock", look: "Look", face: "Face", mark: "Mark", start: "Start", end: "End", refused: "Refused", error: "Error", restore: "Restore",
-  test: "Test", limit: "Limit",
+  test: "Test", limit: "Limit", phone: "Phone",
 };
 const LIMIT_ICON = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M10.25 1.5v9" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 6h6M5.2 3.6 7.6 6 5.2 8.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
 const LIMIT_TILE = { IsoSensitivity: "iso", ShutterSpeed: "shutter", FNumber: "fnumber", Colortemp: "wb" };

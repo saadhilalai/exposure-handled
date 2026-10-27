@@ -405,6 +405,10 @@ class AgentRunner:
         self.gate.killed = True
         self._event("kill", "The bridge was locked (kill switch from another terminal): stopped. The camera is yours.")
 
+    def note(self, kind, text, **fields):
+        """An event from outside the loop (the Pi's controller), in the log and on the dashboard."""
+        self._event(kind, text, **fields)
+
     def toggle_pause(self):
         self.set_auto(self.paused)
 

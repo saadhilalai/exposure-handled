@@ -48,6 +48,7 @@ class Dashboard:
     def __init__(self, runner, host="127.0.0.1", port=8770, guard=None, names=(), actions=None, extra_state=None):
         self.runner, self.host, self.port = runner, host, port
         self.actions, self.extra_state = dict(actions or {}), extra_state
+        self.on_seen = None                  # the Pi: called on every request from a paired phone (its heartbeat)
         self.guard = guard if guard is not None and guard.enabled else None   # agent.pin.PinGuard, or no PIN
         self.cache = {}                      # mode -> (frame_no, jpeg bytes), shared by every viewer
         self.cache_lock = threading.Lock()
@@ -172,6 +173,8 @@ class _Handler(BaseHTTPRequestHandler):
                 return self._send(401, {"ok": False, "error": "pair this phone first"})
             if url.path in ("/", "/index.html"):
                 url = url._replace(path="/pair.html")
+        elif url.path.startswith("/api/") and self.dash.on_seen:
+            self.dash.on_seen()
         if url.path == "/api/state":
             extra = self.dash.extra_state() if self.dash.extra_state else None
             r = self.dash.runner
@@ -222,5 +225,7 @@ class _Handler(BaseHTTPRequestHandler):
             return self._send(200, {"ok": True}, extra=[("Set-Cookie", cookie)])
         if action != "kill" and not self._paired():          # the kill switch works for anyone on the network
             return self._send(401, {"ok": False, "error": "pair this phone first"})
+        if self.dash.on_seen and self._paired():
+            self.dash.on_seen()
         code, reply = self.dash.control(action, body)
         return self._send(code, reply)

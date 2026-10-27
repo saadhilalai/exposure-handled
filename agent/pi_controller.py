@@ -12,6 +12,8 @@ Safety rules, all enforced here:
   - If arming fails anywhere, the agent ends locked and read-only, never half-armed.
   - Disarm is a kill: the bridge is locked first (and the file written), then it goes back to read-only.
   - Losing the camera or the bridge while armed drops back to read-only: arm again to carry on.
+  - Losing the phone while armed (nothing from it for phone_timeout_s): Auto goes off, so the settings stay as
+    they are and the agent only suggests. When the phone is back, Auto stays off until it's pressed again.
 """
 import os
 import queue
@@ -68,6 +70,8 @@ class PiController:
         self.stop_event = threading.Event()
         self.started = False
         self.kill_during_switch = threading.Event()
+        self.last_seen = None                             # the paired phone's last request (its heartbeat)
+        self.phone_lost = False
         for d in (cfg.sessions_dir, cfg.state_dir, cfg.logs_dir):
             d.mkdir(parents=True, exist_ok=True)
 
@@ -77,11 +81,16 @@ class PiController:
         dash.runner = self.runner
         dash.actions.update({"arm": self.arm, "disarm": self.disarm, "kill": self.kill})
         dash.extra_state = self.state
+        dash.on_seen = self.seen
+
+    def seen(self):
+        self.last_seen = self.clock()
 
     def state(self):
         r = self.runner
         locked = self.cfg.lock_file.exists() or bool(r and getattr(r, "bridge_locked", False))
         return {"mode": self.mode, "message": self.message, "locked": locked, "armed": self.mode == "armed",
+                "phone_lost": self.phone_lost,
                 "exposure_allowed": self.cfg.allow_exposure, "pin": self.guard.enabled}
 
     def arm(self, body):
@@ -154,7 +163,24 @@ class PiController:
                 self.stop_event.wait(self.poll_s)
             return
         if not r.step():
-            self._runner_stopped(r)
+            return self._runner_stopped(r)
+        if self.mode == "armed":
+            self._watch_phone(r)
+
+    def _watch_phone(self, r):
+        now = self.clock()
+        gone = self.last_seen is None or now - self.last_seen > self.cfg.phone_timeout_s
+        if gone and not self.phone_lost:
+            self.phone_lost = True
+            if r.live and not r.paused and not r.killed:
+                r.set_auto(False)
+                r.note("phone", "The phone dropped off: Auto off, holding the settings. Press Auto to carry on.")
+            self.message = "The phone dropped off: Auto is off and the settings are held."
+        elif not gone and self.phone_lost:
+            self.phone_lost = False
+            self.message = "The phone is back. Auto stays off until you press it."
+        elif gone and r.live and not r.paused and not r.killed:
+            r.set_auto(False)                             # Auto turned on from elsewhere while the phone is gone
 
     def close(self):
         r, self.runner = self.runner, None
@@ -242,6 +268,7 @@ class PiController:
         except Exception as e:
             return self._fail_safe("Arming failed (%s)" % e)
         self.armed = True
+        self.last_seen, self.phone_lost = self.clock(), False   # the phone just armed it
         self.mode = "armed"
         self.message = "Armed: the agent may change %s. Auto is off: press Auto to start." % (
             "ISO, aperture, shutter and WB" if self.cfg.allow_exposure else "ISO")

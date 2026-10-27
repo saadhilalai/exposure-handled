@@ -199,3 +199,40 @@ def test_the_phone_sees_the_pi_state_and_arming_needs_pairing(pi):
         assert c.mode == "locked"
     finally:
         dash.stop()
+
+
+def test_losing_the_phone_while_armed_holds_the_settings_and_pauses(pi):
+    c, switch, cfg = pi()
+    armed(c, switch)
+    c.runner.set_auto(True)
+    c.seen()
+    ticks(c, 3)
+    assert not c.runner.paused and not c.phone_lost            # the phone is there: Auto stays on
+    c.last_seen = c.clock() - cfg.phone_timeout_s - 1          # nothing from the phone for a while
+    ticks(c, 1)
+    assert c.runner.paused and c.phone_lost and c.mode == "armed"
+    assert any(e["kind"] == "phone" for e in c.runner.events)
+    sets = len(switch.cam.sets)
+    ticks(c, 30)
+    assert len(switch.cam.sets) == sets                         # held: nothing more is sent
+    c.runner.set_auto(True)                                     # Auto on from elsewhere while the phone is gone
+    ticks(c, 1)
+    assert c.runner.paused
+    c.seen()                                                    # the phone is back
+    ticks(c, 1)
+    assert not c.phone_lost and c.runner.paused and "back" in c.message   # Auto stays off until pressed
+
+
+def test_the_phones_requests_are_its_heartbeat(pi):
+    c, switch, cfg = pi()
+    dash = Dashboard(None, port=0, guard=c.guard).start()
+    c.attach(dash)
+    try:
+        ticks(c, 1)
+        call(dash, "/api/state")                                # not paired: doesn't count
+        assert c.last_seen is None
+        cookie = call(dash, "/api/pair", {"pin": PIN})[2]["Set-Cookie"].split(";")[0]
+        call(dash, "/api/state", cookie=cookie)
+        assert c.last_seen is not None
+    finally:
+        dash.stop()
