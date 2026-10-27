@@ -1,0 +1,202 @@
+# Step 8, part 2: moving the agent onto the Pi (plan, not built)
+
+The goal: the agent runs on a Raspberry Pi 5 on the camera rig, starts by itself on power-up, and you run it from your phone.
+No laptop on set. Later goal: a product someone else can install, so it's built clean from the start.
+
+This builds on [step8-pi-plan.md](step8-pi-plan.md) (the research and parts). **Nothing here is built yet, and nothing
+connects to the camera until you say "camera ready".** Anything marked **UNVERIFIED** has to be proven on the Pi itself.
+
+## 1. Does Sony's SDK run on the Pi 5?
+
+**Very likely, but the Pi 5 itself isn't on Sony's tested list. One test on the first day decides it.**
+
+- **There is a Linux ARM64 build.** Sony's current SDK is still v2.02.00, the version the Mac bridge uses. It comes in
+  Linux 64-bit ARM (the Pi 5's kind), Linux 32-bit ARM and Linux x86 versions. The ARM64 download is about 180 MB.
+  ([Sony's SDK page](https://support.d-imaging.sony.co.jp/app/sdk/en/index.html))
+- **What Sony tested it on:** a Raspberry Pi 4 (4GB) on Debian 12 "Bookworm", and two Nvidia Jetson boards. **No Pi 5.**
+  (Sony's own compatibility page, in the SDK download.)
+- **Our camera is on Sony's supported list** for USB, in all three USB modes.
+- **On Linux ARM, Sony's SDK only works over USB, not wireless.** That's fine: the bridge already uses USB only.
+- **The licence:** an app may contain Sony's library "in an inseparable way" and be shared. Sony's files may not be
+  shared on their own.
+  - Whether a separate library file next to our program counts as "inseparable" is a legal question (**UNVERIFIED**).
+  - So for now, nothing changes: each person downloads the SDK from Sony and accepts Sony's licence themselves.
+  - The repo, and any SD card image we ever share, never contains Sony's files.
+  - Before selling anything, get a lawyer's read on that one clause.
+
+**What that means for the bridge:** the same C++ code, built for the Pi. Nothing in the bridge's logic changes:
+- the same allow-list, compiled in;
+- the same check that the camera reports the model we expect;
+- the same ranges and the same kill switch;
+- the same refusal of format, record, firmware, codec, frame rate, resolution, picture profile and media.
+
+Only the build file gets a Linux section, the same way Sony builds its own sample for Linux:
+- **Sony's library files sit next to the program** (Linux's `$ORIGIN`), instead of in the Mac's `Contents/Frameworks`.
+- **Two compiler flags Sony's own build uses on Linux:** `-fsigned-char` (Sony's note: it needs this on Raspberry Pi
+  OS) and `-fstack-protector-all`.
+- **Sony's package list:** `autoconf libtool libudev-dev gcc g++ make cmake unzip libxml2-dev`.
+
+## 2. The Pi's setup, before any of our code
+
+| Setting | Why |
+|---|---|
+| **Raspberry Pi OS (Legacy, 64-bit) Lite**, i.e. Debian 12 "Bookworm" | It's the closest match to what Sony tested (the newer "Trixie" is Debian 13). Lite has no desktop: less to break, and nothing on the Pi grabs the camera as a photo device (likely; checked on the first day). |
+| `kernel=kernel8.img` in `/boot/firmware/config.txt` | The Pi 5's default kernel uses 16K memory pages, which can break prebuilt ARM programs like Sony's. This one uses 4K pages. Check: `getconf PAGESIZE` must say `4096`. |
+| `usbcore.usbfs_memory_mb=150` added to the single line in `/boot/firmware/cmdline.txt` | Sony's required USB buffer size. Check: `cat /sys/module/usbcore/parameters/usbfs_memory_mb` must say `150`. |
+| A USB permission rule for Sony's vendor ID `054c` | So the bridge can open the camera without running as the all-powerful root user. **UNVERIFIED**: Sony's docs don't mention this, so it's tried on the first day. |
+| Camera: **USB Connection Mode = Remote Shoot (PC Remote)**, **USB Power Supply = Off** | The first is how the SDK sees the camera. The second keeps the camera from drawing power from the Pi: it runs on its own battery. |
+
+## 3. Moving the bridge and the brain: what changes, what stays
+
+### Stays exactly the same
+- **The bridge's code and its compiled-in allow-list.** ISO 800–12800 by default. Aperture, shutter and WB only with
+  `--allow-exposure`. WB mode Auto or Color Temp only. No focus.
+- **The brain, the eyes, the looks and the Python safety gate** (`agent/`). It's plain Python, OpenCV and numpy, and
+  64-bit ARM versions of all of them exist.
+- **Two layers have to agree.** The Python gate and the bridge each check every change. One safety function sends
+  them, and every one is logged.
+- **The bridge only talks on a private file-socket on the Pi itself, never on the network.** The phone never reaches the
+  bridge. It only reaches the dashboard, and the dashboard asks the agent, which asks the gate, which asks the bridge.
+- **The kill switch** locks the bridge: nothing changes until you hand control back. **Snapshot and restore:** the
+  settings are saved at the start and offered back at the end.
+- **The tests** run on the Pi as well as the Mac (`pytest`).
+
+### Changes
+1. **The build file gets a Linux section** (above).
+2. **One config file** instead of fixed paths: `/etc/camera-agent/config.toml`. It holds:
+   - where Sony's SDK is;
+   - the data folder;
+   - the dashboard address;
+   - the start-up mode;
+   - the hotspot name.
+
+   On the Mac, the same defaults as today.
+3. **The kill switch survives a restart. This is a new safety fix, and it matters on the Pi.**
+   - Today the lock lasts until the bridge restarts.
+   - On the Pi the bridge restarts by itself after a crash, so a crash could quietly undo a kill.
+   - The fix: the lock is also written to the data folder. A restarted bridge reads it and stays locked until you unlock
+     from the phone.
+4. **After any restart, the agent comes back only suggesting, never changing.** Nothing ever arms itself.
+5. **The dashboard learns to live on a network** (part 5): a pairing PIN, and the Pi's hotspot address added to its
+   list of allowed addresses.
+6. **Arming from the phone.** Today you type `LIVE` in Terminal. With no Terminal on set, the phone does it:
+   - you enter your PIN;
+   - you press **Arm**, then confirm by typing `LIVE` on the phone;
+   - you press **Auto** twice, as today.
+7. **Optional: a real kill button** on the Pi's pins, wired straight to the bridge's lock. It works even if the phone
+   or the Wi-Fi is gone.
+
+### How the start-up mode stays safe (needs your decision, below)
+- **The bridge starts read-only at power-up.** It can read the camera and the live view and refuses every change.
+- **Arming** (PIN + `LIVE` on the phone) switches it to the normal ISO-only mode. The Pi does that by restarting the
+  bridge service in that one mode, through a rule that allows exactly that service and nothing else.
+- **`--allow-exposure` (aperture, shutter, WB) can never be switched on from the phone.** It's a line in the config
+  file, changed only from the Mac over SSH (a secure remote login), on purpose.
+- **Disarm or kill:** the lock goes to the bridge at once, as today, and then the bridge drops back to read-only.
+
+## 4. Auto-start on power-up
+
+Two services, managed by systemd, the Pi's built-in service manager:
+
+| Service | What it does | Restart rule |
+|---|---|---|
+| `camera-bridge` | Starts the bridge **read-only** and waits for the camera on USB. It leaves the camera alone until it's plugged in and in Remote Shoot mode. | Restarts after a crash (`Restart=on-failure`, a 2 s pause). It comes back locked if it was locked. |
+| `camera-agent` | Starts the agent and the dashboard in **suggest-only** mode. It needs the bridge (`Requires=` and `After=camera-bridge`). | Restarts after a crash, always in suggest-only. |
+
+Also:
+- **A small power-and-heat logger** writes `vcgencmd get_throttled` and the temperature to the data folder every
+  minute. The dashboard shows a **Power** tile: green when there have been no voltage dips, amber if one was seen.
+- **Start-up time:** expect roughly 20–40 s from power to dashboard (**UNVERIFIED**, measured on the first day).
+- **Pulling the D-tap mustn't corrupt the card.**
+  - The system part of the card goes **read-only** (Raspberry Pi's own "Overlay File System" switch, in `raspi-config`).
+  - Logs and session snapshots go to a separate data partition on the same card.
+  - Only that partition is written during a shoot, and the session logs are flushed after every change.
+- **The rule for the camera is unchanged on the Pi:** the Pi never connects to the camera, and never changes a
+  setting, without your go.
+
+## 5. Your phone, over the Pi's own Wi-Fi
+
+**Recommended: the Pi makes its own Wi-Fi network (a hotspot).** The Pi's network manager can do it, and it comes up at
+every start. Your phone joins it and opens `http://10.42.0.1:8770` (the hotspot's usual address; it's bookmarked once).
+
+- **The Wi-Fi password:** a strong WPA2 password, set on the first day.
+- **The pairing PIN:** a 6-digit PIN, set in the config file on the first day. Enter it once and the phone stays paired.
+  Arming asks for it again.
+- **The dashboard only answers on the hotspot.** Not on any other network, and not on the internet. No cloud, no
+  accounts.
+- **Wi-Fi country:** the Pi's Wi-Fi stays off until a country is set. The SD card step sets it.
+- **Use 2.4 GHz for the hotspot.** It's the safest choice on the Pi 5. Whether 5 GHz works as a hotspot there is
+  **UNVERIFIED**.
+- **Your phone loses its internet** while it's on the Pi's network. iPhones say "No Internet Connection" and stay joined.
+- **At the desk:** the Mac joins the Pi's network to log in over SSH, or uses an Ethernet cable.
+
+**The other way (not recommended): the Pi joins your phone's hotspot.**
+- Your phone keeps its internet.
+- But the Pi's address changes, the phone's hotspot has to be on before the Pi starts, and some phones turn their
+  hotspot off when nobody uses it.
+
+## 6. Power: the low-power warning
+
+You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it gives up to **3 A**. The Pi 5 asks for
+5 A, so:
+
+- **What the Pi does on 3 A:**
+  - It runs normally.
+  - It limits its USB ports to **600 mA** in total.
+  - It won't boot from USB, which doesn't matter because it boots from the card.
+  - On a desktop it shows a "power is limited" warning. **Lite has no desktop, so there's no pop-up to see**. A message
+    may still show on a connected screen at start-up; the exact wording on Lite is **UNVERIFIED**.
+  - ([Raspberry Pi's power docs](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#power-supply),
+    [their USB-PD whitepaper](https://pip-assets.raspberrypi.com/categories/685-app-notes-guides-whitepapers/documents/RP-009856-WP-1-USB%20Power%20delivery%20on%20Raspberry%20Pi%205.pdf))
+- **The two settings:**
+  - `usb_max_current_enable=1` (in `/boot/firmware/config.txt`) lets the USB ports draw up to 1.6 A instead of 600 mA.
+  - `PSU_MAX_CURRENT=3000` (in the Pi's start-up chip, via `sudo rpi-eeprom-config --edit`) tells the Pi to assume a
+    3 A supply instead of asking the cable.
+- **My recommendation: set neither at first.**
+  - 600 mA is plenty, because the camera runs on its own battery and the cable only carries data.
+  - Raising the USB limit above what a 3 A supply can give is something Raspberry Pi's docs never recommend: if
+    something pulls that much, the voltage drops.
+  - Turn on `usb_max_current_enable=1` only if the camera won't connect at 600 mA.
+- **What actually matters is voltage dips, not the warning.** On the bench, under full load, `vcgencmd get_throttled`
+  must say `0x0`. `0x50000` means the voltage dipped at some point. The Power tile shows the same thing.
+- **Bench-test the cable on the desk first.** Whether this exact cable gives the Pi a steady 5 V 3 A is **UNVERIFIED**.
+
+## 7. Order of work (each step ends with a check-in)
+
+1. **Flash the card** ([pi-sd-card.md](pi-sd-card.md)). Desk power (the MacBook charger), SSH from the Mac.
+2. **Pi settings** (part 2). Check the page size and the USB buffer.
+3. **You download Sony's Linux ARM64 SDK** and accept Sony's licence on Sony's site, then copy it to the Pi. It
+   never goes into the repo.
+4. **Build** the bridge and the read-only probe on the Pi. Run the tests on the Pi.
+5. **After you say "camera ready": the read-only probe.** It reads the settings and saves one live-view frame, with no
+   changes. **This is the go/no-go for the whole Pi plan.** Then `tools/bench_eyes.py`, to measure the Pi's speed.
+6. **Build the Pi parts:** the config file, the kill switch that survives a restart, the PIN, arming from the phone,
+   the hotspot. Each one is tested on the Mac first, with the fake camera.
+7. **Auto-start services.** Pull the power on purpose ten times: it must come back read-only, locked if it was locked.
+8. **The D-tap cable on the bench**, watching for voltage dips.
+9. **Mount it:** cage cold shoe → SmallRig cold shoe mount → SmallRig cheese plate → 3M Dual Lock → Pi case.
+10. **A field test.**
+
+## Decided (director)
+
+1. **Start-up:** the bridge starts read-only at power-up. It's armed from the phone with the PIN and `LIVE`.
+2. **The phone drops off while armed:** the agent holds the current settings and pauses until the phone is back.
+3. **Network:** the Pi makes its own Wi-Fi network.
+4. **USB current:** stays at 600 mA. It's raised (`usb_max_current_enable=1`) only if the camera won't connect.
+5. **Physical kill button:** later. For now the kill switch is the phone's button, or pulling the USB cable.
+   - The product's case will have a button built in, so the code is ready for one.
+   - Every kill goes through one path, the bridge's `lock` command over its private socket. That's what
+     `tools/kill_switch.py` already does.
+   - A button is then one small service: on a press, send `lock`. It needs no change to the bridge, the agent or the
+     dashboard.
+
+## Progress
+
+- [x] **The kill switch outlives a restart.**
+  - `--lock-file=PATH` on the bridge and on the fake camera: if PATH exists at start-up, they start locked.
+  - `lock` writes PATH to disk before it answers. The bridge never removes it.
+  - The agent refuses to start against a kill from before, and says that a restart won't clear it.
+  - Tested without any camera: the flag reading and the file handling (built without Sony's SDK), the fake camera,
+    and the agent.
+  - Without the flag, nothing changes, so the Mac and the Step 7 tools work as before. The new bridge is built
+    beside the current one (`build/bridge-next`); the Step 7 scripts still use `build/bridge`.
