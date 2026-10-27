@@ -1,6 +1,6 @@
 # Step 1: What Sony's SDK can and can't do (Sony cinema camera, macOS)
 
-Date: 2026-10-17. Source: Sony Camera Remote SDK **v2.02.00 for macOS** (package dated 2026-06-10), its API Reference, the sample-app manual, Sony's license agreement (online), and the camera Help Guide (online).
+Source: Sony Camera Remote SDK **v2.02.00 for macOS**, its API Reference, the sample-app manual, Sony's license agreement (online), and the camera Help Guide (online).
 
 "Confirmed in docs" means Sony's paperwork says it. "Untested" means we won't know until the camera is connected (Step 2).
 

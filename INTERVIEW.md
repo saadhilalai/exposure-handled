@@ -1,6 +1,6 @@
 # Interview prep: Camera Agent
 
-> **Draft (2026-10-17).** The answers use only numbers we've actually measured. Where Step 7 (the real-world, blind test) will add results, it says so; update these after the test.
+> **Draft.** The answers use only numbers we've actually measured. Where Step 7 (the real-world, blind test) will add results, it says so; update these after the test.
 
 Ten questions you're likely to get, each with a short answer to say out loud (30–45 seconds).
 

@@ -35,8 +35,8 @@ Keyboard on the page: **Space** kill switch · **a** Auto · **l** Lock · **m**
 - It stores two things per person: a **face signature** (128 numbers from OpenCV's SFace model, Apache 2.0, so it can recognize the person next time) and **the exposure you approved**, in stops.
 - No skin-tone classification anywhere. Your eye sets the target, person by person.
 - **Only for people who agree.** Ask first; if someone says no, don't press it for them (the agent then uses the look's default for that face).
-- Signatures are biometric data, so they stay **only on this computer** (`config/face_refs.json`, never committed, never uploaded), the page never receives them, and **Forget** deletes them (director's decision, 2026-10-18).
-- Checked on your real Step 4 frame through the fake camera: your face matched itself across 2.3 stops of exposure change at 0.97 similarity (OpenCV's threshold is 0.36), in 5–8 ms. Set at −2.3 st, then the light dropped 1 stop, and the agent brought you back: *"Face −3.2 st (Saad's target −2.3): ISO 1600 → 2000"*, then 4000 (base). Those screenshots show your face, so they're only in `sessions/2026-10-17_dashboard-screens-with-face/` (not committed).
+- Signatures are biometric data, so they stay **only on this computer** (`config/face_refs.json`, never committed, never uploaded), the page never receives them, and **Forget** deletes them (director's decision).
+- Checked on your real Step 4 frame through the fake camera: your face matched itself across 2.3 stops of exposure change at 0.97 similarity (OpenCV's threshold is 0.36), in 5–8 ms. Set at −2.3 st, then the light dropped 1 stop, and the agent brought you back: *"Face −3.2 st (Saad's target −2.3): ISO 1600 → 2000"*, then 4000 (base). Those screenshots show your face, so they're only in `sessions/…_dashboard-screens-with-face/` (not committed).
 
 ## Design
 
@@ -64,7 +64,7 @@ Phone: ![Phone](screenshots/step6_08_phone_top.png)
 - After a kill, Auto still showed "On".
 - On a phone, your controls came after the chart. Now it's picture → settings → agent → chart → decisions.
 
-## Limits (added 2026-10-19)
+## Limits
 
 Your request after the live test: when the agent hits a limit, show the reason. On the real camera the lamp measured about 2620K, so WB stopped at your 2800K floor without saying why. Now:
 

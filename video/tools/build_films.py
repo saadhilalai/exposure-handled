@@ -359,7 +359,7 @@ def prep(F):
     if F.get("horizon"):                            # the opening's paper texture (made by tools/make_paper.py)
         link(V / "v1-abstract" / "assets" / "art" / "paper.png", a / "art" / "paper.png")
     (d / "meta.json").write_text(json.dumps({"id": "exposure-handled-" + F["dir"], "name": "exposure-handled-" + F["dir"],
-                                             "createdAt": "2026-10-22T05:00:00.000Z"}, indent=2) + "\n")
+                                             }, indent=2) + "\n")
     (d / "package.json").write_text(json.dumps({"name": "camera-agent-" + F["dir"], "private": True, "type": "module", "scripts": {
         "dev": "npx --yes hyperframes@0.8.167 preview", "check": "npx --yes hyperframes@0.8.167 check",
         "render": "npx --yes hyperframes@0.8.167 render"}}, indent=2) + "\n")

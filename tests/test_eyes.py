@@ -11,7 +11,7 @@ from agent.overlay import CLIPPED, zebras
 from agent.tone import ToneModel, load_calibration, slog3_code, slog3_reflectance
 
 ROOT = Path(__file__).resolve().parent.parent
-ISO_FRAMES = ROOT / "sessions" / "2026-10-17_184612_step3-iso-test" / "iso_frames"
+ISO_FRAMES = max((ROOT / "sessions").glob("*_step3-iso-test"), default=ROOT / "sessions" / "step3-iso-test") / "iso_frames"
 LOG = CameraContext(tone="slog3", tone_source="test")
 
 

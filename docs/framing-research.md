@@ -1,6 +1,6 @@
 # Does Camera Agent already exist? Framing research for the launch film
 
-Research date: 2026-10-21. About 60 web, code and paper searches, plus direct checks of the pages that mattered most. Every claim below has a link.
+About 60 web, code and paper searches, plus direct checks of the pages that mattered most. Every claim below has a link.
 
 ---
 
@@ -8,7 +8,7 @@ Research date: 2026-10-21. About 60 web, code and paper searches, plus direct ch
 
 **The pieces exist. The whole combination doesn't seem to, at least not in public.**
 
-- Cameras have set their own exposure for decades: auto ISO, auto iris, Auto ND, face-weighted metering. Since July 2026 Sony also has an AI (deep-learning) auto white balance in the FX5. None of these works from a creative look, and none explains its choices.
+- Cameras have set their own exposure for decades: auto ISO, auto iris, Auto ND, face-weighted metering. Sony now also has an AI (deep-learning) auto white balance in the FX5. None of these works from a creative look, and none explains its choices.
 - **The closest product is FrameCoach** (iPhone app, 2026). It reads a Sony or Canon camera's live feed, Canon's cinema cameras included. You describe the look in plain English, and it gives up to three ranked changes, each with its reason. One tap sends a change to the camera. But its own support page says it **"never adjusts settings automatically"**: a person approves every change.
 - **The closest coming product is Darkgrade** (Y Combinator, Fall 2024). It's an open camera-control engine, already tested on a Sony cinema camera. Its roadmap lists "one tap to set lights, audio & exposure", "let AI assistants run the camera" and "AI that understands what your camera sees", all marked "on the way". It targets YouTubers and podcasters, not cinematographers.
 - **The closest hobby project is So-DSC.** It lets a chat AI see a Sony RX100's live view and change ISO, shutter, aperture, exposure compensation and white balance itself, while chatting. It's a compact stills camera with no safety limits, and the project has 1 star.
@@ -32,7 +32,7 @@ From `README.md`, `PROGRESS.md` and `agent/runner.py`:
 
 - **How it decides:** explainable rules ("no black box"), plus neural face detection and recognition from OpenCV. **It is not an LLM, and it isn't a trained exposure controller.** "AI assistant" is fair; "AI that learned from DPs" would not be.
 - **What it changes:**
-  - ISO, by itself, in a live closed loop on a real camera (passed 2026-10-19).
+  - ISO, by itself, in a live closed loop on a real camera (passed).
   - All four settings (shutter 1/48, f/4, ISO, white balance 2800K), in one automatic run of the Interview look (Test 3, passed).
   - Today's approved range is ISO 800–12800.
 - **Kill switch:** the dashboard button stopped it in **33 ms** on the real camera, and the bridge locked.
@@ -52,7 +52,7 @@ Key: **Live** = reads the live image. **Sets** = changes the camera's settings i
 |---|---|---|---|---|---|---|---|
 | The Sony cinema camera's own auto exposure | Intelligent Auto, P/A/S modes, ISO Auto, ISO Range Limit, "Face Priority in Multi Metering" | Y | Y | Y | N / N | Shipping | [Sony cinema camera Help Guide](https://helpguide.sony.net/ilc/2530/v1/en/index.html); [what Face Priority metering does (α7 IV guide)](https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000655352.html) |
 | Sony Auto ND (FX6, FX9, FS5, Z190/Z280…) | Electronic variable ND that "proactively and automatically" holds exposure | Y | Y | Y | N / N | Shipping (since ~2017) | [Sony Pro: Variable ND](https://pro.sony/en_IE/technology/variable-auto-nd-filter-technology) |
-| Sony FX5 "Auto Tracing White Balance" | Deep-learning light-source estimation on the new AI unit (announced 2026-07-22) | Y | Y (WB only) | Y | N / N | Shipping | [What Digital Camera](https://www.whatdigitalcamera.com/photography-news/open-gate-recording-comes-to-sony-via-fx5-with-internal-x-ocn-raw-and-16-stops-of-dynamic-range); [Fstoppers](https://fstoppers.com/gear/sony-fx5-fx3-two-features-everyone-asked-903682) |
+| Sony FX5 "Auto Tracing White Balance" | Deep-learning light-source estimation on the new AI unit (announced) | Y | Y (WB only) | Y | N / N | Shipping | [What Digital Camera](https://www.whatdigitalcamera.com/photography-news/open-gate-recording-comes-to-sony-via-fx5-with-internal-x-ocn-raw-and-16-stops-of-dynamic-range); [Fstoppers](https://fstoppers.com/gear/sony-fx5-fx3-two-features-everyone-asked-903682) |
 | Sony AI processing unit (Sony cinema cameras such as the FX3, FX5 and PXW-Z300) | Subject recognition for autofocus, auto framing | Y | Focus/framing only | Y | N / N | Shipping | [CineD Z300](https://www.cined.com/sony-pxw-z300-announced-1-2-inch-4k-3-cmos-camcorder-with-17x-zoom-ai-features-and-world-first-content-authentication/embed/) |
 | Sony Monitor & Control / Creators' App | Phone and tablet remote with waveform, false color, zebras | Y | Manual only | Y | N / N | Shipping | [Videomaker](https://www.videomaker.com/news/sony-releases-updated-monitor-control-app/) |
 | Canon Cinema EOS | Auto Iris, Push Auto Iris, Auto ISO/Gain, AE shift. C400 adds Auto Exposure Ramping Compensation (Aug 2026). | Y | Y | Y | N / N | Shipping | [Canon C200 specs](https://www.canon-europe.com/video-cameras/eos-c200/specifications/); [Canon, Aug 2026 firmware](https://www.canon.co.uk/press-centre/press-releases/2026/08/canon-enhances-cinema-eos-with-new-eos-c80-and-eos-c400-firmware-update/) |
@@ -107,7 +107,7 @@ Key: **Live** = reads the live image. **Sets** = changes the camera's settings i
 | ACamera-Net (2025) | Predicts ISO and white balance from RAW, for "professional-style imaging" | Y | Y | ~ | N / N | Research | [arXiv 2510.20550](https://arxiv.org/abs/2510.20550) |
 | Vision-Language-Camera (VLC) | A vision-language model *suggests* manual-mode settings, with instructions | Y | **N (advice only)** | N | ~ / Y | Research | [GitHub](https://github.com/zqianaa/VLC) |
 | SCOPE (HRI 2026), OPUS (2025) | Language-model agents that drive PTZ cameras. Pan, tilt and zoom only, no exposure. | Y | Movement only | N | N / N | Research | [arXiv 2606.02951](https://arxiv.org/abs/2606.02951); [arXiv 2505.06402](https://arxiv.org/abs/2505.06402) |
-| CineMPC (2024), RoboPhoto-VLA (Oct 2026), PhotoAgent (2026) | Drone and robot "cinematographers" that control camera position, focus and zoom. Not exposure. | Y | Pose/focus/zoom | ~ | ~ / N | Research | [arXiv 2401.05272](https://arxiv.org/abs/2401.05272); [arXiv 2610.26287](https://arxiv.org/abs/2610.26287); [arXiv 2603.22796](https://arxiv.org/abs/2603.22796) |
+| CineMPC (2024), RoboPhoto-VLA (2026), PhotoAgent (2026) | Drone and robot "cinematographers" that control camera position, focus and zoom. Not exposure. | Y | Pose/focus/zoom | ~ | ~ / N | Research | [arXiv 2401.05272](https://arxiv.org/abs/2401.05272); [arXiv 2610.26287](https://arxiv.org/abs/2610.26287); [arXiv 2603.22796](https://arxiv.org/abs/2603.22796) |
 
 ---
 
@@ -133,15 +133,15 @@ Key: **Live** = reads the live image. **Sets** = changes the camera's settings i
 Why "first" claims are hard:
 
 - **You can't prove a negative.** These searches only cover what's public, indexed and in English. A private studio tool, a demo posted only on social media, or a non-English project wouldn't show up.
-- **The nearest competitor is one feature away.** FrameCoach already does the look, the explanation and applying changes to Canon cinema cameras. If it adds an "auto-apply" switch, a "first" line becomes false overnight. Darkgrade has AI exposure on its public roadmap and already runs on the camera.
+- **The nearest competitor is one feature away.** FrameCoach already does the look, the explanation and applying changes to Canon cinema cameras. If it adds an "auto-apply" switch, a "first" line becomes false at once. Darkgrade has AI exposure on its public roadmap and already runs on the camera.
 - **"First" draws "well, actually…" replies.** Built-in auto exposure has changed cinema-camera settings by itself for decades. Sony's FX5 now uses deep learning for white balance. So-DSC lets an AI see live view and change exposure. Each of these could be used to argue against a loosely worded "first".
 - **The word "AI" can be challenged.** Camera Agent decides with explainable rules plus neural face detection. That is a strength, but a "first AI" claim invites a fight over what counts as AI.
 
 **If you still want one**, this is the narrowest wording the sources support. It belongs in the description, with the date and a "we looked" caveat, not spoken in the film:
 
-> "As far as we can find (October 2026), the first assistant that runs a cinema camera's exposure on its own, from a chosen look, and explains every change in plain English."
+> "As far as we can find, the first assistant that runs a cinema camera's exposure on its own, from a chosen look, and explains every change in plain English."
 
-- **Confidence:** moderate that nothing public did all of this before 2026-10-21. Low that it stays true for long.
+- **Confidence:** moderate that nothing public did all of this when this was researched. Low that it stays true for long.
 - **Key sources:** FrameCoach's "never adjusts settings automatically" ([support](https://www.framecoach.io/support)); Darkgrade's roadmap, where AI exposure is still "on the way" ([roadmap](https://darkgrade.com/roadmap)); So-DSC is a compact camera with no look system ([GitHub](https://github.com/nananek/so-dsc)); camera-maker AE has no looks or explanations ([Sony cinema camera Help Guide](https://helpguide.sony.net/ilc/2530/v1/en/index.html), [Sony Auto ND](https://pro.sony/en_IE/technology/variable-auto-nd-filter-technology), [FX5 AI white balance](https://www.whatdigitalcamera.com/photography-news/open-gate-recording-comes-to-sony-via-fx5-with-internal-x-ocn-raw-and-16-stops-of-dynamic-range)).
 
 ### Recommended: vision framing
@@ -153,14 +153,14 @@ Lead with the idea, not a race. Either of these works as the hook:
 
 ### Big, confident lines that are true without "first"
 
-Each is checked against the project's own logs (Oct 19 real-camera tests).
+Each is checked against the project's own logs (the live real-camera tests).
 
 1. **"Pick the look. It handles the exposure."** Five looks. It sets ISO itself; iris, shutter and white balance too when you approve them (Test 3, interview look).
 2. **"It reads the picture in stops, like a DP. Highlights first, then faces."** This is the README's rule order.
 3. **"No tap to approve. It sets the camera itself, and tells you why."** This is the real difference from FrameCoach, said without naming anyone.
 4. **"Every change, explained in one line."** For example: "Face −1.9 st (target +0.5): ISO 2000 → 4000 (base ISO)".
 5. **"It only touches what you approve. Never while you're rolling."** Approved list (today ISO 800–12800) and the lock while recording.
-6. **"One key. Stopped in 33 milliseconds."** Real dashboard kill-switch test, Oct 19. Keep restoring separate: "At the end, it offers to put your settings back."
+6. **"One key. Stopped in 33 milliseconds."** Real dashboard kill-switch test, from the live test. Keep restoring separate: "At the end, it offers to put your settings back."
 
 Two more that are true and on-brand:
 - **"No black box. Every rule is a DP's rule."**

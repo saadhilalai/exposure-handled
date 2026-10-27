@@ -1,8 +1,8 @@
-# Step 5, live: the agent on the real camera (2026-10-19)
+# Step 5, live: the agent on the real camera
 
 **The director's go:** "Camera ready, and I'm leaving it to you." The camera was on a tripod, pointed at a white wall lit by one lamp, with the card out, so nothing could record. Tests 1–3 ran unattended, without anyone typing LIVE, and the dashboard showed the live view throughout.
 
-Tool: `tools/live_selftest.py`. It was rehearsed end to end on the fake camera, using a frame of this same wall, before it touched the real one. Results are saved in `sessions/2026-10-19_184821_live-selftest/` (not committed). Total time: 5 min 15 s.
+Tool: `tools/live_selftest.py`. It was rehearsed end to end on the fake camera, using a frame of this same wall, before it touched the real one. Results are saved in `sessions/…_live-selftest/` (not committed). Total time: 5 min 15 s.
 
 ## How the camera was found (read-only first)
 
@@ -75,7 +75,7 @@ It used all four settings, made 6 changes and stayed within every range. Afterwa
 
 ## What's new in the code
 
-- **The exposure switch** (approved 2026-10-19; off by default). Aperture f/2.8–f/11, shutter 1/48–1/100 and WB can change only when all three layers agree:
+- **The exposure switch** (approved by the director; off by default). Aperture f/2.8–f/11, shutter 1/48–1/100 and WB can change only when all three layers agree:
   - the bridge was started with `--allow-exposure`
   - the safety gate has `exposure=True`
   - the runner (or `run_agent.py --allow-exposure`) has it on too
@@ -90,7 +90,7 @@ It used all four settings, made 6 changes and stayed within every range. Afterwa
 
 1. **Shutter 1/50 ↔ 1/60 measured 0.43 stop instead of 0.26**, in both directions and steady from frame to frame. Not explained yet. One possibility is that the lamp flickers with the mains power and 1/50 doesn't line up with it. **To check:** repeat in daylight. It matters little in practice, because the agent only uses shutter to hold 180°.
 2. **The agent only trusts its WB reading when WB is within about 100 mired of the light.** Further off, the picture is so tinted that the "is this pixel neutral?" test rejects everything ("confidence low"). Then the agent leaves WB alone; it doesn't guess. So it can fix a WB that's somewhat off, but not a daylight setting under tungsten. Likely fix: judge "neutral" relative to the picture's overall tint. That's why Test 3 started at 3700K, the farthest point it still trusted.
-3. **The lamp is warmer than your WB range allows** (≈2620K vs the 2800K floor). The agent correctly stopped at 2800K, but it didn't say why. **Fixed the same evening** (your request): the dashboard now says "Light is warmer than your 2800K limit." See [step6-dashboard.md](step6-dashboard.md#limits-added-2026-10-19).
+3. **The lamp is warmer than your WB range allows** (≈2620K vs the 2800K floor). The agent correctly stopped at 2800K, but it didn't say why. **Fixed straight after** (your request): the dashboard now says "Light is warmer than your 2800K limit." See [step6-dashboard.md](step6-dashboard.md#limits).
 4. Aperture steps measured 0.22–0.38 stop for nominal ⅓ stops: the lens's marked steps aren't exact. That's fine for control.
 5. The calibration assumes the wall is neutral white. Off-white paint would shift the light reading, not the gain.
 

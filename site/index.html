@@ -99,7 +99,7 @@
   <div class="inside-pin">
     <div class="beat" data-beat="crew">
       <h2 class="big"><span class="line">Meet the crew</span> <span class="line"><em>inside.</em></span></h2>
-      <aside class="nerd note"><b>A picture of the idea.</b> The real agent is one Python loop that runs on every live-view frame, about 24 a second on the Sony cinema camera (Oct 19, about 10 ms per frame to see): see (OpenCV), decide (rules for your look), check (approved ranges), change (Sony's SDK). Every change is logged with time, old value, new value and reason.</aside>
+      <aside class="nerd note"><b>A picture of the idea.</b> The real agent is one Python loop that runs on every live-view frame, about 24 a second on the Sony cinema camera (live test, about 10 ms per frame to see): see (OpenCV), decide (rules for your look), check (approved ranges), change (Sony's SDK). Every change is logged with time, old value, new value and reason.</aside>
     </div>
     <div class="beat" data-beat="iso">
       <h2 class="big"><span class="line">Too bright?</span> <span class="line"><em>A third of a stop down.</em></span></h2>
@@ -107,7 +107,7 @@
         <svg viewBox="0 0 300 170"><path class="track" d="M30 150 A120 120 0 0 1 270 150"/><path class="fill" id="iso-arc" d="M30 150 A120 120 0 0 1 270 150"/><g class="ticks" id="iso-ticks"></g><line class="needle" id="iso-needle" x1="150" y1="150" x2="150" y2="44"/></svg>
         <div class="gauge-read"><small>ISO</small><b id="iso-val">6400</b></div>
       </div>
-      <aside class="nerd note"><b>Real, Oct 19, Sony cinema camera.</b> Starting 2 stops too bright, the agent stepped ISO 6400 → 5000 → 4000 → 3200 → 2500 → 2000, one third of a stop every ~1.7 s, until the scene sat inside its window (−1 to +1 stop). Each change was confirmed by the camera in 116–178 ms.</aside>
+      <aside class="nerd note"><b>Real, live test, Sony cinema camera.</b> Starting 2 stops too bright, the agent stepped ISO 6400 → 5000 → 4000 → 3200 → 2500 → 2000, one third of a stop every ~1.7 s, until the scene sat inside its window (−1 to +1 stop). Each change was confirmed by the camera in 116–178 ms.</aside>
     </div>
     <div class="beat" data-beat="iris">
       <h2 class="big"><span class="line">Sky clipping?</span> <span class="line"><em>It closes the iris.</em></span></h2>
@@ -134,7 +134,7 @@
           <div class="gauge-read"><b id="sw-val">0</b><small>MS</small></div>
         </div>
       </div>
-      <aside class="nerd note"><b>Real: 33 ms from key press to stopped</b>, measured on Oct 19 on the Sony cinema camera. In the app the kill switch is SPACE, a button on the dashboard, or <code>tools/kill_switch.py</code>. After a stop, the bridge locks: nothing changes until you hand control back.</aside>
+      <aside class="nerd note"><b>Real: 33 ms from key press to stopped</b>, measured in the live test on the Sony cinema camera. In the app the kill switch is SPACE, a button on the dashboard, or <code>tools/kill_switch.py</code>. After a stop, the bridge locks: nothing changes until you hand control back.</aside>
     </div>
     <div class="inside-progress" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
   </div>
@@ -223,7 +223,7 @@
 <!-- ============ 6 · real test ============ -->
 <section class="real" id="real" aria-label="Real test">
   <header class="sec-head">
-    <span class="chip real"><i></i>Real · Sony cinema camera · Oct 19</span>
+    <span class="chip real"><i></i>Real · Sony cinema camera · Live test</span>
     <h2 class="big"><span class="line">Tested on</span> <span class="line"><em>a real camera.</em></span></h2>
   </header>
   <div class="real-grid">
@@ -235,7 +235,7 @@
       <div class="g4" data-k="hold"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="50"/><circle class="fill" cx="60" cy="60" r="50"/></svg><b data-v></b><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><small class="nerd">CHANGES IN 60 S HOLD</small></div>
     </div>
   </div>
-  <aside class="nerd note wide"><b>Source:</b> the unattended live test on Oct 19 (Test 1, Cinematic look, scene window −1 to +1 stop). The chart is the agent's own metering log: scene exposure in stops, each ISO change marked. Across the session: 44 changes sent, 44 confirmed by the camera, 0 refused. Settled in 8.4 s, then no changes for the full 60 s hold. Kill switch: 33 ms.</aside>
+  <aside class="nerd note wide"><b>Source:</b> the unattended live test (Test 1, Cinematic look, scene window −1 to +1 stop). The chart is the agent's own metering log: scene exposure in stops, each ISO change marked. Across the session: 44 changes sent, 44 confirmed by the camera, 0 refused. Settled in 8.4 s, then no changes for the full 60 s hold. Kill switch: 33 ms.</aside>
 </section>
 
 <!-- ============ 7 · safety ============ -->

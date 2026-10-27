@@ -6,10 +6,10 @@ change (the bridge checks again with its own compiled-in allow-list), and
 logs time, old value, new value, reason and timings to changes.jsonl.
 
 Two exceptions, each off by default: with iso_while_recording on (Step 7 agent takes), ISO and nothing else
-may change while recording; with exposure_while_recording on (rehearsal shoots only, director 2026-10-20),
+may change while recording; with exposure_while_recording on (rehearsal shoots only, director's decision),
 every approved exposure setting may.
 
-The exposure switch (exposure=True, off by default; approved 2026-10-19): aperture,
+The exposure switch (exposure=True, off by default; approved by the director): aperture,
 shutter and white balance may change too, inside their ranges. Without it, only ISO.
 """
 import json

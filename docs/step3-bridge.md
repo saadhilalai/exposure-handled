@@ -24,7 +24,7 @@ Sony cinema camera ──USB──> camera_bridge (C++) ──private socket fil
 - **Kill switch:** `SafetyGate.kill()` / bridge `lock`. Every change is refused until the bridge restarts. (The big dashboard button comes in Step 6.)
 - **Live-view stream:** Python asks for "the next frame newer than the last one I have", so it never gets stale or duplicate frames, and the bridge never floods it.
 
-## Results (2026-10-17)
+## Results
 
 | Check | Result |
 |---|---|

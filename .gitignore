@@ -77,7 +77,7 @@ video/hype/.hyperframes/
 
 # reference films (study only, never published)
 refs/
-# the three brag films (2026-10-21 night): media stays out of git
+# the three brag films: media stays out of git
 video/blender/out/
 video/blender/cache/*
 !video/blender/cache/model.blend

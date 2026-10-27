@@ -21,7 +21,7 @@ Step 7 recording switch (iso_while_recording, off by default): lets the agent ch
 and only ISO, while the camera records. Only for a live Step 7 agent take (a take name
 like S1_R3_A_agent), and only if the bridge was also started with --allow-iso-while-recording.
 
-Rehearsal recording switch (exposure_while_recording, off by default; director, 2026-10-20): every
+Rehearsal recording switch (exposure_while_recording, off by default; director's decision): every
 approved exposure setting (ISO, aperture, shutter, WB) may change while the camera records. Only for a
 live rehearsal agent take (REH_..._agent, label "rehearsal"), with the exposure switch on, and only if
 the bridge was started with --allow-exposure-while-recording. It can never be used in a Step 7 take.

@@ -12,7 +12,7 @@ in sessions/step7-blind/ (never in the repo).
   python tools/rater_server.py serve [--host 0.0.0.0]   or: this Mac only / the same Wi-Fi only
   python tools/rater_server.py results                  count it: only raters who finished every scene
 
-Online (director, 2026-10-19: "host it online so friends can rate from anywhere"): `share` runs
+Online (director: "host it online so friends can rate from anywhere"): `share` runs
 the page on this Mac and opens a temporary Cloudflare tunnel (cloudflared, no account) to it.
 The address is a random https://....trycloudflare.com and lasts as long as `share` runs, so
 keep it running, and the Mac awake, until the ratings are in. The page stays the only way in:
@@ -55,7 +55,7 @@ CSP = ("default-src 'self'; media-src 'self'; img-src 'self'; frame-ancestors 'n
        "form-action 'none'")
 TUNNEL_URL = re.compile(r"https://[a-z0-9-]+\.trycloudflare\.com")
 DNS_HEAD_START_S = 20     # a new address needs ~10 s to reach public DNS; asking sooner gets "not found" cached here
-COUNT_RULE = "only raters who finished every scene count (director, 2026-10-19, decided before any ratings)"
+COUNT_RULE = "only raters who finished every scene count (director, decided before any ratings)"
 
 
 class Study:
@@ -160,7 +160,7 @@ def interval(values, boot=10000, seed=7):
 
 def count(data=DATA, boot=10000):
     """The plan's counting, over the raters who answered every scene. A rater who stopped partway
-    isn't counted at all (director's rule, set 2026-10-19 before any ratings came in)."""
+    isn't counted at all (director's rule, set before any ratings came in)."""
     scenes = {s["id"] for s in json.loads((data / "manifest.json").read_text())["sets"]}
     every = last_answers(data)
     answered = {}

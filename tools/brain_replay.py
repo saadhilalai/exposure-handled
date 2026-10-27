@@ -96,12 +96,12 @@ def main():
     ap.add_argument("--look", default="cinematic")
     look = ap.parse_args().look
 
-    over = SESSIONS / "2026-10-17_183226_step3-start"
+    over = max(SESSIONS.glob("*_step3-start"), default=SESSIONS / "step3-start")
     if over.exists():
         replay("Real frame: after your shoot, ISO 102400 (overexposed)", [(0.0, over / "liveview.jpg")],
                load_settings(over / "settings_start.json"), look, hold_s=4.0)
 
-    iso = SESSIONS / "2026-10-17_184612_step3-iso-test"
+    iso = max(SESSIONS.glob("*_step3-iso-test"), default=SESSIONS / "step3-iso-test")
     if iso.exists():
         index = json.loads((iso / "iso_frames" / "index.json").read_text())
         res = json.loads((iso / "step3_results.json").read_text())["iso_test"]

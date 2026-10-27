@@ -186,7 +186,7 @@ class Brain:
     def __init__(self, look="cinematic", ranges=None, allow_while_recording=False, out_of_range="warn",
                  allowed=None):
         """out_of_range: what to do when ISO or aperture starts OUTSIDE the director's ranges.
-        "warn" (director's decision, 2026-10-17): pause exposure changes and say so.
+        "warn" (director's decision): pause exposure changes and say so.
         "bring_in": propose the nearest approved value, even if that's a big jump.
         allowed: Sony setting names the brain may actually change (None = all). Anything else
         becomes advice ("Would change, not approved yet: ...") and the brain moves on."""

@@ -69,7 +69,7 @@ def test_bad_and_fake_folders_are_skipped_not_fatal(tmp_path, capsys):
     good = take(tmp_path, [row(t / 4) for t in range(40)])
     empty = tmp_path / "S1_R1_A_manual"
     empty.mkdir()
-    fake_take = tmp_path / "2026-10-18_220854_S1_R1_A_agent-fake"
+    fake_take = tmp_path / "0000-00-00_220854_S1_R1_A_agent-fake"
     fake_take.mkdir()
     for name in ("metrics.csv", "runner_log.jsonl"):
         (fake_take / name).write_text((good / name).read_text())
@@ -94,7 +94,7 @@ def test_a_name_that_disagrees_with_the_mode_is_flagged(tmp_path):
 def test_unrecognized_faces_use_the_takes_persons_target(tmp_path):
     # Clarification 2: a face nobody recognized is scored against the take's person (A), not the look's +0.5.
     from tools.score_take import score
-    folder = tmp_path / "2026-10-24_101500_S1_R1_A_agent"
+    folder = tmp_path / "0000-00-00_101500_S1_R1_A_agent"
     folder.mkdir()
     cols = COLS + ["who"]
     rows = [dict(row(t / 4, face=0.0), target=0.5, who="") for t in range(20)] + \
@@ -110,7 +110,7 @@ def test_unrecognized_faces_use_the_takes_persons_target(tmp_path):
 
 def test_a_person_without_a_saved_target_is_scored_as_logged(tmp_path):
     from tools.score_take import score
-    folder = tmp_path / "2026-10-24_101500_S4_R2_B_manual"
+    folder = tmp_path / "0000-00-00_101500_S4_R2_B_manual"
     folder.mkdir()
     cols = COLS + ["who"]
     rows = [dict(row(t / 4, face=0.0), target=0.5, who="") for t in range(12)]

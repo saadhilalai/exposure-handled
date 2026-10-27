@@ -235,7 +235,7 @@ def main():
             sys.exit("--allow-exposure-while-recording is for rehearsals only: add --rehearsal")
         args.allow_exposure = True
     if args.rehearsal and not args.face_refs:
-        args.face_refs = str(ROOT / "sessions" / "REHEARSAL" / "face_refs.json")   # tonight's faces stay with tonight
+        args.face_refs = str(ROOT / "sessions" / "REHEARSAL" / "face_refs.json")   # rehearsal faces stay with the rehearsal
 
     if args.take and not args.rehearsal and STEP7_NAME.match(args.take):
         names = run_sheet_takes()

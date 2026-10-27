@@ -167,7 +167,7 @@ def apply(folder):
     backup = CALIBRATION_FILE.with_suffix(".before-%s.json" % datetime.now().strftime("%Y%m%d-%H%M%S"))
     shutil.copy(CALIBRATION_FILE, backup)
     s = cal["slog3"]
-    stamp = "MEASURED %s (calibrate_grey.py, %s)" % (datetime.now().date(), Path(folder).name)
+    stamp = "MEASURED (calibrate_grey.py, %s)" % Path(folder).name.split("_", 2)[-1]
     for key in ("grey_level", "levels_per_stop", "clip_level", "floor_level"):
         if result.get(key) is not None:
             s[key] = result[key]

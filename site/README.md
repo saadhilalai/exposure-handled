@@ -21,7 +21,7 @@ You're holding a cinema camera, and the AI is your assistant inside it. People l
 | 3 | Your turn | Four camera dials and four lighting setups. Break the picture, then let the AI fix it. Change the light and it reacts. |
 | 4 | Beat the AI | 15 seconds to fix a bad shot. The AI starts from the same shot, and both get scored. |
 | 5 | See what it sees | Drag the slider: AI fix, S-Log3, false color, zebras. |
-| 6 | Tested on a real camera | The agent's own log from the Oct 19 Sony cinema camera test, as a chart and four gauges. |
+| 6 | Tested on a real camera | The agent's own log from the live Sony cinema camera test, as a chart and four gauges. |
 | 7 | Never touch | Locked buttons you can try to press, and the approved ranges as arcs. |
 | 8 | Every decision, live | The dashboard. |
 | 9 | Finale | The camera snaps back together. |
@@ -38,7 +38,7 @@ You're holding a cinema camera, and the AI is your assistant inside it. People l
 
 | On the page | Status | Where it comes from |
 |---|---|---|
-| The Oct 19 chart, gauges, ISO sequence, 33 ms kill switch | **Real** (teal tag) | `data/site.json`, exported from the session logs by `tools/export_site_data.py` |
+| The live-test chart, gauges, ISO sequence, 33 ms kill switch | **Real** (teal tag) | `data/site.json`, exported from the session logs by `tools/export_site_data.py` |
 | Approved ranges and locked settings | **Real** | `config/safe_ranges.json` and the agent's safety rules |
 | Dashboard screenshots | **Placeholder** (amber tag) | `media/screens/`, the real dashboard running on the fake camera, playing a still of the site's illustrated scene; to be replaced by a recording on the camera |
 | The camera picture in the viewfinder, simulator, game and slider | **Illustration** (tagged in Nerd mode) | Rendered live in the browser by `js/sim.js`; not footage |
@@ -57,7 +57,7 @@ It stays inside the real approved ranges. Nerd mode says so on the page.
 
 - Add real camera footage from the shoot (for example as a mode of the before/after slider), and swap the dashboard screenshots for a recording on the camera.
 - Add the Step 7 results.
-- Done at launch (2026-10-21): "See the code" points at the public repo, `noindex` and the Draft chip are gone, and the link-preview image (`media/og.jpg`, 1200×630) has its real address.
+- Done at launch: "See the code" points at the public repo, `noindex` and the Draft chip are gone, and the link-preview image (`media/og.jpg`, 1200×630) has its real address.
 
 ## How it's built
 
@@ -96,7 +96,7 @@ It stays inside the real approved ranges. Nerd mode says so on the page.
   - **The 3D rear screen** gets one still frame, because copying a live picture between the two graphics contexts stalled frames.
   - **Without a graphics chip** (software rendering): no 3D (the camera chapter reads as a normal page), small camera pictures that redraw only when something changes, and no blur, glow or moving grain.
   - **The cursor** is drawn by the system, so it tracks the mouse exactly. Over anything clickable, orange brackets snap around the element itself (`lockFrame` in `js/ui.js`). They follow the element, not the mouse, so they can't lag.
-  - **Measured in Chrome on the M2** (October 20–21): 60 fps everywhere on a retina screen, with the CPU slowed 4× and 6×, with a graphics chip emulated 2× and 9× weaker (the page renders that many more pixels), with both slowed at once, and with no GPU at all. Not tested on real Windows, Intel or iPhone hardware.
+  - **Measured in Chrome on the M2**: 60 fps everywhere on a retina screen, with the CPU slowed 4× and 6×, with a graphics chip emulated 2× and 9× weaker (the page renders that many more pixels), with both slowed at once, and with no GPU at all. Not tested on real Windows, Intel or iPhone hardware.
   - **Testing knobs:** `?quality=high|medium|low` forces a level, `?gpuload=N` acts like a weaker chip, `?debug` exposes internals.
 - **Reduced motion:** with `prefers-reduced-motion`, nothing scrubs or flies. The camera chapter reads as a normal page over a still exploded view.
 - **If 3D can't start:** the page retries once, then shows the camera chapter as a normal page.

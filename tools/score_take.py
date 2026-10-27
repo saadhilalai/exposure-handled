@@ -8,7 +8,7 @@ watches the camera's own auto or your manual control, so all three are measured 
 Definitions (frozen in docs/step7-test-plan.md; changing them after the shoot breaks the test):
   clipping   mean % of the frame clipped in important areas, and % of the time over the look's limit
   face       mean |face - target| in stops, and % of the time within 1/3 stop (rows with a face only).
-             Clarification 2 (2026-10-21, before shooting): a row whose face wasn't recognized is scored against
+             Clarification 2 (before shooting): a row whose face wasn't recognized is scored against
              the target of the person named in the take (A in S1_R1_A_agent), not the look's default.
   settle     for each mark: seconds until the face (no face: the scene key) is back on target
              (face within 1/3 stop of its target; key within 1/3 stop of the look's window, the same

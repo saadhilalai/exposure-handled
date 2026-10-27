@@ -1,6 +1,5 @@
 {
- "source": "Real Sony cinema camera over USB, 2026-10-19, white wall and one lamp, card out (2026-10-19_184821_live-selftest)",
- "date": "2026-10-19",
+ "source": "Real Sony cinema camera over USB, white wall and one lamp, card out (the live self-test session)",
  "tests": {
   "test1": {
    "name": "live ISO test",
@@ -1374,7 +1373,6 @@
    "change_allowed": true,
    "switch": "allow_exposure",
    "approved_range": "1/100 to 1/48 (video only)",
-   "approved_on": "2026-10-19",
    "min_seconds": 0.01,
    "max_seconds": 0.020833
   },
@@ -1382,7 +1380,6 @@
    "change_allowed": true,
    "switch": "allow_exposure",
    "approved_range": "f/2.8 to f/11",
-   "approved_on": "2026-10-19",
    "min_f": 2.8,
    "max_f": 11.0
   },
@@ -1390,15 +1387,13 @@
    "change_allowed": true,
    "switch": "allow_exposure",
    "approved_range": "2800K to 7500K",
-   "approved_on": "2026-10-19",
    "min_k": 2800,
    "max_k": 7500
   },
   "WhiteBalance": {
    "change_allowed": true,
    "switch": "allow_exposure",
-   "approved_range": "AWB or ColorTemp mode only (Color Temp is needed to set Kelvin; AWB is how the camera was found); presets and Custom blocked, confirmed by the director 2026-10-19",
-   "approved_on": "2026-10-19",
+   "approved_range": "AWB or ColorTemp mode only (Color Temp is needed to set Kelvin; AWB is how the camera was found); presets and Custom blocked, confirmed by the director",
    "modes_raw": [
     0,
     256

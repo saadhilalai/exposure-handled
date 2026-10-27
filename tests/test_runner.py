@@ -196,7 +196,7 @@ def test_rec_start_and_stop_are_logged(fake, tmp_path):
 
 
 def test_with_auto_off_the_status_holds_steady(fake, tmp_path):
-    # Rehearsal prep (found 2026-10-20): while it only suggests, the status used to flip every 1.5 s between the
+    # Rehearsal prep: while it only suggests, the status used to flip every 1.5 s between the
     # suggestion and "waiting to be sure", because the brain thought it had made the change and started over.
     cam, path = fake(scene_offset=TOO_DARK)
     r = runner_for(cam, path, tmp_path, live=False)

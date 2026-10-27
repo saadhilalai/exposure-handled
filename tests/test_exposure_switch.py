@@ -1,4 +1,4 @@
-"""The exposure switch (director, 2026-10-19): aperture f/2.8-f/11, shutter 1/48-1/100 and WB
+"""The exposure switch (director): aperture f/2.8-f/11, shutter 1/48-1/100 and WB
 (Auto or Color Temp 2800-7500K) may change too, but only with the switch on in BOTH layers.
 Off by default: ISO only. Also checks that the compiled C++ allow-list and the Python ranges agree."""
 import os

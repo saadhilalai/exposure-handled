@@ -1,6 +1,6 @@
 # Exposure, Handled.: three launch films
 
-**Status:** the director's redo of all three (2026-10-22), finished with the 3D shots from the gaming PC (2026-10-26). After the director's review: a new, less robotic narrator, the voice a touch quieter and the music a bit louder, and the calm opening as a mission radio call. Picture, cuts and timing unchanged. Nothing is on the website until the director approves.
+**Status:** the director's redo of all three, finished with the 3D shots from the gaming PC. After the director's review: a new, less robotic narrator, the voice a touch quieter and the music a bit louder, and the calm opening as a mission radio call. Picture, cuts and timing unchanged. Nothing is on the website until the director approves.
 
 **Where they are (not in git):** `v1-abstract/renders/v1-abstract-4k.mp4`, `v2-hype/renders/v2-hype-4k.mp4`,
 `v3-story/renders/v3-story-4k.mp4`. All 3840×2160, 24 fps, stereo AAC; the narration sits at the same level (about -14.5 LUFS) in all three, voice on top.
@@ -48,7 +48,7 @@ How they're made:
 | 25.0 | Lens rings and an 11-blade aperture that becomes an eye, and blinks | "What if your camera could see it change... the way a cinematographer does?" |
 | 32.5 | A frame stepping through stops, a needle finding the middle | "Reading every stop. Keeping your look." · **Every stop** · **Your look** |
 | 38.5 | The camera as a black silhouette on paper; a sweep of light reveals it | "So you can stay... in the moment." · **The moment** |
-| 43.5 | Quickening cuts: lens glint, the dial, the ring, with art flashes between (each 0.3 s longer than the overnight cut) | |
+| 43.5 | Quickening cuts: lens glint, the dial, the ring, with art flashes between (each 0.3 s longer than the first-draft cut) | |
 | 49.05 | Pure black, held 2.5 s | |
 | 51.55 | "Exposure, Handled." on ten surfaces in one band of the screen, cuts shrinking 0.42 → 0.16 s | a soft tick on each cut |
 | 54.26 | Pure black | **Exposure, *Handled*.** · "Exposure... handled." · the website link |
@@ -84,7 +84,7 @@ How they're made:
 | 46.0 | Sunbeams through a forest | |
 | 48.6 | Pure black | **Exposure, *Handled*.** · "Exposure... handled." · the website link |
 
-## The overnight drafts (replaced)
+## The first drafts (replaced)
 
-The first three drafts (2026-10-22, overnight) used an original camera design, the voice "Imogen", "Petrichor" and
+The first three drafts used an original camera design, the voice "Imogen", "Petrichor" and
 "Cassini" (Scott Buckley), the de Retz quote, and Saad's own Osmo footage in the story. The director asked for this redo.

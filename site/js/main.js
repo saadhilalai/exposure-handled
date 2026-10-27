@@ -387,7 +387,7 @@ function inside() {
     S.mode = { iso: "iso", iris: "iris", wb: "wb" }[active] || "idle";
     S.focus = { iso: "sensor", iris: "iris", wb: "chip" }[active] || (p < 0.1 ? "lcd" : "body");
     if (active !== lastBeat) { if (active) sound.whoosh(); lastBeat = active; }
-    // ISO: the real Oct 19 sequence
+    // ISO: the real live-test sequence
     const li = smooth(0.32, 0.43, p), k = Math.min(5, Math.floor(li * 5.999));
     if (k !== lastIso) { lastIso = k; setIso(isoSeq[k], p > W.iso[0] && p < W.iso[1]); }
     S.sensorGain = p < W.iso[0] - 0.05 ? 0 : 1 - (k / 5) * 0.75;
@@ -650,7 +650,7 @@ function buildChart(fig, t) {
     return `<line class="tick-line" x1="${x}" x2="${x}" y1="${T}" y2="${H - B}"/><circle class="tick-dot" cx="${x}" cy="${y}" r="5"/>${lab ? `<text class="tick-lab" x="${x + 9}" y="${y - 10}">${lab}</text>` : ""}`;
   }).join("");
   fig.innerHTML = `<div class="chart-head nerd"><span class="label">Scene exposure in stops · seconds after auto turned on</span></div>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Real test on Oct 19: the scene started ${ks[0] > 0 ? "+" : ""}${ks[0].toFixed(1)} stops over; five ISO changes brought it to ${ks[ks.length - 1].toFixed(1)} stops, inside the −1 to +1 window, in ${t.settle_s} seconds.">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Real live test: the scene started ${ks[0] > 0 ? "+" : ""}${ks[0].toFixed(1)} stops over; five ISO changes brought it to ${ks[ks.length - 1].toFixed(1)} stops, inside the −1 to +1 window, in ${t.settle_s} seconds.">
       <rect class="band" x="${L}" y="${Y(w1)}" width="${W - L - R}" height="${Y(w0) - Y(w1)}"/>
       <line class="band-edge" x1="${L}" x2="${W - R}" y1="${Y(w1)}" y2="${Y(w1)}"/><line class="band-edge" x1="${L}" x2="${W - R}" y1="${Y(w0)}" y2="${Y(w0)}"/>
       <text class="band-lab" x="${W - R - 8}" y="${Y(w0) - 10}" text-anchor="end">INSIDE THE WINDOW</text>

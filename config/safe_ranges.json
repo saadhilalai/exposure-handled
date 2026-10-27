@@ -1,19 +1,17 @@
 {
   "approved_by": "Saad Hilal (director)",
-  "approved_on": "2026-10-17",
   "note": "Python safety layer. The C++ bridge has its own compiled-in allow-list; both must agree before anything changes. Anything not listed here is blocked. Settings marked \"switch\": \"allow_exposure\" may only change when that switch is on in BOTH layers (bridge started with --allow-exposure, runner/gate with exposure=True); otherwise only ISO changes.",
   "settings": {
     "IsoSensitivity": {
       "change_allowed": true,
       "min_iso": 800,
       "max_iso": 12800,
-      "note": "Approved 2026-10-17. The default: the only setting that changes without the exposure switch."
+      "note": "Approved first. The default: the only setting that changes without the exposure switch."
     },
     "ShutterSpeed": {
       "change_allowed": true,
       "switch": "allow_exposure",
       "approved_range": "1/100 to 1/48 (video only)",
-      "approved_on": "2026-10-19",
       "min_seconds": 0.01,
       "max_seconds": 0.020833
     },
@@ -21,7 +19,6 @@
       "change_allowed": true,
       "switch": "allow_exposure",
       "approved_range": "f/2.8 to f/11",
-      "approved_on": "2026-10-19",
       "min_f": 2.8,
       "max_f": 11.0
     },
@@ -29,15 +26,13 @@
       "change_allowed": true,
       "switch": "allow_exposure",
       "approved_range": "2800K to 7500K",
-      "approved_on": "2026-10-19",
       "min_k": 2800,
       "max_k": 7500
     },
     "WhiteBalance": {
       "change_allowed": true,
       "switch": "allow_exposure",
-      "approved_range": "AWB or ColorTemp mode only (Color Temp is needed to set Kelvin; AWB is how the camera was found); presets and Custom blocked, confirmed by the director 2026-10-19",
-      "approved_on": "2026-10-19",
+      "approved_range": "AWB or ColorTemp mode only (Color Temp is needed to set Kelvin; AWB is how the camera was found); presets and Custom blocked, confirmed by the director",
       "modes_raw": [0, 256]
     },
     "FocusMode": {

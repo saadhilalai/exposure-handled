@@ -16,7 +16,7 @@ def ev(t, event, **kw):
 
 
 def test_window_starts_3_s_before_the_first_mark_after_rec(tmp_path):
-    f = session(tmp_path, "2026-10-24_100000_S1_R5_A_agent",
+    f = session(tmp_path, "0000-00-00_100000_S1_R5_A_agent",
                 [ev(0, "start"), ev(4.0, "rec", recording=True, text="Camera started recording"),
                  ev(19.0, "mark"), ev(39.0, "mark"), ev(54.0, "rec", recording=False), ev(55, "end")])
     t_in, t_out, notes = bc.window(f)
@@ -25,7 +25,7 @@ def test_window_starts_3_s_before_the_first_mark_after_rec(tmp_path):
 
 
 def test_s5_uses_the_middle_12_s_of_the_block(tmp_path):
-    f = session(tmp_path, "2026-10-24_180000_S5_R2_agent",
+    f = session(tmp_path, "0000-00-00_180000_S5_R2_agent",
                 [ev(0, "start"), ev(2.0, "rec", recording=True, text="Camera started recording"),
                  ev(122.0, "rec", recording=False), ev(123, "end")])
     assert bc.window(f, s5=True)[:2] == (54.0, 66.0)
@@ -41,13 +41,13 @@ def test_problems_are_named_not_guessed(tmp_path):
 
 
 def test_the_plan_finds_the_latest_session_and_honours_a_replacement_round(tmp_path):
-    session(tmp_path, "2026-10-24_100000_S1_R5_A_agent", [ev(0, "start")])
-    session(tmp_path, "2026-10-24_101500_S1_R5_A_agent", [ev(0, "start"), ev(1.0, "rec", recording=True, text="x"), ev(10.0, "mark"), ev(30, "end")])
-    session(tmp_path, "2026-10-24_100000_S1_R5_A_agent-fake", [ev(0, "start")])
+    session(tmp_path, "0000-00-00_100000_S1_R5_A_agent", [ev(0, "start")])
+    session(tmp_path, "0000-00-00_101500_S1_R5_A_agent", [ev(0, "start"), ev(1.0, "rec", recording=True, text="x"), ev(10.0, "mark"), ev(30, "end")])
+    session(tmp_path, "0000-00-00_100000_S1_R5_A_agent-fake", [ev(0, "start")])
     rows = {(r["set"], r["method"]): r for r in bc.plan(sessions=tmp_path)}
     assert len(rows) == 21
     r = rows[("S1_A", "agent")]
-    assert r["session"] == "2026-10-24_101500_S1_R5_A_agent" and r["in"] == 6.0 and "2 sessions" in r["notes"][0]
+    assert r["session"] == "0000-00-00_101500_S1_R5_A_agent" and r["in"] == 6.0 and "2 sessions" in r["notes"][0]
     assert rows[("S1_A", "manual")]["notes"] == ["no session yet"]
     swapped = {(r["set"], r["method"]): r for r in bc.plan({"S1_A": "R6"}, sessions=tmp_path)}
     assert swapped[("S1_A", "agent")]["take"] == "S1_R6_A_agent"

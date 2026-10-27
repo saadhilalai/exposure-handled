@@ -1,6 +1,6 @@
 # Step 5: The brain (the cinematographer) and the runner
 
-The brain was built and tested with **no camera**, in a camera simulator and on recorded frames. The runner (eyes → brain → safety gate → bridge, with a kill switch) is built and tested against a **fake camera**. That was the state when this was written. **The live test has since run on the camera (2026-10-19): [step5-live-test.md](step5-live-test.md).**
+The brain was built and tested with **no camera**, in a camera simulator and on recorded frames. The runner (eyes → brain → safety gate → bridge, with a kill switch) is built and tested against a **fake camera**. That was the state when this was written. **The live test has since run on the camera: [step5-live-test.md](step5-live-test.md).**
 
 ## How it decides (`agent/brain.py`)
 
@@ -10,7 +10,7 @@ Explainable rules, no black box. Each update looks at what the eyes measured (sm
 |---|---|---|
 | 0 | Recording lock | While the camera records, nothing changes (unless you allow it). |
 | 1 | 180° shutter | Shutter = 1/(2 × frame rate), e.g. 1/48 at 23.98p. If the slower shutter would clip highlights, it lowers ISO first; if it can't, it asks for ND instead of moving. |
-| 2 | Outside your ranges | If ISO or aperture starts outside your approved range, it **pauses exposure changes and tells you** (your decision, 2026-10-17). |
+| 2 | Outside your ranges | If ISO or aperture starts outside your approved range, it **pauses exposure changes and tells you** (your decision). |
 | 3 | Aperture from the look | Each look has its f-stop (shallow f/2.8, run-and-gun f/5.6…). |
 | 4 | Exposure | **Protect important highlights first** (skies, windows, faces; small lamps and screens may clip), **then faces**, then the overall scene. ISO fills the gap, staying on **base ISO 800 / 4000** when possible, then aperture inside the look's range, then **ND advice**. In Cine EI it never touches ISO (the recorded ISO is locked there). |
 | 5 | White balance | Only between takes, only when the light's color estimate is trusted and steady for about 3 s. On Auto WB it advises: "set a Kelvin value before rolling". |
@@ -40,7 +40,7 @@ Starting points; every number is yours to tune. Exposure is in stops vs 18% grey
 | **Low light** | f/2.8 | ISO up to 12800, preferring high base 4000; accepts a darker key; asks for light | +0.5 | 1 s | 1% |
 | **Photo portrait** | f/2.8 (–f/4) | Base ISO first; shutter left to you (approved range is video only) | +0.5 | 1 s | 0.5% |
 
-**Face target +0.5 for every look** (your decision, 2026-10-17; it was +1.0). +1.0 suited lighter skin and pushed darker skin too bright. The planned Step 6 "this face looks right" button lets you set each person once, so the agent holds *your* exposure for that face instead of one number for everyone.
+**Face target +0.5 for every look** (your decision; it was +1.0). +1.0 suited lighter skin and pushed darker skin too bright. The planned Step 6 "this face looks right" button lets you set each person once, so the agent holds *your* exposure for that face instead of one number for everyone.
 
 ## Tests without a camera
 

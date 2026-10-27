@@ -1,6 +1,6 @@
 # Step 2: First connection (read-only)
 
-Date: 2026-10-17. Camera: Sony cinema camera, firmware 1.01, USB (Remote Shoot/Trn.). Mac: macOS 27.0, Apple Silicon. SDK 2.02.00.
+Camera: Sony cinema camera, firmware 1.01, USB (Remote Shoot/Trn.). Mac: macOS 27.0, Apple Silicon. SDK 2.02.00.
 
 ## What we built
 

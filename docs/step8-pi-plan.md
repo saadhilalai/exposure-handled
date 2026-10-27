@@ -1,6 +1,6 @@
 # Step 8: Raspberry Pi 5 plan (plan only, nothing bought)
 
-Researched 2026-10-17; finished overnight 2026-10-17 after the dashboard was built (Step 6). Prices move fast right now (memory shortages); re-check before buying. Anything marked **UNVERIFIED** couldn't be confirmed from a reliable source. **Nothing has been bought.**
+Researched after the dashboard was built (Step 6). Prices move fast (memory shortages); re-check before buying. Anything marked **UNVERIFIED** couldn't be confirmed from a reliable source. **Nothing has been bought.**
 
 ## Will Sony's SDK work on a Pi 5 with the camera?
 
@@ -53,7 +53,7 @@ Measured on this Mac with `tools/bench_eyes.py` (one CPU core, real frames), the
 - First job on the Pi: run `tools/bench_eyes.py` to replace this estimate with a measurement.
 - The Jetson Orin Nano Super is now $399 (it was $249). It's only worth it if the Pi 5 + SDK route fails (it is on Sony's tested list).
 
-## Parts list (US prices, 2026-10-17, before shipping and tax)
+## Parts list (US prices when researched, before shipping and tax)
 
 | Item | Recommended | Price | Notes |
 |---|---|---|---|
@@ -90,7 +90,7 @@ Measured on the Mac with the fake camera, the agent at 24 fps **plus** a browser
 | Face signature ("this face looks right"), once per second per face | 5.9 ms | ~17 ms |
 | Clean view | 0 ms (passes the camera's own JPEG through) | 0 ms |
 
-**RAM: 4GB (director's decision, 2026-10-18).** The agent uses ~150 MB.
+**RAM: 4GB (director's decision).** The agent uses ~150 MB.
 
 ## Phone access (the dashboard on the rig)
 

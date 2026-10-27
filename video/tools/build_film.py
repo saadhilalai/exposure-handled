@@ -1,7 +1,7 @@
 """Everything the narrated film needs besides its 3D shots (video/tools/capture_film.py makes those).
 
     python video/tools/build_film.py assets      copy the real frames, dashboard screenshots and the stand-in clip in
-    python video/tools/build_film.py data        site/data/site.json (the Oct 19 logs) -> data.js: every logged number
+    python video/tools/build_film.py data        site/data/site.json (the live-test logs) -> data.js: every logged number
                                                  the film shows comes from here, never typed by hand
     python video/tools/build_film.py captions    cues.json -> captions.js (burned-in subtitles) + captions.vtt (players)
     python video/tools/build_film.py mix         the soundtrack: music, ducked under the voice, out for a beat at the
@@ -69,7 +69,7 @@ def data():
         out[k] = {"look": t["look"], "window": t["window"], "settle_s": t["settle_s"], "settled_status": t["settled_status"],
                   "hold_s": t["hold_s"], "changes_during_hold": t["changes_during_hold"], "kill": t["kill"],
                   "changes": t["changes"], "trace": [[p[0], p[1]] for p in t["trace"]]}
-    (FILM / "data.js").write_text("// Made by video/tools/build_film.py from site/data/site.json (the Oct 19 Sony cinema camera logs). Don't edit by hand.\n"
+    (FILM / "data.js").write_text("// Made by video/tools/build_film.py from site/data/site.json (the live-test logs from the Sony cinema camera). Don't edit by hand.\n"
                                   "window.FILMDATA = %s;\n" % json.dumps(out, ensure_ascii=False))
     print("wrote data.js from site/data/site.json (%s)" % site["source"])
 

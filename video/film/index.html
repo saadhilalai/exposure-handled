@@ -6,7 +6,7 @@
     <title>Exposure, Handled.</title>
     <!-- The narrated film. Script and sources: video/SCRIPT.md. Lines and timing: cues.json (-> captions.js).
          3D shots: video/tools/capture_film.py. Audio: video/tools/build_film.py mix. Every number on screen comes from
-         the Oct 19 Sony cinema camera test (site/data/site.json), and every shot carries its tag: REAL, ILLUSTRATION, PLACEHOLDER or
+         the live Sony cinema camera test (site/data/site.json), and every shot carries its tag: REAL, ILLUSTRATION, PLACEHOLDER or
          STAND-IN. -->
     <script src="assets/vendor/gsap.min.js"></script>
     <script src="captions.js"></script>
@@ -239,7 +239,7 @@
 
       <!-- C · 21.6–23.6 · the card -->
       <div id="sC" class="sec card" data-from="21.6" data-to="23.6">
-        <div class="t"><span class="w">October</span> <span class="w">19.</span></div>
+        <div class="t"><span class="w">A</span> <span class="w">real</span> <span class="w">test.</span></div>
         <div class="s">A REAL SONY CINEMA CAMERA · OVER USB · A WHITE WALL AND ONE LAMP</div>
       </div>
 
@@ -291,17 +291,17 @@
         <div class="foot3" id="foot3">2800 K is the lowest white balance you approved. Settled in 12.5 s. Live-view frames, as the agent saw them.</div>
       </div>
 
-      <!-- F · 42.0–47.2 · the dashboard (PLACEHOLDER: real software, fake camera), into the real Oct 19 log -->
+      <!-- F · 42.0–47.2 · the dashboard (PLACEHOLDER: real software, fake camera), into the real live-test log -->
       <div id="sF" class="sec" data-from="42.0" data-to="47.2">
         <div id="dash"><img src="assets/dash/auto.jpg" alt="" /></div>
         <div id="logwrap" class="abs" style="inset:0; opacity:0; background: var(--bg)">
-          <div id="log2"><div class="logh"><span>DECISIONS · OCT 19, REAL Sony cinema camera</span><span style="color: var(--ink-3)">TESTS 1 AND 3, OLDEST FIRST</span></div></div>
+          <div id="log2"><div class="logh"><span>DECISIONS · LIVE TEST, REAL Sony cinema camera</span><span style="color: var(--ink-3)">TESTS 1 AND 3, OLDEST FIRST</span></div></div>
           <div id="counts">
             <div><span class="num" id="d-sent"></span><b>CHANGES SENT</b></div>
             <div class="ok"><span class="num" id="d-conf"></span><b>CONFIRMED BY THE CAMERA</b></div>
             <div><span class="num" id="d-ref"></span><b>REFUSED</b></div>
           </div>
-          <div class="countnote" id="cnote">The whole Oct 19 session, the test’s own setup and restores included.</div>
+          <div class="countnote" id="cnote">The whole live-test session, the test’s own setup and restores included.</div>
         </div>
       </div>
 
@@ -316,7 +316,7 @@
         <div class="ms">
           <div class="n num" id="msn"><span id="d-kill"></span><small>ms</small></div>
           <div class="l" id="msl">AGENT STOPPED · BRIDGE LOCKED · THE CAMERA KEEPS ITS SETTINGS</div>
-          <div class="src" id="mss"><i></i>REAL · Sony cinema camera · OCT 19</div>
+          <div class="src" id="mss"><i></i>REAL · Sony cinema camera · LIVE TEST</div>
         </div>
       </div>
 
@@ -347,7 +347,7 @@
           <div class="fine" id="cfine">
             <div><b>Narration:</b> an AI voice, speaking as the agent. The lines retell its real logs.</div>
             <div><b>Music:</b> “Penumbra” by Scott Buckley · CC BY 4.0 · scottbuckley.com.au</div>
-            <div><b>Real:</b> the Oct 19 test on a Sony cinema camera · <b>Illustration:</b> the website’s 3D camera and simulator · <b>Stand-in:</b> until the Step 7 shoot</div>
+            <div><b>Real:</b> the live test on a Sony cinema camera · <b>Illustration:</b> the website’s 3D camera and simulator · <b>Stand-in:</b> until the Step 7 shoot</div>
           </div>
         </div>
       </div>
@@ -357,8 +357,8 @@
       <div class="tag ill" id="tagIll1"><i></i>ILLUSTRATION</div>
       <div class="tag ill" id="tagIll2"><i></i>ILLUSTRATION</div>
       <div class="tag ill" id="tagIll3"><i></i>ILLUSTRATION</div>
-      <div class="tag real" id="tagReal1"><i></i>REAL · SONY CINEMA CAMERA · OCT 19</div>
-      <div class="tag real" id="tagReal2"><i></i>REAL · SONY CINEMA CAMERA · OCT 19</div>
+      <div class="tag real" id="tagReal1"><i></i>REAL · SONY CINEMA CAMERA · LIVE TEST</div>
+      <div class="tag real" id="tagReal2"><i></i>REAL · SONY CINEMA CAMERA · LIVE TEST</div>
       <div class="tag ph" id="tagPh"><i></i>PLACEHOLDER · REAL DASHBOARD, FAKE CAMERA</div>
       <div class="tag stand" id="tagStand"><i></i>STAND-IN · UNTIL THE STEP 7 FOOTAGE</div>
       <div id="subs"></div>
@@ -374,7 +374,7 @@
       (function () {
         var tl = gsap.timeline({ paused: true });
         var $ = function (s) { return document.querySelector(s); };
-        var D = window.FILMDATA;                       // the Oct 19 logs (data.js, made from site/data/site.json)
+        var D = window.FILMDATA;                       // the live-test logs (data.js, made from site/data/site.json)
         var LABEL = { IsoSensitivity: "ISO", ShutterSpeed: "SHUTTER", FNumber: "IRIS", Colortemp: "WB" };
         function what(c) { return LABEL[c.setting] + " " + c.from.replace(/^ISO /, "") + " → " + c.to.replace(/^ISO /, ""); }
         function why(c) { return c.reason.replace(/: ISO \d+ → \d+/, ""); }
@@ -468,7 +468,7 @@
         later("#inwrap", { opacity: 1 }, { opacity: 0, duration: 0.05 }, 21.45);
         later("#flash", { opacity: 0.9 }, { opacity: 0, duration: 0.3, ease: "power2.out" }, 21.45);
 
-        // ========== C · October 19 ==========
+        // ========== C · the live test ==========
         build("#sC .w", 21.65, { stagger: 0.14, dur: 1.2 });
         fadeIn("#sC .s", 22.1, 0.7, 10);
         fadeOut("#sC .t, #sC .s", 23.15, 0.35);

@@ -35,7 +35,7 @@ The first version used the plain middle value of all region changes and was fool
 - Early evidence the guess is close: a capped lens reads 9/255, exactly what the guess predicts for S-Log3 black, and the real ISO third-stop measured as +0.31 stops.
 - **Open:** the camera's own meter read −3.3 (if its units are 1000 per stop) while the eyes said −6.5 stops for the same dark room. The calibration measures the meter's units and should explain the gap.
 
-## Calibration result (2026-10-17, matte white wall, read-only)
+## Calibration result (matte white wall, read-only)
 
 The director changed ISO/aperture by hand; the bridge ran `--read-only` (0 change requests). Settings: S-Log3 Flexible ISO, 1/50, AWB.
 
@@ -72,7 +72,7 @@ What it means:
 
 Zebras (red/white = clipped, yellow = within ½ stop of clip), false color in stops vs grey, face boxes with stops, a region view (light sources / changed), and a numbers panel. Screenshots are saved per session (not committed: they show the director's face and room).
 
-**Live screenshots (2026-10-17, 22:14, read-only, 0 change requests).** Setup: director in frame, ISO 1600, 1/50, f/5.6, AWB, a lamp in the top-right of the frame.
+**Live screenshots (read-only, 0 change requests).** Setup: director in frame, ISO 1600, 1/50, f/5.6, AWB, a lamp in the top-right of the frame.
 
 - Eyes ran at 24.0 fps (median 9.9 ms per frame).
 - **Face found** (94% confidence), measured −2.3 st; scene key −0.5 st.

@@ -1,6 +1,6 @@
 """Unattended live test on the real camera, with the dashboard up the whole time.
 
-The director's go (2026-10-19): camera on a tripod at a white wall lit by a lamp, card out,
+The director's go: camera on a tripod at a white wall lit by a lamp, card out,
 nothing can record; run it without typing LIVE or watching.
 
   Phase 1, live ISO test (bridge allows ISO only):
@@ -848,11 +848,10 @@ def save_wb_calibration(cal, session):
         "light_k_on_wall": cal["light_k"],
         "r2": cal["r2"],
         "points": cal["points"],
-        "status": "MEASURED %s: Color Temp swept 2800-7500K on a white wall lit by one lamp (live view, S-Log3). "
+        "status": "MEASURED: Color Temp swept 2800-7500K on a white wall lit by one lamp (live view, S-Log3). "
                   "The live view shows a WB error as gain x the real error, in mireds; the eyes divide by it. "
-                  "Assumes the wall is neutral (off-white paint shifts the light reading, not the gain)." % (
-                      datetime.now().date().isoformat()),
-        "source_session": str(session.relative_to(ROOT)) + " (not committed)",
+                  "Assumes the wall is neutral (off-white paint shifts the light reading, not the gain).",
+        "source_session": "sessions/…_%s (not committed)" % session.name.split("_", 2)[-1],
     }
     CALIBRATION_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 

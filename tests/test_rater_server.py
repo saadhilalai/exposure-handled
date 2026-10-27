@@ -97,7 +97,7 @@ def test_counting_says_no_clear_difference_when_there_isnt_one(study):
 
 
 def test_only_raters_who_finished_every_scene_count(study):
-    """Director, 2026-10-19 (before any ratings): a rater who stops partway isn't counted at all."""
+    """Director (before any ratings): a rater who stops partway isn't counted at all."""
     fill(study, prefer=None)
     before = count(study.data, boot=200)
     quitter = make_links(1, "http://x", study.data)[0]
@@ -150,6 +150,6 @@ def test_ready_for_the_open_internet(study):
 
 
 def test_finds_the_tunnel_address_in_cloudflared_output():
-    line = "2026-10-19T21:30:01Z INF |  https://quiet-river-1234.trycloudflare.com                                 |"
+    line = "0000-00-00T00:00:00Z INF |  https://quiet-river-1234.trycloudflare.com                                 |"
     assert TUNNEL_URL.search(line).group(0) == "https://quiet-river-1234.trycloudflare.com"
     assert TUNNEL_URL.search("INF Requesting new quick Tunnel on trycloudflare.com...") is None

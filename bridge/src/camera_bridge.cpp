@@ -21,7 +21,7 @@
 //     value the camera currently offers, never after "lock", and never while recording, with two
 //     exceptions the director approved: started with --allow-iso-while-recording (Step 7 agent takes),
 //     ISO (and nothing else) may change while recording; started with --allow-exposure-while-recording
-//     (rehearsal shoots only, 2026-10-20), the allow-listed exposure settings may change while recording.
+//     (rehearsal shoots only), the allow-listed exposure settings may change while recording.
 //   - Commands (record, format, reset, ...) are poisoned for the whole file.
 //
 // Usage: camera_bridge <socket_path> <log_dir>
@@ -29,7 +29,7 @@
 //   --read-only: every "set" is refused for the whole run (used in Step 4).
 //   --allow-iso-while-recording: Step 7 agent takes only. Off unless given; can't be turned on later.
 //   --allow-exposure: aperture f/2.8-f/11, shutter 1/48-1/100 and WB (Auto or Color Temp 2800-7500K)
-//     may change too (director, 2026-10-19). Off unless given: ISO only.
+//     may change too (director). Off unless given: ISO only.
 //   --allow-exposure-while-recording: rehearsal shoots only. Everything --allow-exposure allows, and it may
 //     change while recording too. Off unless given; can't be turned on later.
 
@@ -65,9 +65,9 @@ namespace {
 const char* kExpectedModel = "ILME-FX2";
 
 // ---------------------------------------------------------------------------
-// Allow-list. Director-approved ranges (PROGRESS.md, 2026-10-17 and 2026-10-19).
+// Allow-list. Director-approved ranges (PROGRESS.md).
 // ISO is always on the list. Aperture, shutter and white balance (approved
-// 2026-10-19) only count when the bridge is started with --allow-exposure.
+// later) only count when the bridge is started with --allow-exposure.
 // Focus and everything else are refused.
 // ---------------------------------------------------------------------------
 struct AllowRule {

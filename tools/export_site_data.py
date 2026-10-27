@@ -1,12 +1,12 @@
 """Export the real numbers the project website shows into site/data/site.json.
 
 Everything here comes from files, not typed by hand:
-  - the Oct 19 live test on the real camera (sessions/<live self-test>/selftest_report.json, each
+  - the live test on the real camera (sessions/<live self-test>/selftest_report.json, each
     phase's metrics.csv and the bridge log), and the frame the agent was looking at for each change
   - the looks (agent/looks.py) and the approved ranges (config/safe_ranges.json)
 sessions/ stays out of the repo; site/data/site.json and the copied frames are what gets published.
 
-Usage: python tools/export_site_data.py [sessions/2026-10-19_184821_live-selftest]
+Usage: python tools/export_site_data.py [sessions/<stamp>_live-selftest]
 """
 import csv
 import json
@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from agent.looks import LOOKS  # noqa: E402
 
-LIVE = ROOT / "sessions" / "2026-10-19_184821_live-selftest"
+LIVE = max((ROOT / "sessions").glob("*_live-selftest"), default=ROOT / "sessions" / "live-selftest")
 OUT = ROOT / "site" / "data" / "site.json"
 FRAMES = ROOT / "site" / "media" / "real"
 BEFORE, AFTER = 3.0, 22.0       # seconds of the exposure trace kept around Auto switching on
@@ -78,8 +78,7 @@ def main():
     sets = [e for e in sets if e.get("event") == "set"]
     ranges = json.loads((ROOT / "config" / "safe_ranges.json").read_text())
     data = {
-        "source": "Real Sony cinema camera over USB, 2026-10-19, white wall and one lamp, card out (%s)" % session.name,
-        "date": report["started"][:10],
+        "source": "Real Sony cinema camera over USB, white wall and one lamp, card out (the live self-test session)",
         "tests": {
             "test1": phase(session, 1, report, "test1", "Cinematic 24p", [-1.0, 1.0], hold_s=60),
             "test3": phase(session, 3, report, "test3", "Interview", [-1.5, 1.5], hold_s=30),

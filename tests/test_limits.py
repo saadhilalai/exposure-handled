@@ -1,4 +1,4 @@
-"""When one of the director's limits stops a fix, the agent says which one and why (director, 2026-10-19:
+"""When one of the director's limits stops a fix, the agent says which one and why (director:
 "Light is warmer than your 2800K limit."). No camera: the brain on its own, then the runner on the fake camera."""
 from dataclasses import replace
 
