@@ -1,0 +1,29 @@
+# Settings for the agent on the Raspberry Pi. The install script copies this to /etc/camera-agent/config.toml.
+# Every setting is optional: a missing one keeps its default. A misspelled name stops the agent with a clear
+# message instead of being ignored.
+#
+# Not settings, on purpose: the start-up mode (the bridge always starts read-only, and only arming from the
+# phone with the PIN and LIVE switches it on), and anything the phone could turn on.
+
+[paths]
+sdk_dir = "/opt/camera-agent/sdk"        # Sony's SDK, downloaded by you from Sony (never shared, never in git)
+data_dir = "/data/camera-agent"          # the card's writable partition: sessions, logs, the kill-switch file
+run_dir = "/run/camera-agent"            # the bridge's private socket
+
+[bridge]
+binary = "/opt/camera-agent/build/bridge/camera_bridge"
+allow_exposure = false                   # true = aperture, shutter and WB may change too (ISO alone otherwise)
+
+[dashboard]
+host = "10.42.0.1"                       # the Pi's address on its own Wi-Fi: the dashboard answers nowhere else
+port = 8770
+names = ["camera-pi.local"]              # other names the phone may use for the Pi
+pin_hash = ""                            # set with: python tools/pi_pin.py (prints the line to paste here)
+
+[hotspot]
+ssid = "camera-pi"                       # the Wi-Fi network's name; its password is set by the install script
+band = "bg"                              # "bg" = 2.4 GHz (recommended on the Pi 5), "a" = 5 GHz
+
+[agent]
+look = "cinematic"                       # the look at start-up: cinematic, run_and_gun, interview, low_light, photo_portrait
+phone_timeout_s = 5.0                    # armed and no word from the phone for this long: hold the settings and pause
