@@ -74,11 +74,17 @@ def approved_settings(ranges, exposure=False):
 class AgentRunner:
     def __init__(self, socket_path, session_dir, look="cinematic", live=False, eyes=None, ranges=None,
                  clock=time.monotonic, on_event=None, auto=True, faces=None, iso_while_recording=False, take=None,
-                 exposure=False, exposure_while_recording=False, label=None):
+                 exposure=False, exposure_while_recording=False, label=None, watch_locked=False):
         """auto=False starts a live session with Auto off: it suggests until the operator turns Auto on.
         iso_while_recording: the Step 7 switch (see above). take: the run-sheet name of this take.
         exposure: aperture, shutter and WB may change too (needs a bridge started with --allow-exposure).
-        exposure_while_recording: the rehearsal switch (see above). label: "rehearsal" keeps this data apart."""
+        exposure_while_recording: the rehearsal switch (see above). label: "rehearsal" keeps this data apart.
+        watch_locked: watch-only, and keep watching a locked bridge (the Pi after a kill: the phone still sees the
+        picture until it's armed again). Never with live=True."""
+        if watch_locked and live:
+            raise RunnerError("watch_locked is for watching only")
+        self.watch_locked = watch_locked
+        self.bridge_locked = False
         self.socket_path = socket_path
         self.client = BridgeClient(socket_path)
         self.kill_client = BridgeClient(socket_path)          # its own connection, for the kill switch
@@ -151,9 +157,12 @@ class AgentRunner:
         self.bridge = status
         if not status.get("connected"):
             raise RunnerError("the bridge has no camera connected")
-        if status.get("locked") and status.get("lock_file"):
+        self.bridge_locked = bool(status.get("locked"))
+        if self.bridge_locked and self.watch_locked:
+            pass                                  # watching only: nothing can be sent, and the bridge refuses anyway
+        elif status.get("locked") and status.get("lock_file"):
             raise RunnerError("the kill switch is still on from before (it outlives restarts): unlock it first")
-        if status.get("locked"):
+        elif status.get("locked"):
             raise RunnerError("the bridge is locked (kill switch was used): restart the bridge first")
         if self.live and status.get("read_only"):
             raise RunnerError("live mode needs a bridge started WITHOUT --read-only")
@@ -233,7 +242,10 @@ class AgentRunner:
             now = self.clock()
             if now - self.t_status >= STATUS_EVERY_S:
                 self.t_status = now
-                if self.client.status().get("locked") and not self.killed:
+                locked = bool(self.client.status().get("locked"))
+                if locked and self.watch_locked:
+                    self.bridge_locked = True
+                elif locked and not self.killed:
                     self._killed_from_outside()
                     return False
             if now - self.t_settings >= SETTINGS_EVERY_S:
@@ -454,6 +466,7 @@ class AgentRunner:
                 "mode": "live" if self.live else "dry run", "fake": bool(self.bridge.get("fake")),
                 "model": self.bridge.get("model"), "state": self.state(), "auto": self.live and not self.paused and not self.killed,
                 "held": self.held, "killed": self.killed, "kill_reason": self.kill_reason,
+                "bridge_locked": self.bridge_locked or self.killed,
                 "recording": self.cam.recording, "iso_while_recording": self.iso_while_recording, "take": self.take,
                 "exposure_while_recording": self.exposure_while_recording, "label": self.label,
                 "problems": self.problems,

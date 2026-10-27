@@ -20,6 +20,9 @@ With a PIN (on the Pi, where the phone reaches it over Wi-Fi; see agent/pin.py):
   POST /api/pair {"pin": "123456"}   pairs this phone (a cookie). Until then the page is the PIN screen,
                                      and /api/* answers 401, except the kill switch, which always works.
 Without a PIN (the Mac), nothing changes.
+
+On the Pi (tools/pi_agent.py) the runner changes when the phone arms or disarms: `actions` adds those buttons,
+`extra_state` adds the Pi's own state to /api/state as "pi", and between runners /api/state answers 503.
 """
 import json
 import threading
@@ -42,8 +45,9 @@ COOKIE = "ca_pair"
 
 
 class Dashboard:
-    def __init__(self, runner, host="127.0.0.1", port=8770, guard=None, names=()):
+    def __init__(self, runner, host="127.0.0.1", port=8770, guard=None, names=(), actions=None, extra_state=None):
         self.runner, self.host, self.port = runner, host, port
+        self.actions, self.extra_state = dict(actions or {}), extra_state
         self.guard = guard if guard is not None and guard.enabled else None   # agent.pin.PinGuard, or no PIN
         self.cache = {}                      # mode -> (frame_no, jpeg bytes), shared by every viewer
         self.cache_lock = threading.Lock()
@@ -70,6 +74,8 @@ class Dashboard:
     def frame(self, mode, after, timeout=1.0):
         """The next frame newer than `after`, drawn in `mode`. Returns (frame_no, jpeg) or (None, None)."""
         r = self.runner
+        if r is None:                               # between runners on the Pi
+            return None, None
         deadline = time.monotonic() + timeout
         while r.frame_no <= after and time.monotonic() < deadline and not r.killed:
             time.sleep(0.01)
@@ -91,6 +97,10 @@ class Dashboard:
 
     def control(self, action, body):
         r = self.runner
+        if action in self.actions:
+            return self.actions[action](body)
+        if r is None:
+            return 503, {"ok": False, "error": "the agent is starting: try again in a moment"}
         if action == "kill":
             r.kill("Kill switch (dashboard)")
         elif action == "auto":
@@ -163,8 +173,18 @@ class _Handler(BaseHTTPRequestHandler):
             if url.path in ("/", "/index.html"):
                 url = url._replace(path="/pair.html")
         if url.path == "/api/state":
-            return self._send(200, self.dash.runner.snapshot())
+            extra = self.dash.extra_state() if self.dash.extra_state else None
+            r = self.dash.runner
+            if r is None or not hasattr(r, "t0"):
+                body = {"ok": False, "error": (extra or {}).get("message") or "the agent is starting"}
+                return self._send(503, dict(body, pi=extra) if extra else body)
+            snap = r.snapshot()
+            if extra:
+                snap["pi"] = extra
+            return self._send(200, snap)
         if url.path == "/api/frame.jpg":
+            if self.dash.runner is None:
+                return self._send(503, {"ok": False, "error": "no live view yet"})
             q = parse_qs(url.query)
             mode = q.get("mode", ["clean"])[0]
             try:

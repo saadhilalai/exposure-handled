@@ -27,6 +27,7 @@ let mode = "clean";
 let lastFrame = -1;
 let showFaces = true, showRegions = false, showTable = false;
 let armedUntil = 0;
+let frameRunning = true;              // the live view stops after a kill; on the Pi it comes back
 let shownCamera = {};
 let hoverX = null;                    // chart crosshair position (kept across redraws)
 
@@ -72,7 +73,7 @@ async function frameLoop() {
     $("frame-empty").hidden = false;
     await new Promise((res) => setTimeout(res, 1000));
   }
-  if (state && state.killed && lastFrame >= 0) return;          // agent stopped: keep the last frame
+  if (state && state.killed && lastFrame >= 0) { frameRunning = false; return; }   // agent stopped: keep the last frame
   setTimeout(frameLoop, Math.max(0, 1000 / VIEW_FPS - (performance.now() - started)));
 }
 
@@ -81,7 +82,12 @@ async function stateLoop() {
   try {
     const r = await fetch("/api/state", { cache: "no-store" });
     if (r.ok) { state = await r.json(); render(); }
-    else if (r.status === 401) { location.reload(); return; }   // this phone isn't paired (any more): the PIN screen
+    else if (r.status === 401) { location.reload(); return; }
+    else if (r.status === 503) {                                   // the Pi between modes, or waiting for the camera
+      const b = await r.json().catch(() => ({}));
+      $("status").textContent = b.error || "Starting";
+      if (b.pi) renderPi(b.pi);
+    }   // this phone isn't paired (any more): the PIN screen
   } catch (e) {
     $("status").textContent = "Lost connection to the agent. If the runner stopped, nothing more is sent to the camera.";
   }
@@ -90,6 +96,7 @@ async function stateLoop() {
 
 function render() {
   const s = state;
+  if (!frameRunning && !s.killed) { frameRunning = true; lastFrame = -1; frameLoop(); }
   // top bar
   $("source").textContent = s.fake ? "Fake camera" : (s.model || "Camera");
   $("source").classList.toggle("fake", !!s.fake);
@@ -131,6 +138,7 @@ function render() {
   renderFeed(s);
   renderPeople(s);
   if (showTable) renderTable(s); else renderChart(s);
+  renderPi(s.pi);                                                    // only on the Pi; last, so it can mark the lock
 }
 
 function renderControls(s) {
@@ -422,6 +430,40 @@ function renderTable(s) {
 
 /* -------------------------------------------------------------- controls */
 function kill() { post("kill"); }
+
+/* ------------------------------------------------------------------ the Pi */
+function renderPi(pi) {
+  $("pi-block").hidden = !pi;
+  if (!pi) return;
+  $("pi-status").textContent = pi.message;
+  $("arm-form").hidden = !(pi.mode === "watching" || pi.mode === "locked");
+  $("btn-disarm").hidden = pi.mode !== "armed";
+  if (pi.mode !== "armed") $("auto-hint").textContent = "Watching only: arm with the PIN and LIVE to let the agent change settings.";
+  if (pi.locked && pi.mode !== "armed") {
+    $("state-word").textContent = "Locked";
+    const k = $("btn-kill");
+    k.classList.add("done");
+    k.querySelector(".kill-title").textContent = "Locked";
+    $("kill-sub").textContent = "Kill switch on · arm with the PIN and LIVE to carry on";
+  }
+}
+let piHintTimer = null;
+function piHint(text) {
+  $("pi-hint").textContent = text;
+  clearTimeout(piHintTimer);
+  piHintTimer = setTimeout(() => { $("pi-hint").textContent = ""; }, 6000);
+}
+$("arm-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const pin = $("arm-pin"), live = $("arm-live");
+  const r = await post("arm", { pin: pin.value, confirm: live.value.trim().toUpperCase() });
+  piHint(r.ok ? "Arming…" : (r.error || "couldn't arm"));
+  pin.value = ""; live.value = "";
+});
+$("btn-disarm").addEventListener("click", async () => {
+  const r = await post("disarm");
+  piHint(r.ok ? "Disarmed: the bridge is locked and back to read-only." : (r.error || "couldn't disarm"));
+});
 function toggleAuto() {
   if (!state || state.killed || state.mode !== "live") return;
   if (state.auto) { post("auto", { on: false }); return; }

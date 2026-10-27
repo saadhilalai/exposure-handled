@@ -79,6 +79,20 @@
         <ul class="advice" id="advice"></ul>
       </div>
 
+      <div class="block" id="pi-block" hidden>
+        <span class="group-label">Pi</span>
+        <p class="status" id="pi-status"></p>
+        <form class="face-form" id="arm-form" hidden>
+          <label class="visually-hidden" for="arm-pin">PIN</label>
+          <input id="arm-pin" inputmode="numeric" maxlength="6" placeholder="PIN" autocomplete="off">
+          <label class="visually-hidden" for="arm-live">Type LIVE</label>
+          <input id="arm-live" maxlength="4" placeholder="Type LIVE" autocomplete="off" autocapitalize="characters">
+          <button type="submit" class="btn">Arm</button>
+        </form>
+        <button type="button" class="btn wide" id="btn-disarm" hidden>Disarm (locks the camera's settings)</button>
+        <p class="hint" id="pi-hint"></p>
+      </div>
+
       <div class="block">
         <div class="pair">
           <button type="button" class="btn switch" id="btn-auto" aria-pressed="false">

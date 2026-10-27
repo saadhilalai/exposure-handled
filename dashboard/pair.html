@@ -9,17 +9,17 @@
 <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
 <style>
-  .pair { max-width: 420px; margin: 0 auto; padding: calc(var(--topbar-h) + 32px) var(--gutter) 48px; }
-  .pair h1 { font-family: var(--wide); font-weight: 700; font-size: 22px; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 8px; }
-  .pair p { color: var(--grey); margin: 0 0 24px; }
-  .pair input { width: 100%; padding: 14px 16px; font-size: 28px; letter-spacing: 0.4em; text-align: center; background: var(--surface);
+  .pairing { max-width: 420px; margin: 0 auto; padding: calc(var(--topbar-h) + 32px) var(--gutter) 48px; }
+  .pairing h1 { font-family: var(--wide); font-weight: 700; font-size: 22px; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 8px; }
+  .pairing p { color: var(--grey); margin: 0 0 24px; }
+  .pairing input { width: 100%; padding: 14px 16px; font-size: 28px; letter-spacing: 0.4em; text-align: center; background: var(--surface);
                 border: 1px solid var(--line-strong); border-radius: 0; }
-  .pair .row { display: flex; gap: 12px; margin-top: 12px; }
-  .pair button { flex: 1; padding: 14px; border: 1px solid var(--line-strong); background: none; font-family: var(--wide);
+  .pairing .row { display: flex; gap: 12px; margin-top: 12px; }
+  .pairing .row button { flex: 1; padding: 14px; border: 1px solid var(--line-strong); background: none; font-family: var(--wide);
                  letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
-  .pair .msg { min-height: 1.5em; margin: 12px 0 0; color: var(--caution); }
-  .pair .kill { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); }
-  .pair .kill button { width: 100%; padding: 20px; border-color: var(--stop); color: var(--stop); font-weight: 700; }
+  .pairing .msg { min-height: 1.5em; margin: 12px 0 0; color: var(--caution); }
+  .pairing .kill-note { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .pairing .kill { width: 100%; }
 </style>
 </head>
 <body>
@@ -30,7 +30,7 @@
     <span class="wordmark">Camera Agent</span>
   </a>
 </header>
-<main class="pair">
+<main class="pairing">
   <h1>Pair this phone</h1>
   <p>Enter the 6-digit PIN once. This phone stays paired after that.</p>
   <form id="form" autocomplete="off">
@@ -39,10 +39,11 @@
     <div class="row"><button type="submit">Pair</button></div>
     <p class="msg" id="msg" role="status"></p>
   </form>
-  <div class="kill">
-    <p>The kill switch works without pairing. It stops the agent and locks the camera's settings.</p>
-    <button type="button" id="kill">Kill switch</button>
-  </div>
+  <p class="kill-note">The kill switch works without pairing. It stops the agent and locks the camera's settings.</p>
+  <button type="button" class="kill" id="kill">
+    <span class="kill-title">Kill switch</span>
+    <span class="kill-sub">Works without pairing</span>
+  </button>
 </main>
 <script>
   function post(action, body) {
