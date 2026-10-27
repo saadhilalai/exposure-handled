@@ -1,0 +1,17 @@
+# The bridge in its normal mode: ISO only (plus aperture, shutter and WB only if the settings file allows it).
+# Never started at power-up and never enabled: only the agent starts it, after the phone armed it (PIN + LIVE).
+# If it stops for any reason, it is NOT restarted armed: the read-only bridge takes over.
+[Unit]
+Description=Camera Agent bridge (armed from the phone)
+Conflicts=camera-bridge.service
+OnFailure=camera-bridge.service
+
+[Service]
+Type=simple
+User=camera-agent
+Group=camera-agent
+Environment=CAMERA_AGENT_CONFIG=/etc/camera-agent/config.toml
+RuntimeDirectory=camera-agent
+RuntimeDirectoryPreserve=yes
+ExecStart=/opt/camera-agent/.venv/bin/python /opt/camera-agent/tools/pi_bridge.py --armed
+Restart=no

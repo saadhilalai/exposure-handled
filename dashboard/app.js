@@ -438,6 +438,9 @@ function renderPi(pi) {
   $("pi-status").textContent = pi.message;
   $("arm-form").hidden = !(pi.mode === "watching" || pi.mode === "locked");
   $("btn-disarm").hidden = pi.mode !== "armed";
+  const h = pi.health;                                               // once a minute, from tools/pi_health.py
+  $("pi-health").textContent = !h ? "" : (h.power_ok ? "Power OK" : "⚠ Voltage dipped: check the D-tap cable and battery")
+    + (h.temp_c != null ? " · " + Math.round(h.temp_c) + "°C" : "") + (h.throttled_now ? " · slowed down (heat or power)" : "");
   if (pi.mode !== "armed") $("auto-hint").textContent = "Watching only: arm with the PIN and LIVE to let the agent change settings.";
   if (pi.locked && pi.mode !== "armed") {
     $("state-word").textContent = "Locked";

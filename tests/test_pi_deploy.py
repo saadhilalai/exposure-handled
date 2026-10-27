@@ -1,0 +1,111 @@
+"""The Pi's start-up services, permission rules, install script, bridge launcher and power-and-heat log
+(deploy/pi/, tools/pi_bridge.py, tools/pi_health.py). They only run for real on the Pi; this checks what can be
+checked here. No camera."""
+import configparser
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+from agent.config import parse
+from tools import pi_health
+
+ROOT = Path(__file__).resolve().parent.parent
+DEPLOY = ROOT / "deploy" / "pi"
+
+
+def unit(name):
+    c = configparser.ConfigParser(interpolation=None, strict=False)
+    c.optionxform = str
+    c.read(DEPLOY / name)
+    return c
+
+
+def test_the_bridge_starts_read_only_at_power_up():
+    u = unit("camera-bridge.service")
+    assert u["Service"]["ExecStart"].endswith("pi_bridge.py --read-only")
+    assert u["Unit"]["Conflicts"] == "camera-bridge-armed.service"
+    assert u["Install"]["WantedBy"] == "multi-user.target"
+    assert u["Service"]["User"] == "camera-agent"                       # never root
+
+
+def test_the_armed_bridge_is_never_enabled_or_restarted_armed():
+    u = unit("camera-bridge-armed.service")
+    assert u["Service"]["ExecStart"].endswith("pi_bridge.py --armed")
+    assert u["Service"]["Restart"] == "no"
+    assert u["Unit"]["OnFailure"] == "camera-bridge.service"            # read-only takes over
+    assert u["Unit"]["Conflicts"] == "camera-bridge.service"
+    assert "Install" not in u                                           # nothing can enable it at power-up
+
+
+def test_the_agent_doesnt_stop_when_arming_stops_the_read_only_bridge():
+    u = unit("camera-agent.service")
+    assert "camera-bridge.service" in u["Unit"]["Wants"] and "Requires" not in u["Unit"]
+    assert u["Service"]["ExecStart"].endswith("tools/pi_agent.py")
+    assert u["Service"]["User"] == "camera-agent" and u["Install"]["WantedBy"] == "multi-user.target"
+
+
+def test_the_health_reading_runs_every_minute():
+    assert unit("camera-health.timer")["Timer"]["OnUnitActiveSec"] == "60"
+    s = unit("camera-health.service")["Service"]
+    assert s["Type"] == "oneshot" and "video" in s["SupplementaryGroups"]   # vcgencmd needs the video group
+
+
+def test_the_permission_rules_are_narrow():
+    rule = (DEPLOY / "50-camera-agent.rules").read_text()
+    assert 'subject.user == "camera-agent"' in rule and 'verb == "start"' in rule
+    units = {w.strip('"') for w in rule.replace("(", " ").replace(")", " ").split() if w.endswith('.service"')}
+    assert units == {"camera-bridge.service", "camera-bridge-armed.service"}
+    udev = (DEPLOY / "60-camera-agent.rules").read_text()
+    assert 'ATTR{idVendor}=="054c"' in udev and 'GROUP="camera-agent"' in udev and 'MODE="0660"' in udev
+
+
+def test_the_install_script_parses_and_never_starts_the_bridge():
+    text = (DEPLOY / "install.sh").read_text()
+    subprocess.run(["bash", "-n", str(DEPLOY / "install.sh")], check=True)
+    assert "systemctl start" not in text and "systemctl restart" not in text
+    assert "set -euo pipefail" in text
+    if shutil.which("shellcheck"):
+        subprocess.run(["shellcheck", "-S", "warning", str(DEPLOY / "install.sh")], check=True)
+
+
+def test_the_bridge_launcher_uses_the_settings_file(tmp_path):
+    env = dict(os.environ, CAMERA_AGENT_CONFIG=str(ROOT / "config" / "pi.example.toml"))
+    run = lambda mode: subprocess.run([sys.executable, str(ROOT / "tools" / "pi_bridge.py"), mode, "--print"],
+                                      env=env, capture_output=True, text=True, check=True).stdout.split()
+    assert run("--read-only") == ["/opt/camera-agent/build/bridge/camera_bridge", "/run/camera-agent/bridge.sock",
+                                  "/data/camera-agent/logs", "--read-only",
+                                  "--lock-file=/data/camera-agent/state/locked"]
+    assert "--read-only" not in run("--armed") and "--allow-exposure" not in run("--armed")
+
+
+def test_reading_power_and_heat():
+    ok = pi_health.summary(pi_health.parse_throttled("throttled=0x0\n"), pi_health.parse_temp("temp=48.3'C\n"))
+    assert ok["power_ok"] and ok["temp_c"] == 48.3 and ok["notes"] == []
+    seen = pi_health.summary(pi_health.parse_throttled("throttled=0x50000"), 61.0)
+    assert not seen["power_ok"] and seen["undervoltage_seen"] and not seen["undervoltage_now"]
+    assert seen["notes"] == ["under-voltage seen", "throttling seen"]
+    now = pi_health.summary(pi_health.parse_throttled("throttled=0x50005"), None)
+    assert now["undervoltage_now"] and now["throttled_now"]
+    with pytest.raises(ValueError):
+        pi_health.parse_throttled("error")
+
+
+def test_the_reading_goes_to_the_log_and_the_dashboard(tmp_path):
+    cfg = parse('[paths]\ndata_dir = "%s"\n' % tmp_path)
+
+    class Done:
+        def __init__(self, out):
+            self.stdout = out
+    answers = {"get_throttled": "throttled=0x10000\n", "measure_temp": "temp=55.0'C\n"}
+    entry = pi_health.read(run=lambda cmd, **kw: Done(answers[cmd[1]]))
+    pi_health.save(entry, cfg)
+    assert json.loads((cfg.state_dir / "health.json").read_text())["undervoltage_seen"]
+    log = cfg.logs_dir / "health.jsonl"
+    log.write_text("x" * (pi_health.MAX_LOG_BYTES + 10) + "\n")       # too big: trimmed, not endless
+    pi_health.save(entry, cfg)
+    assert log.stat().st_size < pi_health.MAX_LOG_BYTES

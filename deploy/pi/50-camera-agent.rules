@@ -1,0 +1,10 @@
+// polkit: the agent's own user may START its two bridge services, and nothing else.
+// (Starting one stops the other, because they conflict.) Installed to /etc/polkit-1/rules.d/.
+polkit.addRule(function (action, subject) {
+    if (action.id == "org.freedesktop.systemd1.manage-units" && subject.user == "camera-agent") {
+        var unit = action.lookup("unit"), verb = action.lookup("verb");
+        if ((unit == "camera-bridge.service" || unit == "camera-bridge-armed.service") && verb == "start") {
+            return polkit.Result.YES;
+        }
+    }
+});

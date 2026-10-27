@@ -1,0 +1,3 @@
+# udev: the agent's user may open Sony USB devices (vendor 054c), so the bridge doesn't run as root.
+# Installed to /etc/udev/rules.d/. Unplug and replug the camera after installing.
+SUBSYSTEM=="usb", ATTR{idVendor}=="054c", MODE="0660", GROUP="camera-agent"

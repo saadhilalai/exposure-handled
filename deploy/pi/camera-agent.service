@@ -1,0 +1,19 @@
+# The agent and the phone dashboard. Starts with the bridge read-only and only suggests until the phone arms it.
+# It uses Wants=, not Requires=, on the bridge: arming stops the read-only bridge on purpose, and that must not
+# stop the agent.
+[Unit]
+Description=Camera Agent (agent and phone dashboard)
+Wants=camera-bridge.service NetworkManager.service
+After=camera-bridge.service NetworkManager.service
+
+[Service]
+Type=simple
+User=camera-agent
+Group=camera-agent
+Environment=CAMERA_AGENT_CONFIG=/etc/camera-agent/config.toml
+ExecStart=/opt/camera-agent/.venv/bin/python /opt/camera-agent/tools/pi_agent.py
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

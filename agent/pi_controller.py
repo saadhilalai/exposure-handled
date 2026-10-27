@@ -15,6 +15,7 @@ Safety rules, all enforced here:
   - Losing the phone while armed (nothing from it for phone_timeout_s): Auto goes off, so the settings stay as
     they are and the agent only suggests. When the phone is back, Auto stays off until it's pressed again.
 """
+import json
 import os
 import queue
 import subprocess
@@ -23,6 +24,7 @@ import time
 from datetime import datetime
 
 from agent.bridge_client import BridgeClient
+from agent.faces import FaceBook
 from agent.runner import AgentRunner
 
 
@@ -71,6 +73,7 @@ class PiController:
         self.started = False
         self.kill_during_switch = threading.Event()
         self.last_seen = None                             # the paired phone's last request (its heartbeat)
+        self.faces = FaceBook(cfg.state_dir / "face_refs.json")   # on the card's data partition, never uploaded
         self.phone_lost = False
         for d in (cfg.sessions_dir, cfg.state_dir, cfg.logs_dir):
             d.mkdir(parents=True, exist_ok=True)
@@ -90,8 +93,15 @@ class PiController:
         r = self.runner
         locked = self.cfg.lock_file.exists() or bool(r and getattr(r, "bridge_locked", False))
         return {"mode": self.mode, "message": self.message, "locked": locked, "armed": self.mode == "armed",
-                "phone_lost": self.phone_lost,
+                "phone_lost": self.phone_lost, "health": self._health(),
                 "exposure_allowed": self.cfg.allow_exposure, "pin": self.guard.enabled}
+
+    def _health(self):
+        """The latest power-and-heat reading (tools/pi_health.py, once a minute), or None."""
+        try:
+            return json.loads((self.cfg.state_dir / "health.json").read_text())
+        except (OSError, ValueError):
+            return None
 
     def arm(self, body):
         """PIN + LIVE (checked here, in the phone's request), then the switch happens in the main loop."""
@@ -221,7 +231,7 @@ class PiController:
 
     def _new_runner(self, live):
         name = "%s_%s" % (datetime.now().strftime("%Y-%m-%d_%H%M%S"), "pi-armed" if live else "pi-watch")
-        r = AgentRunner(self.cfg.socket_path, self.cfg.sessions_dir / name, look=self.look, live=live, eyes=self.eyes,
+        r = AgentRunner(self.cfg.socket_path, self.cfg.sessions_dir / name, look=self.look, live=live, eyes=self.eyes, faces=self.faces,
                         clock=self.clock, auto=False, exposure=live and self.cfg.allow_exposure, watch_locked=not live)
         r.start()
         return r

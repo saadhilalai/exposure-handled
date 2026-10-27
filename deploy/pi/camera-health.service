@@ -1,0 +1,11 @@
+# One reading of the Pi's power and heat (vcgencmd), for the dashboard and the log.
+[Unit]
+Description=Camera Agent power and heat reading
+
+[Service]
+Type=oneshot
+User=camera-agent
+Group=camera-agent
+SupplementaryGroups=video
+Environment=CAMERA_AGENT_CONFIG=/etc/camera-agent/config.toml
+ExecStart=/opt/camera-agent/.venv/bin/python /opt/camera-agent/tools/pi_health.py

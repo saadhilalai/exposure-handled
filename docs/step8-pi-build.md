@@ -96,16 +96,21 @@ Only the build file gets a Linux section, the same way Sony builds its own sampl
 
 ## 4. Auto-start on power-up
 
-Two services, managed by systemd, the Pi's built-in service manager:
+Services managed by systemd, the Pi's built-in service manager (files in `deploy/pi/`):
 
 | Service | What it does | Restart rule |
 |---|---|---|
-| `camera-bridge` | Starts the bridge **read-only** and waits for the camera on USB. It leaves the camera alone until it's plugged in and in Remote Shoot mode. | Restarts after a crash (`Restart=on-failure`, a 2 s pause). It comes back locked if it was locked. |
-| `camera-agent` | Starts the agent and the dashboard in **suggest-only** mode. It needs the bridge (`Requires=` and `After=camera-bridge`). | Restarts after a crash, always in suggest-only. |
+| `camera-bridge` | The bridge **read-only**, started at power-up. It waits for the camera on USB and leaves it alone until it's plugged in and in Remote Shoot mode. | Tries again every 3 s while there's no camera. Comes back locked if it was locked. |
+| `camera-bridge-armed` | The bridge in its normal mode. **Never started at power-up**: only the agent starts it, after the phone arms it. The two bridge services conflict, so only one ever runs. | **Never restarted armed.** If it stops, the read-only bridge takes over. |
+| `camera-agent` | The agent and the dashboard, suggesting only until the phone arms it. It *wants* the bridge rather than *requiring* it, because arming stops the read-only bridge on purpose. | Restarts after a crash, always read-only. |
+| `camera-health` (every minute) | One power-and-heat reading for the dashboard and the log. | |
+
+The agent's own user may start those two bridge services and nothing else (a polkit rule), and may open Sony USB
+devices (a udev rule), so nothing runs as the all-powerful root user.
 
 Also:
 - **A small power-and-heat logger** writes `vcgencmd get_throttled` and the temperature to the data folder every
-  minute. The dashboard shows a **Power** tile: green when there have been no voltage dips, amber if one was seen.
+  minute. The dashboard's Pi panel shows "Power OK" or a warning that the voltage dipped, with the temperature.
 - **Start-up time:** expect roughly 20–40 s from power to dashboard (**UNVERIFIED**, measured on the first day).
 - **Pulling the D-tap mustn't corrupt the card.**
   - The system part of the card goes **read-only** (Raspberry Pi's own "Overlay File System" switch, in `raspi-config`).
@@ -200,3 +205,54 @@ You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it g
     and the agent.
   - Without the flag, nothing changes, so the Mac and the Step 7 tools work as before. The new bridge is built
     beside the current one (`build/bridge-next`); the Step 7 scripts still use `build/bridge`.
+- [x] **One settings file** (`agent/config.py`, example `config/pi.example.toml`).
+  - It holds the paths, the dashboard address, the PIN's hash and the hotspot.
+  - It's strict: a misspelled name stops the agent with a clear message.
+  - With no file, everything is the Mac's default.
+  - The start-up mode is not a setting, and exposure can be allowed only in this file.
+- [x] **Pairing with a PIN** (`agent/pin.py`, `dashboard/pair.html`, `tools/pi_pin.py`).
+  - The settings file holds only a salted hash of the PIN.
+  - Five wrong PINs lock pairing for 60 s, doubling up to 15 min.
+  - Paired phones are remembered across restarts.
+  - The kill switch works even without pairing.
+  - With no PIN set, the dashboard is unchanged.
+- [x] **Arming from the phone** (`agent/pi_controller.py`, `tools/pi_agent.py`).
+  - **At start:** read-only, always.
+  - **Arming:** PIN + `LIVE` switches the bridge to its normal mode and clears an old kill. Auto starts off.
+  - **Disarm or kill:** locks the bridge, then goes back to read-only. The phone keeps seeing the picture.
+  - **Failures:** a failed arm, or a kill mid-switch, ends locked and read-only. Losing the camera while armed goes
+    back to read-only.
+  - **Stays separate:** the Step 7 and rehearsal tools are untouched. The Pi has its own program.
+- [x] **The phone drops off while armed:** after `phone_timeout_s` (5 s) with nothing from the phone, Auto goes off and
+  the settings are held. When the phone is back, Auto stays off until it's pressed again.
+- [x] **The Pi section of the build file**, laid out like Sony's own Linux sample. It can only be built on the Pi.
+- [x] **Start-up services, the install script and the power-and-heat log** (`deploy/pi/`, `tools/pi_bridge.py`,
+  `tools/pi_health.py`).
+  - The install script runs in steps: `boot`, `app`, `pin`, `hotspot`.
+  - It never starts the bridge: the services start at the next power-up.
+  - It runs the tests on the Pi, and installs nothing if they fail.
+  - On the Pi, face memory lives in the data folder.
+
+## Left for when the Pi arrives
+
+1. **Flash the card and log in** ([pi-sd-card.md](pi-sd-card.md)).
+2. **Copy the repo to `/opt/camera-agent`**, then run `sudo deploy/pi/install.sh boot` and restart the Pi.
+3. **Download Sony's Linux ARM64 SDK** from Sony's site (you accept Sony's licence there) and unzip it to
+   `/opt/camera-agent/sdk`.
+4. **Run `sudo deploy/pi/install.sh app`, then `sudo deploy/pi/install.sh pin`.**
+   - The first real build of the bridge on Linux.
+   - The tests on the Pi.
+   - Checks that the pinned numpy and OpenCV install there (**UNVERIFIED**).
+5. **After "camera ready": the read-only probe.** This is the go/no-go for the Pi.
+   - Also checks the USB permission rule (**UNVERIFIED**).
+   - Then `tools/bench_eyes.py` for the real speed.
+6. **A separate data partition, so the system part can go read-only.** Imager grows the system to fill the card on
+   first start, so this is done on the Pi.
+   - Recommended: split the card into system and data before turning on the Overlay File System.
+   - The fallback is a small USB stick for data.
+   - **UNVERIFIED**, worked out on the Pi.
+7. **`sudo deploy/pi/install.sh hotspot`**, then a restart: the phone joins the Pi's network and pairs.
+8. **Power-cut test:** pull the power on purpose ten times. It must come back read-only every time, and locked if it
+   was locked.
+9. **The D-tap cable on the bench**, watching the Power line on the dashboard. Then mount it on the rig and do a
+   field test.

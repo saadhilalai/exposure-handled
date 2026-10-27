@@ -1,0 +1,23 @@
+# The bridge, read-only: it can read the camera and its live view, and refuses every change.
+# Started at power-up. The agent switches to camera-bridge-armed.service only after the phone arms it
+# (PIN + LIVE); the two services conflict, so only one bridge ever runs.
+[Unit]
+Description=Camera Agent bridge (read-only)
+Conflicts=camera-bridge-armed.service
+After=local-fs.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=camera-agent
+Group=camera-agent
+Environment=CAMERA_AGENT_CONFIG=/etc/camera-agent/config.toml
+RuntimeDirectory=camera-agent
+RuntimeDirectoryPreserve=yes
+ExecStart=/opt/camera-agent/.venv/bin/python /opt/camera-agent/tools/pi_bridge.py --read-only
+# No camera yet (or it was unplugged): try again every few seconds, for as long as it takes.
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
