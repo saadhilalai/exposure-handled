@@ -17,6 +17,7 @@ if(NOT EXISTS "${CRSDK_INCLUDE_DIR}/CameraRemote_SDK.h")
 endif()
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
+find_package(Threads REQUIRED)
 find_library(CR_CORE_LIB Cr_Core HINTS "${CRSDK_LIB_DIR}" NO_DEFAULT_PATH REQUIRED)
 
 # Property code -> name table, generated from the local SDK header.
@@ -36,7 +37,7 @@ function(add_camera_program name source)
     # SYSTEM: don't report warnings from Sony's headers, only from our code.
     target_include_directories(${name} SYSTEM PRIVATE "${CRSDK_INCLUDE_DIR}")
     target_include_directories(${name} PRIVATE "${GENERATED_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/src")
-    target_link_libraries(${name} PRIVATE "${CR_CORE_LIB}")
+    target_link_libraries(${name} PRIVATE "${CR_CORE_LIB}" Threads::Threads)
     target_compile_options(${name} PRIVATE -Wall -Wextra)
     if(APPLE)
         # On macOS the SDK loads its USB/network adapters from
@@ -51,6 +52,15 @@ function(add_camera_program name source)
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     "${CRSDK_LIB_DIR}/CrAdapter"
                     $<TARGET_FILE_DIR:${name}>/Contents/Frameworks/CrAdapter
+        )
+    else()
+        # On Linux (the Raspberry Pi), the same layout as Sony's own Linux sample: Sony's libraries and its
+        # CrAdapter folder sit next to the program and are found through $ORIGIN. Sony's sample also builds
+        # with these two flags on Linux (-fsigned-char: Raspberry Pi OS treats plain char as unsigned).
+        set_target_properties(${name} PROPERTIES BUILD_RPATH "$ORIGIN" INSTALL_RPATH "$ORIGIN")
+        target_compile_options(${name} PRIVATE -fsigned-char -fstack-protector-all)
+        add_custom_command(TARGET ${name} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${CRSDK_LIB_DIR}" $<TARGET_FILE_DIR:${name}>
         )
     endif()
 endfunction()
