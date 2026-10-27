@@ -6,7 +6,7 @@
     python video/tools/build_hype.py all       (also: --voice imogen|sloane|orion)
 
 Everything is keyed in beats of the music, so cuts, words, voice lines and hits land on the beat. Every real number
-comes from site/data/site.json (the Oct 19 Sony cinema camera logs), never typed by hand.
+comes from site/data/site.json (the live-test logs from the Sony cinema camera), never typed by hand.
 
 Media (not in git; see video/CREDITS.md for the sources):
     assets/music/beast.mp3      "Beast" by Sascha Ende, CC BY 4.0, https://ende.app/en/song/10415-beast
@@ -50,8 +50,8 @@ SHOTS = [
     dict(id="kill", at=46, to=50, src="3d/kill.mp4", sb=0, tag="ill", push=[1.0, 1.06]),
     dict(id="slam", at=50, to=END, src="3d/slam.mp4", sb=0, tag="ill", tag_to=64, push=[1.0, 1.0]),
 ]
-TAGS = {"ill": "3D ILLUSTRATION", "real": "REAL · SONY CINEMA CAMERA · OCT 19 · SPED UP", "ph": "PLACEHOLDER · REAL DASHBOARD, FAKE CAMERA",
-        "stand": "STAND-IN · UNTIL SATURDAY’S FOOTAGE"}
+TAGS = {"ill": "3D ILLUSTRATION", "real": "REAL · SONY CINEMA CAMERA · LIVE TEST · SPED UP", "ph": "PLACEHOLDER · REAL DASHBOARD, FAKE CAMERA",
+        "stand": "STAND-IN · UNTIL THE STEP 7 FOOTAGE"}
 TICKS1 = [10.4, 10.75, 11.1, 11.45, 11.8]          # test 1's five ISO steps, sped up onto the beat
 FLIPS3 = {"ShutterSpeed": [38.6], "FNumber": [39.1], "IsoSensitivity": [39.6, 39.85, 40.1], "Colortemp": [40.45]}
 WORDS = [
@@ -165,12 +165,12 @@ def edit():
         duration=s(END), bpm=BPM, shots=shots, huds=huds, statuses=statuses, tags=tags,
         words=[dict(at=s(w["at"]), to=s(w["to"]), style=w["style"], html=w["html"], out=w.get("out", True)) for w in WORDS],
         stat=dict(n=t1["kill"]["ms_to_stop"], at=s(48.9), to=s(50.6),
-                  label="KILL SWITCH · <b>REAL</b> TEST · SONY CINEMA CAMERA · OCT 19"),
+                  label="KILL SWITCH · <b>REAL</b> TEST · SONY CINEMA CAMERA · LIVE TEST"),
         flashes=[[s(b), o, dd] for b, o, dd in FLASHES], streaks=[[s(b), top, dr] for b, top, dr in STREAKS],
         kill=[s(KILL[0]), s(KILL[1])], end=s(END_CARD), dimUnderEnd=SHOTS[-1]["id"], fadeOut=[s(FADE[0]), s(FADE[1])],
         fine=("Narration: an AI voice, speaking as the agent · Music: “Beast” by Sascha Ende (ende.app), CC BY 4.0<br>"
-              "3D: illustration · REAL: the Oct 19 test on a Sony cinema camera, sped up · PLACEHOLDER: the real dashboard on a fake camera · "
-              "STAND-IN: until Saturday’s footage"),
+              "3D: illustration · REAL: the live test on a Sony cinema camera, sped up · PLACEHOLDER: the real dashboard on a fake camera · "
+              "STAND-IN: until the Step 7 footage"),
         source=d["source"])
     (HYPE / "edit.js").write_text("// Made by video/tools/build_hype.py (the edit, in seconds; the source is in beats there). Don't edit by hand.\n"
                                   "window.EDIT = %s;\n" % json.dumps(edit_js, ensure_ascii=False, indent=1))

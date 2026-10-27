@@ -1,6 +1,6 @@
 # Brag video credits
 
-## The three launch films, redone (2026-10-22, `v1-abstract/`, `v2-hype/`, `v3-story/`)
+## The three launch films, redone (`v1-abstract/`, `v2-hype/`, `v3-story/`)
 
 The films carry no credits or small print on screen (the director's rule). These lines go wherever a film is posted
 (the video description, the website's Nerd mode).
@@ -65,7 +65,7 @@ many surfaces" cards.
 
 **Tools:** Blender (GPL), HyperFrames, GSAP, FFmpeg.
 
-## The three launch films, overnight drafts (2026-10-22, replaced by the redo above)
+## The three launch films, first drafts (replaced by the redo above)
 
 The films carry no credits or small print on screen (the director's rule); these lines go wherever a film is posted
 (video description, the website's Nerd mode).
@@ -109,9 +109,9 @@ agent, in short lines. Nothing it says claims more than the logs show (see `FILM
 
 **Pictures:**
 - 3D illustration: the website's own camera, rendered frame by frame (`tools/capture_hype.py`).
-- Real: the Oct 19 test on a Sony cinema camera, its live-view frames and its logged settings, sped up.
+- Real: the live test on a Sony cinema camera, its live-view frames and its logged settings, sped up.
 - Placeholder: the real dashboard on the fake camera.
-- Stand-in: the lamp-off clip, until Saturday's footage.
+- Stand-in: the lamp-off clip, until the Step 7 footage.
 
 **Type:** Instrument Serif and D-DIN, SIL Open Font License 1.1 (`hype/assets/fonts/`), the website's fonts.
 
@@ -126,7 +126,7 @@ agent, in short lines. Nothing it says claims more than the logs show (see `FILM
 - Excerpt used: from 0:13.5, 70 s, raised 7 dB, ducked under the voice, with a fade in, a dip at the kill switch and a fade out. The audio isn't in git. Download the full mix from https://www.scottbuckley.com.au/library/penumbra/ and rebuild with the command in `tools/build_film.py`.
 
 **Pictures:**
-- Real: the Oct 19 test on a Sony cinema camera, its live-view frames and its log.
+- Real: the live test on a Sony cinema camera, its live-view frames and its log.
 - Illustration: the website's own 3D camera and camera simulator, rendered frame by frame (`tools/capture_film.py`).
 - Placeholder: the real dashboard on the fake camera.
 - Stand-in: the "next" clip, until the Step 7 footage.

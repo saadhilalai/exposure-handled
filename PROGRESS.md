@@ -2,7 +2,7 @@
 
 Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered step at a time; each step ends with a check-in and a commit.
 
-## 🎙️ The director's sound notes, done (2026-10-26)
+## 🎙️ The director's sound notes, done
 
 - Picture, cuts and timing untouched (the video streams are byte-identical; only the audio was swapped).
 - New narrator: Seed Audio "Julian" through Higgsfield. ElevenLabs "Jazzo" measured slightly more natural, but the free
@@ -12,7 +12,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 - Calm's opening is a mission radio call (300-3000 Hz, crunch, static, a tone before and after).
 - The old-voice 4K renders are kept beside the new ones as `*-4k-oldvoice.mp4`.
 
-## 🎞️ All three films finished (2026-10-26), waiting for the director's approval
+## 🎞️ All three films finished, waiting for the director's approval
 
 - The 10 remaining 3D shots were rendered on the gaming PC and fetched (`tools/fetch_renders.py`). Each was checked: full frame
   count, no black, frozen or glitched frames.
@@ -23,7 +23,7 @@ Director: Saad Hilal. Code: an AI coding assistant. Work happens one numbered st
 - Nothing is on the website or anywhere public until the director approves.
 - **Open decisions for the director:** 29–34 in `docs/open-decisions.md`.
 
-## 🎞️ The redo of all three films (2026-10-22, morning; no camera connected)
+## 🎞️ The redo of all three films (no camera connected)
 
 The director sent three briefs (calm, hype, story). Notes: `video/FILMS.md`; credits: `video/CREDITS.md`; decisions 29–34 in
 `docs/open-decisions.md`. Nothing goes on the website until the director approves.
@@ -41,9 +41,9 @@ The director sent three briefs (calm, hype, story). Notes: `video/FILMS.md`; cre
 - **Voice:** one human-sounding AI narrator for all three (MiniMax "Harrison"), because the ElevenLabs free account was
   blocked mid-job.
 - **Laptop sleeps:** the render queue is resumable (`video/blender/queue.sh`); restart it after a wake if it stopped.
-- **Delivered 12:03:** Calm, 4K (`~/Movies/Final Renders/1 - Calm (4K).mp4`) and a phone copy (sent). Story and Hype wait on their 3D shots.
+- **Delivered first:** Calm, 4K (`~/Movies/Final Renders/1 - Calm (4K).mp4`) and a phone copy (sent). Story and Hype wait on their 3D shots.
 
-## 🎞️ Three launch films (2026-10-21 → 22, overnight; no camera connected)
+## 🎞️ Three launch films (no camera connected)
 
 The director asked for three different films to pick from, with a new photoreal camera. Notes: `video/FILMS.md`; decisions: `docs/open-decisions.md` (21–29).
 - **References:** all 13 studied (the 10 audio-only files were matched to their video uploads). The private breakdown is in `refs/BREAKDOWN.md` (git-ignored, like `refs/`). Five techniques are summarised in FILMS.md.
@@ -53,14 +53,14 @@ The director asked for three different films to pick from, with a new photoreal 
   - Path-traced in Cycles (`shots.py`), in resumable queues (`queue.sh`).
   - Moving shots render at 1080p and are scaled up to 4K. The stills are true 4K.
 - **Films:** `video/v1-abstract` (calm, 50 s), `video/v2-hype` (36.5 s), `video/v3-story` (55 s), made by `video/tools/build_films.py`.
-- **Picking:** the director picks one in the morning. Nothing goes on the website until then.
-- **Done at 06:15, 2026-10-22:**
+- **Picking:** the director picks one. Nothing goes on the website until then.
+- **Done:**
   - All three films are rendered at 4K and checked frame by frame. Each also has a 1080p preview and a phone copy (under 30 MB) next to it in `renders/`.
   - Four 4K stills: product, exploded, agent close-up, rear.
   - A first-frame bug in seven 3D shots was found and fixed: the crew and the hero were placed from the camera parts' previous-frame positions.
-  - Tonight's commits are local, not pushed. The privacy scan is clean (no AI-company or client names, no local paths).
+  - These commits are local, not pushed. The privacy scan is clean (no AI-company or client names, no local paths).
 
-## ⚡ The hype cut (2026-10-21, night)
+## ⚡ The hype cut
 
 The director's note on the narrated film was "too slow, too many words, looks like Nerd mode", so it's been redone as a hype video. Draft 1 is sent and opened on the Mac.
 
@@ -79,10 +79,10 @@ The director's note on the narrated film was "too slow, too many words, looks li
 - **The voice:** Higgsfield's ElevenLabs engine. The draft uses Imogen; Sloane and Orion reels are sent too.
 - **Waiting on the director:** music, voice, subtitles and one swapped line (decisions 17–20 in `docs/open-decisions.md`).
 
-## 🎬 The narrated film (2026-10-21, evening)
+## 🎬 The narrated film
 
 - **Asked for:** a narrated brag film in which the agent talks you through it, with the website's 3D camera, real numbers and the kill switch. The script comes first for approval, then the render.
-- **Script v1:** `video/SCRIPT.md`, sent for approval. It has 14 lines, about 38 s of talking in 70 s, with every number sourced to the Oct 19 logs.
+- **Script v1:** `video/SCRIPT.md`, sent for approval. It has 14 lines, about 38 s of talking in 70 s, with every number sourced to the live-test logs.
 - **Voice:** auditions of Dior and Marie (ElevenLabs) were sent. The free voice account then locked itself ("unusual activity… upgrade to continue"). The options are written down in docs/open-decisions.md (14–16).
 - **Built:** `video/film/`.
   - The site's own 3D camera and simulator are rendered frame by frame at 4K (`video/tools/capture_film.py` + `capture.html`, about 0.25 s a frame).
@@ -92,7 +92,7 @@ The director's note on the narrated film was "too slow, too many words, looks li
   - Every shot is tagged Real, Illustration, Placeholder or Stand-in.
 - **Next:** your OK on the lines and the voice, then the voice takes, the mix, a 4K render, the film at the top of the website, and a redeploy.
 
-## 🚀 Public (2026-10-21, evening)
+## 🚀 Public
 
 - **Website:** https://s4dai-exposure-handled.static.hf.space, a free static Hugging Face Space (`s4dAi/exposure-handled`, the same account as LANDFALL and the robot). Republish with `python tools/make_space.py --push s4dAi/exposure-handled`.
 - **Code:** https://github.com/saadhilalai/exposure-handled. It's public with the full history, both plan tags, an About description, the website link and topics.
@@ -109,39 +109,39 @@ The director's note on the narrated film was "too slow, too many words, looks li
   - The 3D builds in each.
 - **Repo name:** `exposure-handled`, the brand, following `landfall` and `walk-before-you-climb`. Inside it, the tool is still called Camera Agent.
 
-## 📅 Step 7 dates (director, 2026-10-21)
+## 📅 Step 7 sessions (director)
 
-- **Saturday 2026-10-24: session 1 only.** Indoors: S1, S3, S4, S6, with both people. That's 54 scored takes and 5 bonus. Day sheet: [docs/step7-day.md](docs/step7-day.md).
-- **Session 2, the next clear day:** S2 around midday, then S5 at sunset.
+- **Session 1 first, on its own.** Indoors: S1, S3, S4, S6, with both people. That's 54 scored takes and 5 bonus. Day sheet: [docs/step7-day.md](docs/step7-day.md).
+- **Session 2, on a clear day:** S2 around midday, then S5 at sunset.
 - **The blind test's rating page goes out after session 2,** because its seven sets include S2 and S5.
 
-## 🧰 2026-10-21, afternoon (director at school; no camera)
+## 🧰 Step 7 prep (director away; no camera)
 
 - **Decisions applied:**
   - The plan's two clarifications, and the fingerprint the director emailed.
-  - Rehearsal on Thursday.
+  - The rehearsal is set.
   - Music "Penumbra" (Scott Buckley, CC BY 4.0).
   - The brand **Exposure, Handled.** on the film's end card, the site's title and the README. "Camera Agent" stays the tool's name.
-- **Thursday:**
+- **For the rehearsal:**
   - The status flicker with Auto off is fixed (the brain forgets a suggestion that wasn't applied).
-  - The face test now rehearses Saturday's naming (A).
-- **Saturday:**
+  - The face test now rehearses the Step 7 naming (A).
+- **For Step 7:**
   - `tools/blind_clips.py` works out the 21 blind-test cut points from the logs.
   - `docs/step7-day.md` is a one-page day sheet.
   - A full fake take went end to end: Rec, mark, scoring, cut points.
-  - Open question 13: which sessions Saturday covers.
+  - Open question 13: which sessions the first shoot covers.
 - **Website:**
   - On short laptop windows the opening chat no longer covers the headline.
   - Link-preview tags and image.
   - One Nerd note corrected: the loop runs about 24 times a second, not 6.
   - Accessibility audit: 0 violations.
-- **Brag video:** stand-in clips rendered from the site's simulator, with the same names as the real clips, so Saturday is a file swap. The draft was sent to the director.
+- **Brag video:** stand-in clips rendered from the site's simulator, with the same names as the real clips, so the real footage is a file swap. The draft was sent to the director.
 
-## 🧰 2026-10-20 night → 10-21: unattended work (no camera connected at any point)
+## 🧰 Unattended work (no camera connected at any point)
 
 **Decisions waiting for the director:** [docs/open-decisions.md](docs/open-decisions.md) (Step 7 clarifications, rehearsal day, website, video).
 
-- **Saturday (Step 7) prep.** An audit of the run sheet, start, rating page and scoring found these, now fixed and tested (126 tests pass):
+- **Step 7 prep.** An audit of the run sheet, start, rating page and scoring found these, now fixed and tested (126 tests pass):
   - **Dashboard port:** it defaulted to 8765, robot-walker's port, and the run sheet's commands don't pass `--port`. It now defaults to 8770. The port is checked before anything starts, so a busy port stops the take with a clear message.
   - **Dry-run takes** (the camera's own auto, and manual) could offer to "put ISO back" at the end, which would have sent a change. They no longer do.
   - **Bridge checks:** an old socket from a stopped bridge now gives a clear message instead of a traceback, and no empty take folder is left behind.
@@ -168,32 +168,32 @@ The director's note on the narrated film was "too slow, too many words, looks li
   - New dashboard screenshots show the site's own scene, not a grey test pattern.
 - **Brag video:** the storyboard and a placeholder build are in `video/` (kept out of git), in the robot film's style. Swap steps are in video/STORYBOARD.md.
 
-## 🎬 Next: sunset shakedown rehearsal, Thursday 2026-10-22
+## 🎬 Next: sunset shakedown rehearsal
 
-**Set (2026-10-21): Thursday 2026-10-22 at sunset** (moved from the 20th). Everything is ready and unchanged: the start script, the rehearsal switch, the checklist. Don't connect to the camera until "camera ready".
+**Set for sunset.** Everything is ready and unchanged: the start script, the rehearsal switch, the checklist. Don't connect to the camera until "camera ready".
 
-**Not the Step 7 test**: a rehearsal before the official shoot on Saturday, to find what breaks in real light. Checklist and step-by-step: [docs/rehearsal.md](docs/rehearsal.md).
-- **Rehearsal mode** (built today, 119+ tests pass):
+**Not the Step 7 test**: a rehearsal before the real Step 7 shoot, to find what breaks in real light. Checklist and step-by-step: [docs/rehearsal.md](docs/rehearsal.md).
+- **Rehearsal mode** (119+ tests pass):
   - `--rehearsal` labels everything. Sessions go to `sessions/REHEARSAL/`, takes are named `REH_…`, and `score_take.py` refuses to mix them with Step 7 takes.
   - **Rehearsal-only recording switch:** `--allow-exposure-while-recording` lets ISO, aperture, shutter and WB change while recording. It needs a live `REH_…_agent` take and the bridge started with the same flag. It can't be used in a Step 7 take, and the Step 7 ISO-only switch is unchanged.
   - **Problem log:** the `x` key or the dashboard's Problems box writes to `problems.jsonl`, with what the agent saw.
   - **`tools/watch_session.py`:** a read-only live summary and after-shoot report (flicker, slow reactions, fps, refusals, problems).
 - **Supervision:** the director runs the bridge and agent in their own Terminal, and the coding assistant watches the logs read-only. If the hotspot drops, the agent keeps running on the Mac.
-- **After the shoot:** a ranked list of what went wrong, fixed during the week before Saturday.
+- **After the shoot:** a ranked list of what went wrong, fixed before the Step 7 shoot.
 - **One command at the location:** `tools/rehearsal.sh [REH_take]` makes the folder, starts the bridge in its own process group, and starts the agent with the dashboard. The director types LIVE, and SPACE stays theirs. The bridge stops when the agent quits. Agent takes get the rehearsal switch; watch-only takes get a read-only bridge.
-- **Decided (2026-10-20): Saturday stays ISO only**, like the frozen Step 7 plan. The rehearsal's all-four-settings run is rehearsal only.
+- **Decided: Step 7 stays ISO only**, like the frozen Step 7 plan. The rehearsal's all-four-settings run is rehearsal only.
 
-## 🌙 Parked (2026-10-19, late night)
+## 🌙 Parked
 
 - **Nothing is running and the camera isn't connected.** Everything is committed.
 - **Next session, with the director:** the live face test and the light-change test, then we schedule the Step 7 shoot.
-- **While we wait: the project website, v2** (Step 9; a draft, not deployed). See [site/README.md](site/README.md). Rebuilt on 2026-10-20 at the director's request: "people learn by playing, not reading".
+- **While we wait: the project website, v2** (Step 9; a draft, not deployed). See [site/README.md](site/README.md). Rebuilt at the director's request: "people learn by playing, not reading".
   - **Backbone:** an original 3D cinema camera (three.js, no maker's name) that comes apart as you scroll. A crew of orange agents swarms the sensor for ISO, cranks the iris, repaints a color chip for WB, and freezes when you press the big STOP. It snaps back together at the end.
   - **Things to play with:** the viewfinder opening, where the AI takes over and the settings tick. A camera simulator with four dials and four lighting setups, where the AI fixes your picture live. A 15-second "Beat the AI" game. A before/after slider (AI fix, S-Log3, false color, zebras).
-  - **Words:** short headlines only. Every explanation and honest footnote sits behind the Nerd mode switch. Real Oct 19 data is tagged Real and the dashboard screenshots are tagged Placeholder. The simulator's scene is a rendered illustration, tagged in Nerd mode.
+  - **Words:** short headlines only. Every explanation and honest footnote sits behind the Nerd mode switch. Real data from the live camera test is tagged Real and the dashboard screenshots are tagged Placeholder. The simulator's scene is a rendered illustration, tagged in Nerd mode.
   - **Preview:** `python tools/serve_site.py`, then http://127.0.0.1:8780/.
 
-## 📍 Where things stand (2026-10-19, evening)
+## 📍 Where things stand (after the live test)
 
 **The live test is done.** It ran unattended on the director's go ("Camera ready, and I'm leaving it to you"), with the camera on a tripod at a white wall and one lamp, card out. Details: [docs/step5-live-test.md](docs/step5-live-test.md).
 - **Test 1, live ISO: PASS.**
@@ -214,8 +214,8 @@ The director's note on the narrated film was "too slow, too many words, looks li
 - **Display LUT read (read-only):** OFF, Base Look "S-Log3", which applies no conversion.
 - 89 tests pass.
 
-**Later the same evening (no camera): the director's four answers, built and committed.**
-- **Blind-test LUT: Sony's LC-709TypeA** (`2_SGamut3CineSLog3_To_LC-709TypeA.cube`), found on this Mac. It replaces the first pick, s709, the same evening, before any grading.
+**Later (no camera): the director's four answers, built and committed.**
+- **Blind-test LUT: Sony's LC-709TypeA** (`2_SGamut3CineSLog3_To_LC-709TypeA.cube`), found on this Mac. It replaces the first pick, s709, before any grading.
   - Sony's official LookProfile LUT for S-Gamut3.Cine/S-Log3 (the camera records movies in S-Gamut3.Cine).
   - Copied into `luts/`, which stays out of the repo. The plan's LUT line names the file and its checksum. It's still the only line changed since the freeze.
 - **Rating page:**
@@ -226,11 +226,11 @@ The director's note on the narrated film was "too slow, too many words, looks li
 - **README wording kept** as changed.
 - 105 tests pass.
 
-**Decisions (2026-10-19):**
+**Decisions (after the live test):**
 8. ✅ Director: run the live tests unattended this time, without typing LIVE or watching. Card out; static wall and lamp.
 9. ✅ Director: after the ISO test passed, unlock aperture f/2.8–f/11, shutter 1/48–1/100 and WB 2800–7500K.
    - Built as a startup switch (`--allow-exposure`), off by default in all three layers, so ISO only stays the default (Step 7 uses ISO only).
-10. ✅ Director (confirmed 2026-10-19): WB mode may switch only between **Auto and Color Temp**.
+10. ✅ Director (confirmed): WB mode may switch only between **Auto and Color Temp**.
     - Color Temp is needed to set Kelvin; Auto is how the camera was found.
     - Presets and Custom WB stay blocked.
 
@@ -255,25 +255,25 @@ The director's note on the narrated film was "too slow, too many words, looks li
   - Port 8765 is taken by robot-walker's web server, so use 8770.
 - The unattended live test: `tools/live_selftest.py` (`--fake --quick` to rehearse).
 
-<details><summary>Earlier: overnight 2026-10-17 → morning 2026-10-18 (resolved)</summary>
+<details><summary>Earlier: unattended work (resolved)</summary>
 
-The director went to sleep and asked for everything that doesn't need him or the camera. **The camera was not connected at any point overnight.** Only the fake camera and saved frames were used.
+The director stepped away and asked for everything that doesn't need them or the camera. **The camera was not connected at any point.** Only the fake camera and saved frames were used.
 
-**Done overnight (each committed):**
+**Done (each committed):**
 - Step 6 dashboard: [docs/step6-dashboard.md](docs/step6-dashboard.md)
 - Step 7 test plan (**DRAFT**) + scoring tools: [docs/step7-test-plan.md](docs/step7-test-plan.md)
 - Step 8 Pi plan finished: [docs/step8-pi-plan.md](docs/step8-pi-plan.md)
 - Step 9 started: README + [INTERVIEW.md](INTERVIEW.md)
 - 62 tests pass.
 
-**Director's decisions (2026-10-18 morning):**
+**Director's decisions:**
 1. ✅ Lock = hold every setting now.
 2. ✅ Keep face memory: local only, never uploaded, Forget deletes it, **only for people who agree** (note added to the dashboard, README, Step 6 doc).
 3. ✅ Face screenshots stay off the public repo.
-4. ✅ Allow ISO changes while recording **only for Step 7 agent takes**, behind a switch that's **off by default** (to build: brain, Python gate and C++ bridge all refuse while recording today).
+4. ✅ Allow ISO changes while recording **only for Step 7 agent takes**, behind a switch that's **off by default** (to build: brain, Python gate and C++ bridge all refused while recording at that point).
 5. ✅ Pi: **4GB**.
-6. ✅ Step 7's 8 questions answered (2026-10-18): ISO only; Sony cinema camera Auto ISO only; advice not followed in scored takes + one bonus take per face scene and person; Sony's official LUT; a private rater page I build; 2+ people with different skin tones (everyone in S1 and S4, others split); dates later.
-7. ✅ Step 7 plan **approved as FINAL** (2026-10-18). LUT = the camera's Display LUT, read from the camera (read-only) at the next connection, named in the plan before any grading. Built: the recording switch, the rater page (anonymous IDs, answers off the repo), the printable run sheet.
+6. ✅ Step 7's 8 questions answered: ISO only; Sony cinema camera Auto ISO only; advice not followed in scored takes + one bonus take per face scene and person; Sony's official LUT; a private rater page I build; 2+ people with different skin tones (everyone in S1 and S4, others split).
+7. ✅ Step 7 plan **approved as FINAL**. LUT = the camera's Display LUT, read from the camera (read-only) at the next connection, named in the plan before any grading. Built: the recording switch, the rater page (anonymous IDs, answers off the repo), the printable run sheet.
 
 **Needs Saad at the camera:**
 1. **Live ISO test (Step 5)**, ~10 min:
@@ -295,9 +295,9 @@ The director went to sleep and asked for everything that doesn't need him or the
 
 </details>
 
-<details><summary>Earlier park notes (19:40, resolved)</summary>
+<details><summary>Earlier park notes (resolved)</summary>
 
-Parked 2026-10-17, 19:40 (director stepped away)
+Parked (director stepped away)
 
 **Stopped at a clean point:** Steps 5 (no-camera part) and 8 are finished and committed. The last report to the director (Step 5 + Step 8 summary and four questions) was delivered and is awaiting replies. Nothing was half-done.
 
@@ -325,11 +325,11 @@ Parked 2026-10-17, 19:40 (director stepped away)
 
 </details>
 
-## Resumed 2026-10-17, 21:48: director's answers
+## Resumed: director's answers
 
 1. **Out-of-range ISO/aperture:** warn and pause (the brain's default; now confirmed).
 2. **Look numbers:** keep for now; tune after the live test.
-3. **Pi RAM:** decided 2026-10-18: **4GB** (nothing bought).
+3. **Pi RAM:** decided: **4GB** (nothing bought).
 4. **Allow-list for the live brain test:** **ISO only (800–12800).** The brain plans every lever, but only ISO changes are made; shutter/aperture/WB proposals are shown as "would change". Expand after the director has seen it behave.
 
 ## Steps
@@ -338,41 +338,41 @@ Parked 2026-10-17, 19:40 (director stepped away)
 - [x] **Step 2: First connection, read-only.** Results: [docs/step2-first-connection.md](docs/step2-first-connection.md). Connected, read 452 settings, saved frames, changed nothing (verified twice per run). Sigma recognized. Live view shows log whether Display LUT is On or Off. *Waiting for director review.*
 - [x] **Step 3: The bridge (C++ ↔ Python).** Results: [docs/step3-bridge.md](docs/step3-bridge.md). Base ISOs from the camera: 800 / 4000. Live view 24 fps (matches 23.98p), 0 frames missed. ISO 800 → 1000 → 800 confirmed and restored exactly. The camera confirms a change in 119-172 ms, and it shows in the picture after 272-325 ms. *Waiting for director review.*
 - [x] **Step 4: The eyes (read-only).** *Waiting for director review.* Notes: [docs/step4-eyes.md](docs/step4-eyes.md). Eyes + overlay built, 7 tests pass, live at 24 fps / about 10 ms per frame.
-  - ✅ **Calibration done (2026-10-17, white wall):**
+  - ✅ **Calibration done (white wall):**
     - Measured: 20.63 levels/stop, clip 221, black 10.0, camera meter 1000/stop.
     - Derived: 18% grey = 95.2.
     - Validated: the real ISO third-stop measures +0.331 (truth +0.333).
     - Optional later: wall at f/8 and f/11 to check the deep-shadow range.
-  - ✅ **Overlay screenshots done (22:14):** face found (94%), lamp flagged as a practical and zebra-striped, 24 fps. Saved in sessions/ (not committed: they show the director's face).
-  - ✅ **Decided (22:20):** default face target lowered to **+0.5 st** for every look; the per-person "this face looks right" button goes in Step 6. README notes the agent is designed to expose correctly across skin tones.
+  - ✅ **Overlay screenshots done:** face found (94%), lamp flagged as a practical and zebra-striped, 24 fps. Saved in sessions/ (not committed: they show the director's face).
+  - ✅ **Decided:** default face target lowered to **+0.5 st** for every look; the per-person "this face looks right" button goes in Step 6. README notes the agent is designed to expose correctly across skin tones.
 - [x] **Step 5: The brain + the runner.** Notes: [docs/step5-brain.md](docs/step5-brain.md). Rules + 5 looks tested with no camera: simulator (14 scenes, 0 back-and-forth) and recorded frames.
   - ✅ Decided: ISO/aperture starting outside the approved range → warn and pause.
   - ✅ **Brain, ISO-only mode:** only approved settings change; shutter/aperture/WB show as "Would change, not approved yet: …".
   - ✅ **Runner built (no camera):** `tools/run_agent.py` (eyes → brain → safety gate → bridge). Dry run by default; `--live` needs typing LIVE on the real camera. Kill switch: SPACE / Ctrl-C / `tools/kill_switch.py` / USB. Runaway guard (20 changes/min). Session snapshot + offer to restore ISO.
   - ✅ **Tried on a fake camera** (`tools/fake_bridge.py`, same protocol as the bridge) with your real Step 4 frame. It caught a 6400 ↔ 5000 pumping bug, fixed with a "clipping memory" rule + regression test. Keys checked in a real terminal.
   - ✅ 49 tests pass (7 eyes, 33 brain, 9 runner).
-  - ✅ **Live on the camera (2026-10-19), unattended on the director's go: all 3 tests PASS.** [docs/step5-live-test.md](docs/step5-live-test.md). Live ISO test, then a self-test of aperture, shutter and WB with WB calibration, then an automatic run with all four. Camera put back exactly as found each time. Static scene only: **lighting changes and faces still need Saad.**
-- [x] **Step 6: The dashboard** (built overnight 2026-10-17, fake camera only). [docs/step6-dashboard.md](docs/step6-dashboard.md). *Waiting for director review.*
+  - ✅ **Live on the camera, unattended on the director's go: all 3 tests PASS.** [docs/step5-live-test.md](docs/step5-live-test.md). Live ISO test, then a self-test of aperture, shutter and WB with WB calibration, then an automatic run with all four. Camera put back exactly as found each time. Static scene only: **lighting changes and faces still need Saad.**
+- [x] **Step 6: The dashboard** (fake camera only). [docs/step6-dashboard.md](docs/step6-dashboard.md). *Waiting for director review.*
   - Live view (clean / zebras / false color, face brackets, light sources), setting tiles, status + last change, Auto (starts Off in live, two presses to turn on), Lock, look picker, **"this face looks right"** (per person, stored only on this computer), highlight meters, 60 s exposure chart with tooltip + table, decisions feed, big kill switch (also Space). S4D style from LANDFALL. Phone layout with the kill switch pinned.
   - Checked with screenshots driven like a person; 5 bugs found and fixed. 58 tests pass.
-  - ✅ **Limits (2026-10-19, director's request):** when one of the director's limits stops a fix, an amber box says which, e.g. "Light is warmer than your 2800K limit.", and the setting's tile says "At your 2800K limit". Covers WB, ISO, aperture and shutter. Tried on the fake camera with a 2600K lamp; 13 tests.
+  - ✅ **Limits (director's request):** when one of the director's limits stops a fix, an amber box says which, e.g. "Light is warmer than your 2800K limit.", and the setting's tile says "At your 2800K limit". Covers WB, ISO, aperture and shutter. Tried on the fake camera with a 2600K lamp; 13 tests.
   - ❓ For the director: (1) Lock = "hold everything now" (my reading of your Step 5 rule); (2) face signatures are stored locally (biometric data); (3) screenshots with your face are not committed.
-- [~] **Step 7: Prove it works.** [docs/step7-test-plan.md](docs/step7-test-plan.md): **FINAL** (approved 2026-10-18, frozen). Shooting not started.
+- [~] **Step 7: Prove it works.** [docs/step7-test-plan.md](docs/step7-test-plan.md): **FINAL** (approved, frozen). Shooting not started.
   - Ready, no camera needed: `metrics.csv` logging + `m` mark key, `tools/score_take.py` (measurement definitions fixed in code, 4 tests), balanced take order from a fixed seed (`tools/make_test_order.py`).
-  - ✅ All 8 questions answered 2026-10-18 and written into the plan (63 scored takes + 6 bonus + sunset, ~3.5–4 h, two sessions).
-  - ✅ **Approved as FINAL 2026-10-18; frozen at commit c652757 (tag `step7-plan-final`).**
-  - ✅ **Two clarifications, 2026-10-21, before any shooting** (director): Manual keeps the iris fixed; unrecognized faces are scored against the take's person. They're at commit 6cea834 (tag `step7-plan-clarified`). The plan's SHA-256, emailed by the director to themselves: `7b2a9e69b190f4d055f87d4acb2e536deaababe3bf262d4b0d93d8ffea2a303b`.
+  - ✅ All 8 questions answered and written into the plan (63 scored takes + 6 bonus + sunset, ~3.5–4 h, two sessions).
+  - ✅ **Approved as FINAL; frozen at commit c652757 (tag `step7-plan-final`).**
+  - ✅ **Two clarifications, before any shooting** (director): Manual keeps the iris fixed; unrecognized faces are scored against the take's person. They're at commit 6cea834 (tag `step7-plan-clarified`). The plan's SHA-256, emailed by the director to themselves: `7b2a9e69b190f4d055f87d4acb2e536deaababe3bf262d4b0d93d8ffea2a303b`.
   - ✅ Tools built (no camera): recording switch (all 3 layers, off by default, agent takes only), read-only Display LUT reader, printable run sheet (87 rows), private anonymous rating page + counting. [docs/step7-tools.md](docs/step7-tools.md).
-  - ✅ Decided 2026-10-19, before any ratings (not in the frozen plan): **only raters who finish every clip count**; the page goes **online** (`rater_server.py share`, a temporary Cloudflare tunnel, anonymous codes only). Tested over the internet with test patterns. [docs/step7-tools.md](docs/step7-tools.md).
-  - ✅ Display LUT read 2026-10-19 (read-only): **OFF, Base Look "S-Log3"** (no conversion).
+  - ✅ Decided before any ratings (not in the frozen plan): **only raters who finish every clip count**; the page goes **online** (`rater_server.py share`, a temporary Cloudflare tunnel, anonymous codes only). Tested over the internet with test patterns. [docs/step7-tools.md](docs/step7-tools.md).
+  - ✅ Display LUT read (read-only): **OFF, Base Look "S-Log3"** (no conversion).
     - ✅ **LUT: Sony's LC-709TypeA**, `2_SGamut3CineSLog3_To_LC-709TypeA.cube` (S-Gamut3.Cine/S-Log3), named with its checksum on the plan's LUT line. It was found on the director's Mac and replaces the first pick, s709. The copy in `luts/` stays out of the repo.
 - [x] **Step 8: Raspberry Pi 5 plan (plan only, nothing bought).** [docs/step8-pi-plan.md](docs/step8-pi-plan.md). Pi 5 4GB build ≈ $244. Pi 5 likely fast enough (~33 ms/frame est. vs 41.7 ms budget); Jetson not needed. Risks: SDK unproven on Pi 5 (use Bookworm + 4K-page kernel), 5V/5A power from D-tap. *Waiting for director review.*
-- [~] **Step 9: Package it.** Started overnight: README rewritten (what it does, how it thinks, safety, skin tones, results so far with sources, setup, honest limits, "How this was built"); [INTERVIEW.md](INTERVIEW.md) drafted with 10 Q&As + 3 draft resume bullets (real numbers only). Waiting on Step 7 results and a demo video.
-  - ✅ **Website draft (2026-10-19, director's request), not deployed:** [site/](site/README.md).
+- [~] **Step 9: Package it.** Started: README rewritten (what it does, how it thinks, safety, skin tones, results so far with sources, setup, honest limits, "How this was built"); [INTERVIEW.md](INTERVIEW.md) drafted with 10 Q&As + 3 draft resume bullets (real numbers only). Waiting on Step 7 results and a demo video.
+  - ✅ **Website draft (director's request), not deployed:** [site/](site/README.md).
     - Built to the robot site's level, with its own cinematic identity.
-    - Real Oct 19 data is used wherever it exists; placeholder clips and screenshots are labeled on the page.
+    - Real data from the live camera test is used wherever it exists; placeholder clips and screenshots are labeled on the page.
     - A 2-minute screen recording was sent to the director.
-  - ✅ **Website v2 (2026-10-20, director's brief), not deployed:** an exploded 3D camera as the backbone, plus a simulator, a game, a before/after slider and Nerd mode. It runs at 60 fps on the M2, at laptop and phone size. Desktop and phone recordings were sent to the director.
+  - ✅ **Website v2 (director's brief), not deployed:** an exploded 3D camera as the backbone, plus a simulator, a game, a before/after slider and Nerd mode. It runs at 60 fps on the M2, at laptop and phone size. Desktop and phone recordings were sent to the director.
 
 ## Step 1 summary
 
@@ -383,7 +383,7 @@ Parked 2026-10-17, 19:40 (director stepped away)
 - License: our own code can be public and the app can be sold. Sony's files can't be published. Distributing to others requires a warranty/consent notice.
 - Risks: macOS 27 isn't on Sony's tested list (14/15/26). CMake isn't installed and full Xcode isn't either. Pi 5 isn't on Sony's tested list.
 
-## Decisions (2026-10-17)
+## Decisions (first session)
 
 1. Bridge: **A**, a C++ helper program with its own hard-coded safety blocks, plus a Python brain.
 2. Step 2 first connection: **our own minimal read-only program**, not Sony's interactive sample app.
@@ -391,7 +391,7 @@ Parked 2026-10-17, 19:40 (director stepped away)
 4. Warranty clause: director has read it and chose to continue.
 
 
-## Approved safe ranges (director, 2026-10-17)
+## Approved safe ranges (director)
 
 These go into the C++ allow-list. Anything not listed is blocked.
 
@@ -404,11 +404,11 @@ These go into the C++ allow-list. Anything not listed is blocked.
 | Focus | No changes yet | Never touch | |
 | Everything else | Blocked | Blocked | |
 
-**2026-10-19:** the director unlocked aperture, shutter and WB after the live ISO test passed. They sit behind a startup switch (`--allow-exposure`) that is off by default, in the bridge, the safety gate and the runner. WB mode may switch only between Auto and Color Temp. ISO alone remains the default.
+**Later,** the director unlocked aperture, shutter and WB after the live ISO test passed. They sit behind a startup switch (`--allow-exposure`) that is off by default, in the bridge, the safety gate and the runner. WB mode may switch only between Auto and Color Temp. ISO alone remains the default.
 
 Before any ISO change in Step 3:
 
-- ✅ **Sony cinema camera base ISOs for S-Log3 confirmed from the camera itself: 800 (Low) and 4000 (High).** Source: the camera's own menu text via the read-only "Camera Gain BaseISO" display-string request (2026-10-17).
+- ✅ **Sony cinema camera base ISOs for S-Log3 confirmed from the camera itself: 800 (Low) and 4000 (High).** Source: the camera's own menu text via the read-only "Camera Gain BaseISO" display-string request.
 - Note: at the end of Step 2 the camera's own shutter was 1/250, outside the approved range. The range limits what the agent may *set*; it won't "correct" a value you set. How the agent should react to an out-of-range starting value is a question for Step 5.
 
 ## Ground rules (from the director, apply to every step)

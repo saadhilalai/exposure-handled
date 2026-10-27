@@ -1,6 +1,6 @@
 # Open decisions for the director
 
-## Answered (2026-10-21)
+## Answered
 
 | # | Decision | Answer |
 |---|---|---|
@@ -9,18 +9,18 @@
 | 3 | Run-sheet notes | **Written by hand on the printout.** The list is in docs/step7-tools.md, section 0. |
 | 4 | Plan fingerprint | **Emailed by the director:** `7b2a9e69b190f4d055f87d4acb2e536deaababe3bf262d4b0d93d8ffea2a303b` (with both clarifications; tag `step7-plan-clarified`). |
 | 5 | Disclosure | **Said in the results** (as recommended). |
-| 6 | Saturday's start | **`tools/step7.sh`** (as recommended). |
-| 7 | Rehearsal | **Thursday 2026-10-22, at sunset.** |
+| 6 | Step 7 start | **`tools/step7.sh`** (as recommended). |
+| 7 | Rehearsal | **At sunset.** |
 | 8 | Pointer over buttons | **Keep the dot** (as recommended). |
 | 9 | Depth of field on slower computers | **Keep** (as recommended). |
 | 10 | End-card title | **Exposure, Handled.** It's on the end card, the website's title and the README. |
 | 11 | Music | **"Penumbra" by Scott Buckley** (CC BY 4.0): a different track, same calm cinematic feel. |
 | 12 | Commit the video source | **Yes**, the storyboard and composition. Footage, music and renders stay out (as recommended). |
-| 13 | Saturday's sessions | **Session 1 only** (indoors: S1, S3, S4, S6, both people). Session 2 (S2 midday, S5 sunset) goes on the next clear day. |
+| 13 | First shoot's sessions | **Only session 1** (indoors: S1, S3, S4, S6, both people). Session 2 (S2 midday, S5 sunset) goes on a clear day. |
 
 None of 3, 5, 6, 8, 9 or 12 changes the frozen plan.
 
-## New (2026-10-22, morning): the redo of all three films
+## New: the redo of all three films
 
 Everything is in `video/FILMS.md` and `video/CREDITS.md`. None of it is on the website.
 
@@ -55,7 +55,7 @@ daylight in SHUTTER. It's not used, because SHUTTER is a YSV film and your notes
 - Hype: "Beast", now 9 dB lower, ducking harder under the voice.
 - All CC BY 4.0, and none is used in another of your films.
 
-## New (2026-10-22, overnight): three films to pick from
+## New: three films to pick from
 
 Everything is in `video/FILMS.md`. The renders are in `video/v1-abstract/renders/`, `video/v2-hype/renders/` and `video/v3-story/renders/` (not in git). This replaces the hype draft below (17–20); its music and voice carry over.
 
@@ -64,7 +64,7 @@ Everything is in `video/FILMS.md`. The renders are in `video/v1-abstract/renders
 **22. A "first" claim: not used anywhere yet.**
 - The research (`docs/framing-research.md`) found nothing public that does all of this together: watches a pro cinema camera's live image, changes its exposure itself, steers by a chosen look, and explains each change. The closest, FrameCoach, needs a tap for every change.
 - But "first" can't be proven, and FrameCoach is one feature away from making it false.
-- If you want it, the safest wording is for a description, not the film: *"As far as we can find (October 2026), the first assistant that runs a cinema camera's exposure on its own, from a chosen look, and explains every change in plain English."*
+- If you want it, the safest wording is for a description, not the film: *"As far as we can find, the first assistant that runs a cinema camera's exposure on its own, from a chosen look, and explains every change in plain English."*
 - **Recommended:** leave it out. The films say "A camera that thinks like a cinematographer" instead.
 
 **23. The story film's big line: "What if your camera had a cinematographer inside it?"** It's your line. The research flags that the agent runs on the laptop, not inside the camera.
@@ -97,9 +97,9 @@ Everything is in `video/FILMS.md`. The renders are in `video/v1-abstract/renders
 **27. Resolution.**
 - **Now:** the moving 3D is path-traced at 1920×1080 and scaled up to 4K. Path-traced 4K is about 50 s a frame here, about 20 hours for all three films.
 - **The stills:** true 4K.
-- **Recommended:** once you pick a film, re-render just its 3D shots at 4K over a night.
+- **Recommended:** once you pick a film, re-render just its 3D shots at 4K in one long render.
 
-## New (2026-10-21, night): the hype cut
+## New: the hype cut
 
 You asked for a hype video instead of the slow narrated film, so decisions 14–16 below are replaced by these. Draft 1 is sent (`video/hype/renders/`, not in git). The cut sheet, with the source of every real thing on screen, is `video/HYPE.md`.
 
@@ -129,14 +129,14 @@ If you'd rather have Dior from the first auditions, that needs the ElevenLabs up
 Everything else follows your note:
 - 36.5 s.
 - Five big words.
-- One stat: **33 ms**, the kill switch, from the real Oct 19 test.
+- One stat: **33 ms**, the kill switch, from the real live camera test.
 - Small tags on every shot.
 
 ---
 
 ## Replaced by the hype cut: the narrated film (decisions 14–16)
 
-**14. Approve the script.** `video/SCRIPT.md`: 14 lines, about 38 s of talking in a 70 s film. Every number comes from the Oct 19 logs, and the source is beside each line. Change any line you like. Nothing gets voiced until you approve them.
+**14. Approve the script.** `video/SCRIPT.md`: 14 lines, about 38 s of talking in a 70 s film. Every number comes from the live-test logs, and the source is beside each line. Change any line you like. Nothing gets voiced until you approve them.
 
 **15. Which voice?** There are three auditions of lines 7, 8, 11 and 12 (sent, and in `video/composition/assets/voice/auditions/`, not in git):
 - **Dior:** a crisp, neutral male voice, made for tech launch films.
@@ -152,21 +152,21 @@ Until you answer, I'm building the film's visuals timed to the script, with the 
 
 ---
 
-## New (2026-10-21, afternoon)
+## New: Step 7 sessions
 
-**13. Is Saturday both sessions, or session 1 only?** *(Answered: session 1 only.)* The plan has two:
+**13. Is the first shoot both sessions, or only session 1?** *(Answered: only session 1.)* The plan has two:
 - Session 1: daytime, indoors, S1/S3/S4/S6, with both people.
 - Session 2: a clear day, S2 around midday, then S5 at sunset.
 
-docs/step7-day.md covers both. **Recommended:** session 1 on Saturday, and session 2 on the next clear day, because the plan says rain only moves session 2. Tell me if both are on Saturday, and I'll add a timeline (S2 at midday, S5 starting about 25 min before sunset).
+docs/step7-day.md covers both. **Recommended:** session 1 first, and session 2 on a clear day, because the plan says rain only moves session 2. Tell me if both are on one day, and I'll add a timeline (S2 at midday, S5 starting about 25 min before sunset).
 
 ---
 
 *The original questions, as asked:*
 
-Written 2026-10-21 while you were away.
+Written while you were away.
 
-## Before Saturday (Step 7)
+## Before the Step 7 shoot
 
 **1. Manual takes: may you move the iris?**
 - The frozen plan says both "Manual: ISO, ND, iris if you want" and "the same for all three: the look's f-stop, set by hand".
@@ -189,16 +189,16 @@ Written 2026-10-21 while you were away.
 
 **4. Proof the plan wasn't changed after the shoot.**
 - The git history was rewritten twice (to clean old wording), so the tag alone is weaker evidence than it was.
-- The plan's fingerprint today (SHA-256 of docs/step7-test-plan.md): `f7e7f9d661c7fea2af8b8c666d17b431ec99d993597d4731251244a52b5b404d`
-- **Recommended:** email that line to yourself before Saturday, so a timestamp outside this Mac holds it.
+- The plan's fingerprint at that point (SHA-256 of docs/step7-test-plan.md): `f7e7f9d661c7fea2af8b8c666d17b431ec99d993597d4731251244a52b5b404d`
+- **Recommended:** email that line to yourself before the shoot, so a timestamp outside this Mac holds it.
 
 **5. Disclosure.** You run the Manual takes and you've read the plan, including the blind-test picks. That can't be fixed now. **Recommended:** say so in the results.
 
-**6. Saturday's start script (new): `tools/step7.sh`.** One window runs the bridge for the day; a second runs each take by name, with the exact run-sheet command. See docs/step7-tools.md, section 0. **Recommended:** use it. The printed commands still work as they are, because the dashboard port now defaults to 8770.
+**6. The Step 7 start script (new): `tools/step7.sh`.** One window runs the bridge for the day; a second runs each take by name, with the exact run-sheet command. See docs/step7-tools.md, section 0. **Recommended:** use it. The printed commands still work as they are, because the dashboard port now defaults to 8770.
 
 ## The rehearsal
 
-**7. Which evening?** Wednesday or Thursday leaves a day to fix what it finds. Everything is ready: `tools/rehearsal.sh`, docs/rehearsal.md.
+**7. When?** Leave at least a day before Step 7 to fix what it finds. Everything is ready: `tools/rehearsal.sh`, docs/rehearsal.md.
 
 ## Website
 
@@ -210,7 +210,7 @@ Written 2026-10-21 while you were away.
 
 The storyboard is `video/STORYBOARD.md` and the composition is `video/composition/index.html`. It's 40 s, in the robot film's style, with every stand-in tagged in yellow.
 
-**10. Title on the end card.** "Camera Agent" for now. The robot's film has a phrase title ("Walk Before You Climb"). **Recommended:** keep "Camera Agent" unless a line comes out of Saturday's footage.
+**10. Title on the end card.** "Camera Agent" for now. The robot's film has a phrase title ("Walk Before You Climb"). **Recommended:** keep "Camera Agent" unless a line comes out of the Step 7 footage.
 
 **11. Music.** The draft has none. The robot's film used "Meanwhile" by Scott Buckley (CC BY 4.0). **Recommended:** a different CC BY track, chosen like the robot's: measure where its swell falls and line it up with the moment the window grows to full screen (12.2 s). Don't reuse another project's track; the robot's first draft was rejected partly for that.
 

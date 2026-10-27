@@ -8,11 +8,11 @@ An S4D project, directed by Saad Hilal. Code written with an AI coding assistant
 
 ![The dashboard on the fake camera](docs/screenshots/step6_03_desktop_auto.png)
 
-**Status (2026-10-21):**
-- Steps 1–6 and 8 are built, and the live closed-loop ISO test on the real camera passed (2026-10-19).
-- The real-world comparison (Step 7) is planned and frozen. Session 1 (indoors) is shot on Saturday 2026-10-24, and session 2 on the next clear day.
+**Status:**
+- Steps 1–6 and 8 are built, and the live closed-loop ISO test on the real camera passed.
+- The real-world comparison (Step 7) is planned and frozen. It runs in two sessions: session 1 indoors, and session 2 outdoors on a clear day.
 - Every result below is labeled with where it came from: **real camera**, **recorded frames**, **simulator** or **fake camera**.
-- Day-by-day log: [PROGRESS.md](PROGRESS.md).
+- Step-by-step log: [PROGRESS.md](PROGRESS.md).
 
 ## What it does
 
@@ -65,7 +65,7 @@ Never touched, ever: card format, file delete, firmware, record format, codec, f
 The agent is designed to expose correctly across skin tones.
 
 - **It never guesses or labels anyone's skin tone.** It measures how bright each face is, in stops relative to 18% grey, and compares that with a target.
-- **The default face target is +0.5 stop.** The common "skin at +1 stop" rule of thumb comes from lighter skin and pushes darker skin too bright, so the default sits lower (director's decision, 2026-10-17).
+- **The default face target is +0.5 stop.** The common "skin at +1 stop" rule of thumb comes from lighter skin and pushes darker skin too bright, so the default sits lower (director's decision).
 - **Set each person once: "this face looks right."** Frame the person and press it. The agent remembers that person (a face signature from OpenCV's SFace model) and holds their face at the exposure *you* approved. The cinematographer's eye decides, not a formula. Saved only for people who agree, only on this computer (never uploaded, never in this repo), and "Forget" deletes them.
 - **Faces never clip:** a clipping face is treated like a clipping window, for everyone.
 - **Honest status:** not yet tested on a range of skin tones with the real camera. That is part of the Step 7 test plan.
@@ -157,7 +157,7 @@ Keys: **Space** kill switch · `p` Auto on/off · `l` Lock · `m` mark an event 
 
 ## Honest limits
 
-- **Live so far: one static scene.** On 2026-10-19 the agent ran live on the camera, pointed at a white wall lit by a lamp. That was the ISO test, a self-test of aperture, shutter and WB, and a short automatic run with all four ([docs/step5-live-test.md](docs/step5-live-test.md)). Lighting changes, people and faces haven't been tested live yet; that's Step 7.
+- **Live so far: one static scene.** The agent ran live on the camera, pointed at a white wall lit by a lamp. That was the ISO test, a self-test of aperture, shutter and WB, and a short automatic run with all four ([docs/step5-live-test.md](docs/step5-live-test.md)). Lighting changes, people and faces haven't been tested live yet; that's Step 7.
 - **ISO** is the only setting that changes by default. Aperture (f/2.8–f/11), shutter (1/48–1/100) and WB (Auto or 2800–7500K) are approved too, but only behind a startup switch, `--allow-exposure`, that's off by default. The Step 7 test uses ISO only.
 - The WB reading is only trusted within about 100 mired of the light. If the WB is set further off than that, the agent leaves WB alone rather than guess.
 - No focus actions (by design, for now).

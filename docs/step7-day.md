@@ -1,4 +1,4 @@
-# Step 7 day sheet: Saturday 2026-10-24, session 1 (indoors)
+# Step 7 day sheet: session 1 (indoors)
 
 > **Two Terminal windows, that's all:**
 > ```
@@ -9,17 +9,17 @@
 
 **This is the real test, not a rehearsal.** The printed run sheet is the plan, and this page is only how to run it. Sessions go to `sessions/`, named after the take.
 
-**Saturday is session 1 only** (director, 2026-10-21):
+**The first shoot is only session 1** (director):
 - **Scenes:** S1 window-backlit face, S3 tungsten, S4 low light and S6 static control, with **both people (A and B)**.
 - **Takes:** 54 scored and 5 bonus, 59 in all. Allow about 2.5–3 hours.
-- **On the printed sheet** these are the first pages, under "Session 1 · daytime, indoors". The session 2 pages (S2, S5) come after a page break: leave them for the next clear day.
+- **On the printed sheet** these are the first pages, under "Session 1 · daytime, indoors". The session 2 pages (S2, S5) come after a page break: leave them for a clear day.
 - **Shoot S1 while there's daylight in the window,** since its event is opening the blind.
 
 ## Bring
 
 - [ ] Sony cinema camera, with 3+ charged batteries, and enough card space for about 1.5 hours of footage at your codec
 - [ ] Lens, **variable ND**, tripod
-- [ ] **USB-C data cable** (the one from Oct 19)
+- [ ] **USB-C data cable** (the one from the live test)
 - [ ] MacBook and its **charger**, plus an outlet nearby: it's a long day
 - [ ] **The printed run sheet** and a pen, including the consent page for each person
 - [ ] For the events:
@@ -69,13 +69,13 @@
 ## End of the day
 
 1. Ctrl-C in window 1: the bridge stops, and the Mac may sleep again.
-2. Copy the card into a folder called **STEP7-2026-10-24**, never next to rehearsal footage.
-3. Tell your coding assistant. It scores session 1's takes (`tools/score_take.py`) and lists the cut points for the 15 blind-test clips shot today (`tools/blind_clips.py`).
+2. Copy the card into a folder whose name starts with **STEP7-** (add the shoot date after it), never next to rehearsal footage.
+3. Tell your coding assistant. It scores session 1's takes (`tools/score_take.py`) and lists the cut points for the 15 blind-test clips shot in session 1 (`tools/blind_clips.py`).
 4. **The rating page waits for session 2.** Two of the blind test's seven sets (S2 and S5) are shot then, and raters see all 21 clips together.
 
-## Session 2: the next clear day
+## Session 2: a clear day
 
 - **Scenes:** S2 around midday (person A, shade to sun), then S5 starting about 25 minutes before sunset (2-minute blocks; press m at each block's start). These are the sheet's session 2 pages.
 - **Bring** a marked line on the ground between the shade and the sun.
-- **Same two windows** as Saturday: `tools/step7.sh bridge`, then each take by name.
-- This page gets its own session 2 section before that day.
+- **Same two windows** as session 1: `tools/step7.sh bridge`, then each take by name.
+- This page gets its own session 2 section before that shoot.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Saturday's Step 7, in two Terminal windows:
+# Step 7, in two Terminal windows:
 #
 #   tools/step7.sh bridge             Window 1, once for the day: starts the bridge with the Step 7 switch
 #                                     (--allow-iso-while-recording), keeps the Mac awake, waits until the camera
