@@ -151,6 +151,8 @@ class AgentRunner:
         self.bridge = status
         if not status.get("connected"):
             raise RunnerError("the bridge has no camera connected")
+        if status.get("locked") and status.get("lock_file"):
+            raise RunnerError("the kill switch is still on from before (it outlives restarts): unlock it first")
         if status.get("locked"):
             raise RunnerError("the bridge is locked (kill switch was used): restart the bridge first")
         if self.live and status.get("read_only"):

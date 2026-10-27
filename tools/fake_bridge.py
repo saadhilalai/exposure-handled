@@ -4,6 +4,8 @@ Same socket protocol as bridge/src/camera_bridge.cpp (ping, status, settings, ge
 lvstats, set, lock, quit) and the same checks before a change: read-only, kill switch,
 allow-list (ISO 800-12800; with --allow-exposure also f/2.8-f/11, 1/48-1/100 and WB Auto /
 Color Temp 2800-7500K, like the real bridge), recording, value offered.
+--lock-file PATH: like the real bridge, the kill switch outlives a restart (PATH present = start locked;
+"lock" writes it; nothing here removes it).
 White balance: the light has a color temperature (--light-k, default 3200K). On Auto WB the
 picture is neutral; on Color Temp it gets the cast a real camera would show (warmer when the
 WB setting is above the light).
@@ -18,12 +20,13 @@ Usage:
          [--light 20:-1 40:0.7]   from 20 s the room is 1 stop darker, from 40 s 0.7 stop brighter
          [--record 30:40]         the camera records from 30 s to 40 s
          [--read-only | --allow-iso-while-recording | --allow-exposure | --allow-exposure-while-recording] [--light-k 3200]
-         [--socket run/fake_bridge.sock] [--log-dir DIR]
+         [--socket run/fake_bridge.sock] [--log-dir DIR] [--lock-file PATH]
 """
 import argparse
 import copy
 import json
 import math
+import os
 import socketserver
 import sys
 import threading
@@ -122,7 +125,7 @@ def made_up_scene(w, h, tm):
 class FakeCamera:
     def __init__(self, frame=None, size=(1024, 576), iso=None, shutter=None, fnumber=None, light=(), record=(),
                  read_only=False, realtime=True, fps=24.0, log_dir=None, scene_offset=0.0, iso_while_recording=False,
-                 allow_exposure=False, light_k=3200, exposure_while_recording=False):
+                 allow_exposure=False, light_k=3200, exposure_while_recording=False, lock_file=None):
         self.props = copy.deepcopy(json.loads(SETTINGS_FILE.read_text())["properties"])
         for name, raw in (("IsoSensitivity", iso), ("FNumber", fnumber and int(round(fnumber * 100))),
                           ("ShutterSpeed", shutter and (1 << 16) | int(shutter))):
@@ -152,7 +155,8 @@ class FakeCamera:
         self.iso_while_recording = iso_while_recording and not read_only
         self.exposure_while_recording = exposure_while_recording and not read_only and not iso_while_recording
         self.allow_exposure = (allow_exposure or self.exposure_while_recording) and not read_only and not iso_while_recording
-        self.locked = False
+        self.lock_file = Path(lock_file) if lock_file else None
+        self.locked = bool(self.lock_file and self.lock_file.exists())   # a kill from before the restart
         self.sets = []                                                  # every set command received
         self.frame_no = 0
         self.t0 = time.monotonic()
@@ -267,7 +271,7 @@ class FakeCamera:
             return {"ok": True, "pong": True}, None
         if cmd == "status":
             return {"ok": True, "model": "FAKE camera (no real camera)", "fake": True, "connected": True,
-                    "locked": self.locked, "read_only": self.read_only, "iso_while_recording": self.iso_while_recording,
+                    "locked": self.locked, "lock_file": self.lock_file is not None, "read_only": self.read_only, "iso_while_recording": self.iso_while_recording,
                     "allow_exposure": self.allow_exposure, "exposure_while_recording": self.exposure_while_recording,
                     "allow_list": [{"name": n, "min": lo, "max": hi} for n, (lo, hi, sw) in ALLOW_LIST.items()
                                    if self.allow_exposure or not sw]}, None
@@ -285,8 +289,18 @@ class FakeCamera:
             return self.set(args[1], int(args[2], 0)), None
         if cmd == "lock":
             self.locked = True
-            self._log({"event": "locked"})
-            return {"ok": True, "locked": True}, None
+            kept = None
+            if self.lock_file:
+                try:
+                    with open(self.lock_file, "w") as f:
+                        f.write("locked by the kill switch\n")
+                        f.flush()
+                        os.fsync(f.fileno())
+                    kept = True
+                except OSError:
+                    kept = False
+            self._log({"event": "locked", "kept_after_restart": kept})
+            return {"ok": True, "locked": True, "kept_after_restart": kept}, None
         if cmd == "quit":
             return {"ok": True, "quitting": True}, None
         return {"ok": False, "error": "unknown or malformed command"}, None
@@ -342,6 +356,7 @@ def main():
                     help="rehearsal shoots only: --allow-exposure, and it may change while recording too")
     ap.add_argument("--light-k", type=int, default=3200, help="the light's color temperature")
     ap.add_argument("--log-dir")
+    ap.add_argument("--lock-file", help="the kill switch outlives a restart (as on the Pi)")
     args = ap.parse_args()
     if sum((args.read_only, args.allow_iso_while_recording, args.allow_exposure, args.allow_exposure_while_recording)) > 1:
         sys.exit("--read-only, --allow-iso-while-recording, --allow-exposure and --allow-exposure-while-recording "
@@ -351,7 +366,8 @@ def main():
                         light=parse_pairs(args.light), record=parse_pairs(args.record),
                         read_only=args.read_only, log_dir=args.log_dir,
                         iso_while_recording=args.allow_iso_while_recording, allow_exposure=args.allow_exposure,
-                        light_k=args.light_k, exposure_while_recording=args.allow_exposure_while_recording)
+                        light_k=args.light_k, exposure_while_recording=args.allow_exposure_while_recording,
+                        lock_file=args.lock_file)
     server = serve(camera, args.socket)
     print("Fake camera ready on %s (no real camera). Ctrl-C or 'quit' stops it." % args.socket, flush=True)
     try:

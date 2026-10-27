@@ -12,6 +12,7 @@
 //   display_strings <type_id>       the camera's own menu text for a list (e.g. 8 = base ISO)
 //   set <Name> <raw_value>          the ONLY way to change the camera (see guarded_set)
 //   lock                            kill switch: refuse every change until the bridge restarts
+//                                   (with --lock-file: until that file is removed, even across restarts)
 //   quit                            disconnect from the camera and exit
 //
 // Safety:
@@ -26,12 +27,15 @@
 //
 // Usage: camera_bridge <socket_path> <log_dir>
 //          [--read-only | --allow-iso-while-recording | --allow-exposure | --allow-exposure-while-recording]
+//          [--lock-file=PATH]
 //   --read-only: every "set" is refused for the whole run (used in Step 4).
 //   --allow-iso-while-recording: Step 7 agent takes only. Off unless given; can't be turned on later.
 //   --allow-exposure: aperture f/2.8-f/11, shutter 1/48-1/100 and WB (Auto or Color Temp 2800-7500K)
 //     may change too (director). Off unless given: ISO only.
 //   --allow-exposure-while-recording: rehearsal shoots only. Everything --allow-exposure allows, and it may
 //     change while recording too. Off unless given; can't be turned on later.
+//   --lock-file=PATH: the kill switch outlives a restart (on the Pi, which restarts the bridge after a crash).
+//     PATH present at start-up = start locked. "lock" writes it before answering. The bridge never removes it.
 
 #include <poll.h>
 #include <signal.h>
@@ -50,6 +54,7 @@
 #include "CrImageDataBlock.h"
 #include "ICrCameraObjectInfo.h"
 #include "IDeviceCallback.h"
+#include "bridge_args.hpp"
 #include "sdk_util.hpp"
 
 // Never used anywhere in the bridge. Any mention is a compile error.
@@ -99,6 +104,7 @@ std::atomic<bool> g_read_only{false};  // set by --read-only at startup; cannot 
 std::atomic<bool> g_iso_while_recording{false};  // --allow-iso-while-recording (Step 7); startup only
 std::atomic<bool> g_allow_exposure{false};       // --allow-exposure: aperture, shutter, WB too; startup only
 std::atomic<bool> g_exposure_while_recording{false};  // --allow-exposure-while-recording (rehearsal); startup only
+std::string g_lock_file;  // --lock-file=PATH, or "" (startup only)
 SDK::CrDeviceHandle g_handle = 0;
 std::mutex g_sdk_mutex;  // one SDK call at a time
 std::mutex g_set_mutex;  // one setting change at a time
@@ -407,6 +413,7 @@ std::string cmd_status() {
     std::ostringstream o;
     o << "{\"ok\": true, \"model\": \"" << kExpectedModel << "\", \"connected\": " << (g_connected ? "true" : "false")
       << ", \"locked\": " << (g_locked ? "true" : "false")
+      << ", \"lock_file\": " << (g_lock_file.empty() ? "false" : "true")
       << ", \"read_only\": " << (g_read_only ? "true" : "false")
       << ", \"iso_while_recording\": " << (g_iso_while_recording ? "true" : "false")
       << ", \"exposure_while_recording\": " << (g_exposure_while_recording ? "true" : "false")
@@ -578,9 +585,11 @@ bool handle(int fd, const std::string& line) {
     else if (cmd == "display_strings" && args.size() == 2 && parse_int(args[1], &a)) reply = cmd_display_strings(a);
     else if (cmd == "set" && args.size() == 3 && parse_int(args[2], &a)) reply = guarded_set(args[1], a);
     else if (cmd == "lock") {
-        g_locked = true;
-        log_event("\"event\": \"locked\"");
-        reply = "{\"ok\": true, \"locked\": true}";
+        g_locked = true;  // first, so nothing gets through while the file is written
+        const bool kept = !g_lock_file.empty() && write_lock_file(g_lock_file);
+        const std::string kept_json = g_lock_file.empty() ? "null" : (kept ? "true" : "false");
+        log_event("\"event\": \"locked\", \"kept_after_restart\": " + kept_json);
+        reply = "{\"ok\": true, \"locked\": true, \"kept_after_restart\": " + kept_json + "}";
     } else if (cmd == "quit") {
         g_running = false;
         reply = "{\"ok\": true, \"quitting\": true}";
@@ -632,20 +641,22 @@ int check_rules() {
 
 int main(int argc, char** argv) {
     if (argc == 2 && std::string(argv[1]) == "--check-rules") return check_rules();
-    const std::string flag = argc == 4 ? argv[3] : "";
-    if (argc < 3 || argc > 4 ||
-        (argc == 4 && flag != "--read-only" && flag != "--allow-iso-while-recording" && flag != "--allow-exposure" &&
-         flag != "--allow-exposure-while-recording")) {
+    const std::optional<BridgeArgs> parsed = parse_bridge_args(argc, argv);
+    if (!parsed) {
         std::cerr << "usage: camera_bridge <socket_path> <log_dir> [--read-only | --allow-iso-while-recording | "
-                     "--allow-exposure | --allow-exposure-while-recording]\n";
+                     "--allow-exposure | --allow-exposure-while-recording] [--lock-file=PATH]\n";
         return 2;
     }
+    const std::string flag = parsed->mode;
+    g_lock_file = parsed->lock_file;
+    g_locked = lock_file_present(g_lock_file);  // before the camera is even looked for
     g_read_only = (flag == "--read-only");
     g_iso_while_recording = (flag == "--allow-iso-while-recording");
     g_exposure_while_recording = (flag == "--allow-exposure-while-recording");
     g_allow_exposure = (flag == "--allow-exposure" || g_exposure_while_recording);
-    const std::string socket_path = argv[1];
-    g_log.open(std::string(argv[2]) + "/bridge_log.jsonl", std::ios::app);
+    const std::string socket_path = parsed->socket_path;
+    g_log.open(parsed->log_dir + "/bridge_log.jsonl", std::ios::app);
+    if (g_locked) log_event("\"event\": \"locked_at_start\", \"lock_file\": \"" + json_escape(g_lock_file) + "\"");
     ::signal(SIGPIPE, SIG_IGN);
     ::signal(SIGINT, on_signal);
     ::signal(SIGTERM, on_signal);
@@ -693,6 +704,8 @@ int main(int argc, char** argv) {
               << (g_read_only        ? ". READ-ONLY: all changes refused.\n"
                   : g_allow_exposure ? ". Allow-list: ISO 800-12800, f/2.8-f/11, 1/48-1/100, WB Auto or 2800-7500K.\n"
                                      : ". Allow-list: IsoSensitivity 800-12800 only.\n");
+    if (g_locked)
+        std::cout << "KILL SWITCH STILL ON from before the restart (" << g_lock_file << "): every change refused.\n";
     if (g_iso_while_recording)
         std::cout << "STEP 7 SWITCH ON: ISO (only) may change while the camera records. Restart without it after the take.\n";
     if (g_exposure_while_recording)
