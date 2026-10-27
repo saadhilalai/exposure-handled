@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Camera Agent | Pair this phone</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="brand/favicon.png">
+<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .pair { max-width: 420px; margin: 0 auto; padding: calc(var(--topbar-h) + 32px) var(--gutter) 48px; }
+  .pair h1 { font-family: var(--wide); font-weight: 700; font-size: 22px; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 8px; }
+  .pair p { color: var(--grey); margin: 0 0 24px; }
+  .pair input { width: 100%; padding: 14px 16px; font-size: 28px; letter-spacing: 0.4em; text-align: center; background: var(--surface);
+                border: 1px solid var(--line-strong); border-radius: 0; }
+  .pair .row { display: flex; gap: 12px; margin-top: 12px; }
+  .pair button { flex: 1; padding: 14px; border: 1px solid var(--line-strong); background: none; font-family: var(--wide);
+                 letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+  .pair .msg { min-height: 1.5em; margin: 12px 0 0; color: var(--caution); }
+  .pair .kill { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .pair .kill button { width: 100%; padding: 20px; border-color: var(--stop); color: var(--stop); font-weight: 700; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="S4D Camera Agent">
+    <img src="brand/s4d.png" alt="S4D" width="32" height="32">
+    <span class="brand-sep"></span>
+    <span class="wordmark">Camera Agent</span>
+  </a>
+</header>
+<main class="pair">
+  <h1>Pair this phone</h1>
+  <p>Enter the 6-digit PIN once. This phone stays paired after that.</p>
+  <form id="form" autocomplete="off">
+    <label class="visually-hidden" for="pin">PIN</label>
+    <input id="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required>
+    <div class="row"><button type="submit">Pair</button></div>
+    <p class="msg" id="msg" role="status"></p>
+  </form>
+  <div class="kill">
+    <p>The kill switch works without pairing. It stops the agent and locks the camera's settings.</p>
+    <button type="button" id="kill">Kill switch</button>
+  </div>
+</main>
+<script>
+  function post(action, body) {
+    return fetch("/api/" + action, {
+      method: "POST", headers: { "Content-Type": "application/json", "X-Camera-Agent": "1" },
+      body: JSON.stringify(body || {}),
+    }).then((r) => r.json()).catch(() => ({ ok: false, error: "no connection to the Pi" }));
+  }
+  const msg = document.getElementById("msg");
+  document.getElementById("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const pin = document.getElementById("pin");
+    msg.textContent = "Checking…";
+    const r = await post("pair", { pin: pin.value });
+    if (r.ok) { location.replace("/"); return; }
+    msg.textContent = r.error || "wrong PIN";
+    pin.value = "";
+    pin.focus();
+  });
+  document.getElementById("kill").addEventListener("click", async () => {
+    const r = await post("kill");
+    msg.textContent = r.ok ? "Stopped. Nothing more is sent to the camera." : (r.error || "the kill switch didn't answer");
+  });
+</script>
+</body>
+</html>

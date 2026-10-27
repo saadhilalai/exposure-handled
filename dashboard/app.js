@@ -81,6 +81,7 @@ async function stateLoop() {
   try {
     const r = await fetch("/api/state", { cache: "no-store" });
     if (r.ok) { state = await r.json(); render(); }
+    else if (r.status === 401) { location.reload(); return; }   // this phone isn't paired (any more): the PIN screen
   } catch (e) {
     $("status").textContent = "Lost connection to the agent. If the runner stopped, nothing more is sent to the camera.";
   }

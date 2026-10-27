@@ -15,9 +15,15 @@ Python's standard library only, so it runs the same on the Pi. Listens on 127.0.
 Every POST must carry the header "X-Camera-Agent: 1". A browser won't add a custom header
 for another website without asking this server first (and it never says yes), so a random
 web page can't press the buttons. The Host header is checked too, against DNS tricks.
+
+With a PIN (on the Pi, where the phone reaches it over Wi-Fi; see agent/pin.py):
+  POST /api/pair {"pin": "123456"}   pairs this phone (a cookie). Until then the page is the PIN screen,
+                                     and /api/* answers 401, except the kill switch, which always works.
+Without a PIN (the Mac), nothing changes.
 """
 import json
 import threading
+from http.cookies import CookieError, SimpleCookie
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -32,18 +38,20 @@ PAGE_DIR = ROOT / "dashboard"
 TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
          ".png": "image/png", ".woff2": "font/woff2", ".svg": "image/svg+xml", ".txt": "text/plain; charset=utf-8"}
 MODES = ("clean", "zebras", "false_color")
+COOKIE = "ca_pair"
 
 
 class Dashboard:
-    def __init__(self, runner, host="127.0.0.1", port=8770):
+    def __init__(self, runner, host="127.0.0.1", port=8770, guard=None, names=()):
         self.runner, self.host, self.port = runner, host, port
+        self.guard = guard if guard is not None and guard.enabled else None   # agent.pin.PinGuard, or no PIN
         self.cache = {}                      # mode -> (frame_no, jpeg bytes), shared by every viewer
         self.cache_lock = threading.Lock()
         handler = type("Handler", (_Handler,), {"dash": self})
         self.server = ThreadingHTTPServer((host, port), handler)
         self.server.daemon_threads = True
         self.port = self.server.server_address[1]            # port 0 = any free port (tests)
-        self.allowed_hosts = {"%s:%d" % (h, self.port) for h in ("127.0.0.1", "localhost", host)}
+        self.allowed_hosts = {"%s:%d" % (h, self.port) for h in ("127.0.0.1", "localhost", host, *names)}
 
     def start(self):
         self.started = True
@@ -131,6 +139,15 @@ class _Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _paired(self):
+        if self.dash.guard is None:
+            return True
+        try:
+            morsel = SimpleCookie(self.headers.get("Cookie", "")).get(COOKIE)
+        except CookieError:
+            return False
+        return self.dash.guard.is_paired(morsel.value if morsel else "")
+
     def _host_ok(self):
         if self.dash.host in ("0.0.0.0", ""):   # opened up on purpose (Pi + phone); see docs
             return True
@@ -140,6 +157,11 @@ class _Handler(BaseHTTPRequestHandler):
         if not self._host_ok():
             return self._send(403, {"ok": False, "error": "wrong host"})
         url = urlparse(self.path)
+        if not self._paired():
+            if url.path.startswith("/api/"):
+                return self._send(401, {"ok": False, "error": "pair this phone first"})
+            if url.path in ("/", "/index.html"):
+                url = url._replace(path="/pair.html")
         if url.path == "/api/state":
             return self._send(200, self.dash.runner.snapshot())
         if url.path == "/api/frame.jpg":
@@ -169,5 +191,16 @@ class _Handler(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(min(length, 10000)) or b"{}") if length else {}
         except (ValueError, json.JSONDecodeError):
             return self._send(400, {"ok": False, "error": "bad request"})
-        code, reply = self.dash.control(url.path[len("/api/"):], body if isinstance(body, dict) else {})
+        action, body = url.path[len("/api/"):], body if isinstance(body, dict) else {}
+        if action == "pair":
+            if self.dash.guard is None:
+                return self._send(404, {"ok": False, "error": "no PIN on this dashboard"})
+            token, error = self.dash.guard.pair(str(body.get("pin") or ""))
+            if not token:
+                return self._send(403, {"ok": False, "error": error})
+            cookie = "%s=%s; Path=/; Max-Age=31536000; HttpOnly; SameSite=Strict" % (COOKIE, token)
+            return self._send(200, {"ok": True}, extra=[("Set-Cookie", cookie)])
+        if action != "kill" and not self._paired():          # the kill switch works for anyone on the network
+            return self._send(401, {"ok": False, "error": "pair this phone first"})
+        code, reply = self.dash.control(action, body)
         return self._send(code, reply)
