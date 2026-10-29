@@ -153,6 +153,9 @@ def test_the_watch_test_never_arms_and_refuses_damaged_code():
     assert "AllowedCPUs=3" in text and "OPENCV_FOR_THREADS_NUM=1" in text        # the 2-core limit
     assert "status --porcelain" in text and "pi_send_code.sh --restore" in text  # emptied files stop it
     assert "trap stop_all EXIT" in text
+    bench = (ROOT / "tools" / "pi_power_bench.sh").read_text()
+    subprocess.run(["bash", "-n", str(ROOT / "tools" / "pi_power_bench.sh")], check=True)
+    assert "set -euo pipefail" in bench and "the bridge is armed" in bench and "BridgeClient" not in bench
 
 
 def test_the_hotspot_is_a_trial_that_undoes_itself_until_kept():
