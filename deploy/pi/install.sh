@@ -9,8 +9,13 @@
 #   sudo deploy/pi/install.sh app       user, folders, settings file, Python, face models, the bridge build,
 #                                       the tests, the services. Needs Sony's Linux SDK on the Pi first.
 #   sudo deploy/pi/install.sh pin       the dashboard's 6-digit PIN (asked twice; only a hash is stored)
-#   sudo deploy/pi/install.sh hotspot   the Pi's own Wi-Fi. Do it last: after the next restart the Pi stops
-#                                       joining your home Wi-Fi, so the Mac logs in by joining the Pi's network.
+#   sudo deploy/pi/install.sh hotspot        the Pi's own Wi-Fi, set up but not switched on (do it last)
+#   sudo deploy/pi/install.sh hotspot-try    switch to it on trial: unless hotspot-keep is run from the Pi's
+#                                            network within 10 minutes, it goes back to your home Wi-Fi by itself
+#   sudo deploy/pi/install.sh hotspot-keep   keep it: from then on the Pi makes its own network at every start
+#   sudo deploy/pi/install.sh hotspot-off    back to your home Wi-Fi for good
+#   Rescue, with no way in: put an empty file named home-wifi on the card's boot part (the Mac can write it),
+#   and at the next start the Pi goes back to your home Wi-Fi.
 #
 # It never starts the bridge and never touches the camera: the services start at the next power-up.
 # Safe to run again: each step only changes what's missing.
@@ -160,6 +165,23 @@ $line"
     say "PIN saved (only its hash). Phones paired before must pair again if you changed it: sudo rm $(setting state_dir)/paired.json"
 }
 
+HOTSPOT=camera-hotspot
+RESCUE_FILE=$BOOT/home-wifi
+
+# The home Wi-Fi connection (Raspberry Pi Imager calls it "preconfigured").
+home_wifi() {
+    nmcli -t -f NAME,TYPE connection show | awk -F: -v h="$HOTSPOT" '$2 == "802-11-wireless" && $1 != h {print $1; exit}'
+}
+
+need_hotspot() {
+    nmcli -t -f NAME connection show | grep -qx "$HOTSPOT" || die "no hotspot yet: sudo deploy/pi/install.sh hotspot"
+}
+
+# Switch wlan0 a few seconds after this script ends, so a dropped login can't cut the switch off halfway.
+switch_later() {
+    systemd-run -q --unit="camera-wifi-switch-$(date +%s)" --on-active=5s /bin/sh -c "$1"
+}
+
 step_hotspot() {
     need_root; need_pi
     [ -f "$CONF" ] || die "no settings file yet: run the app step first"
@@ -167,21 +189,67 @@ step_hotspot() {
     ssid=$(setting ssid); band=$(setting band); host=$(setting host)
     country=$(raspi-config nonint get_wifi_country 2>/dev/null || true)
     [ -n "$country" ] || die "no Wi-Fi country set (the Pi's Wi-Fi stays off without one): sudo raspi-config, Localisation Options, WLAN Country"
-    if nmcli -t -f NAME connection show | grep -qx camera-hotspot; then
-        echo "The hotspot is already set up (connection camera-hotspot). Nothing changed."
+    [ -n "$(home_wifi)" ] || die "no home Wi-Fi connection found to come back to: set one up first"
+    say "The rescue: an empty file named home-wifi on the card's boot part sends the Pi back to home Wi-Fi"
+    install -m 644 "$APP/deploy/pi/camera-wifi-rescue.service" /etc/systemd/system/
+    systemctl daemon-reload
+    systemctl enable -q camera-wifi-rescue.service
+    echo "ready (it only acts when that file is there)"
+    if nmcli -t -f NAME connection show | grep -qx "$HOTSPOT"; then
+        echo "The hotspot is already set up (connection $HOTSPOT). Nothing else changed."
         return
     fi
+    dpkg -s dnsmasq-base >/dev/null 2>&1 || apt-get install -y -qq dnsmasq-base   # hands the phone its address
     read -r -s -p "Wi-Fi password for '$ssid' (8+ characters): " pass; echo
     read -r -s -p "Same password again: " pass2; echo
     [ "$pass" = "$pass2" ] || die "the two passwords don't match"
     [ "${#pass}" -ge 8 ] || die "the password needs at least 8 characters"
-    nmcli connection add type wifi ifname wlan0 con-name camera-hotspot autoconnect yes \
+    nmcli connection add type wifi ifname wlan0 con-name "$HOTSPOT" autoconnect no \
         connection.autoconnect-priority 100 ssid "$ssid" 802-11-wireless.mode ap 802-11-wireless.band "$band" \
         ipv4.method shared ipv4.addresses "$host/24" wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$pass" >/dev/null
-    say "Hotspot '$ssid' set up (WPA2, ${band/bg/2.4 GHz}, the Pi at $host). It comes up at the next restart."
-    echo "After that, the Pi no longer joins your home Wi-Fi. To log in from the Mac: join '$ssid', then"
+    say "Hotspot '$ssid' set up (WPA2, ${band/bg/2.4 GHz}, the Pi at $host), but not switched on."
+    echo "The Pi is still on your home Wi-Fi. Next, to try it:  sudo deploy/pi/install.sh hotspot-try"
+}
+
+step_hotspot_try() {
+    need_root; need_pi; need_hotspot
+    local home ssid host
+    home=$(home_wifi); ssid=$(setting ssid); host=$(setting host)
+    [ -n "$home" ] || die "no home Wi-Fi connection to come back to"
+    systemctl stop camera-hotspot-undo.timer 2>/dev/null || true
+    systemd-run -q --unit=camera-hotspot-undo --on-active=10min /bin/sh -c \
+        "nmcli connection down $HOTSPOT; nmcli connection up '$home'"
+    switch_later "nmcli connection up $HOTSPOT"
+    say "In 5 seconds the Pi leaves your home Wi-Fi and makes its own network, '$ssid'. This login will drop."
+    echo "Within 10 minutes, on the Mac: join '$ssid', then"
     echo "  ssh <your user>@$host"
-    echo "On the phone: join '$ssid', open http://$host:$(setting port)/ and enter the PIN once."
+    echo "  sudo /opt/camera-agent/deploy/pi/install.sh hotspot-keep"
+    echo "If you don't, or the Pi restarts, it goes back to your home Wi-Fi ('$home') by itself."
+}
+
+step_hotspot_keep() {
+    need_root; need_pi; need_hotspot
+    nmcli -t -f NAME connection show --active | grep -qx "$HOTSPOT" ||
+        die "the hotspot isn't on right now: run hotspot-try first, and this from the Pi's own network"
+    systemctl stop camera-hotspot-undo.timer 2>/dev/null || true
+    nmcli connection modify "$HOTSPOT" autoconnect yes connection.autoconnect-priority 100
+    sync
+    say "Kept: the Pi now makes its own network '$(setting ssid)' at every start, and stays off your home Wi-Fi."
+    echo "On the phone: join '$(setting ssid)', open http://$(setting host):$(setting port)/ and enter the PIN once."
+    echo "Back to home Wi-Fi later: sudo deploy/pi/install.sh hotspot-off"
+}
+
+step_hotspot_off() {
+    need_root; need_pi; need_hotspot
+    local home
+    home=$(home_wifi)
+    [ -n "$home" ] || die "no home Wi-Fi connection to go back to"
+    systemctl stop camera-hotspot-undo.timer 2>/dev/null || true
+    nmcli connection modify "$HOTSPOT" autoconnect no
+    sync
+    switch_later "nmcli connection down $HOTSPOT; nmcli connection up '$home'"
+    say "In 5 seconds the Pi goes back to your home Wi-Fi ('$home') and stays there. This login may drop."
+    echo "Then on the Mac (on your home Wi-Fi):  ssh <your user>@camera-pi.local"
 }
 
 case "${1:-}" in
@@ -190,5 +258,8 @@ case "${1:-}" in
     app) step_app ;;
     pin) step_pin ;;
     hotspot) step_hotspot ;;
-    *) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+    hotspot-try) step_hotspot_try ;;
+    hotspot-keep) step_hotspot_keep ;;
+    hotspot-off) step_hotspot_off ;;
+    *) sed -n '2,21p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

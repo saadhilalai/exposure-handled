@@ -153,3 +153,19 @@ def test_the_watch_test_never_arms_and_refuses_damaged_code():
     assert "AllowedCPUs=3" in text and "OPENCV_FOR_THREADS_NUM=1" in text        # the 2-core limit
     assert "status --porcelain" in text and "pi_send_code.sh --restore" in text  # emptied files stop it
     assert "trap stop_all EXIT" in text
+
+
+def test_the_hotspot_is_a_trial_that_undoes_itself_until_kept():
+    text = (DEPLOY / "install.sh").read_text()
+    made = text[text.index("step_hotspot() {"):text.index("step_hotspot_try() {")]
+    assert "autoconnect no" in made and "autoconnect yes" not in made     # set up, but never on at start-up
+    trial = text[text.index("step_hotspot_try() {"):text.index("step_hotspot_keep() {")]
+    assert "--on-active=10min" in trial and "connection up '$home'" in trial   # no answer: back to home Wi-Fi
+    assert "switch_later" in trial                                             # a dropped login can't stop it
+    keep = text[text.index("step_hotspot_keep() {"):text.index("step_hotspot_off() {")]
+    assert "--active" in keep and "camera-hotspot-undo.timer" in keep and "autoconnect yes" in keep
+    for step in ("hotspot-try)", "hotspot-keep)", "hotspot-off)"):
+        assert step in text
+    rescue = unit("camera-wifi-rescue.service")
+    assert rescue["Unit"]["ConditionPathExists"] == "/boot/firmware/home-wifi"
+    assert "autoconnect no" in rescue["Service"]["ExecStart"] and "rm -f /boot/firmware/home-wifi" in rescue["Service"]["ExecStart"]

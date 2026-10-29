@@ -1,0 +1,14 @@
+# The way back to home Wi-Fi when nothing else reaches the Pi: put an empty file named home-wifi on the card's
+# boot part (any Mac can write it), and at the next start the Pi stops making its own network and rejoins home.
+[Unit]
+Description=Camera agent: back to home Wi-Fi if the rescue file is on the boot part
+ConditionPathExists=/boot/firmware/home-wifi
+After=NetworkManager.service NetworkManager-wait-online.service
+Wants=NetworkManager-wait-online.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'nmcli connection modify camera-hotspot autoconnect no; nmcli connection down camera-hotspot; nmcli device connect wlan0; rm -f /boot/firmware/home-wifi; sync'
+
+[Install]
+WantedBy=multi-user.target
