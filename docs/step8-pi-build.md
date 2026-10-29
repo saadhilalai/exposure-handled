@@ -257,3 +257,24 @@ You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it g
    was locked.
 9. **The D-tap cable on the bench**, watching the Power line on the dashboard. Then mount it on the rig and do a
    field test.
+
+## Measured on the Pi
+
+- **Speed per live-view frame** (`tools/bench_eyes.py` on one core, the public live-test frames, 1024×576):
+
+  | | Mac M2 | Pi 5 |
+  |---|---|---|
+  | JPEG decode | 0.7 ms | 5.4 ms |
+  | Eyes without faces | 7.1 ms | 18.8 ms |
+  | One face detection | 13.3 ms | 41.8 ms |
+  | **Average, faces every 3rd frame** | **12.2 ms** | **38.2 ms** |
+
+  - **What it means:** it fits the 41.7 ms budget at 24 fps, but only just (the estimate was ~33 ms).
+  - **Room to spare:** the Pi has 4 cores, so face detection can move to its own core. The brain only decides a few
+    times a second, so every other frame would also be enough.
+  - **Still to measure:** the 4-core run didn't finish (see power).
+- **Power:**
+  - On a MacBook charger through a USB-C dock, the Pi flagged a voltage dip at every start.
+  - It dropped off the network during the 4-core test. Power is the likely cause; unconfirmed.
+  - Power it directly from the charger for the camera tests, and watch for dips again on the D-tap cable.
+- **Sony's Linux download:** Sony's sample project is a zip inside the SDK zip. The `install.sh sdk` step handles it.

@@ -109,3 +109,14 @@ def test_the_reading_goes_to_the_log_and_the_dashboard(tmp_path):
     log.write_text("x" * (pi_health.MAX_LOG_BYTES + 10) + "\n")       # too big: trimmed, not endless
     pi_health.save(entry, cfg)
     assert log.stat().st_size < pi_health.MAX_LOG_BYTES
+
+
+def test_the_card_copy_refuses_the_wrong_disk_and_asks_first():
+    text = (DEPLOY / "clone_card.sh").read_text()
+    subprocess.run(["bash", "-n", str(DEPLOY / "clone_card.sh")], check=True)
+    assert "set -euo pipefail" in text
+    assert 'is the card the Pi is running from' in text                 # never the running card
+    assert "isn't a USB disk" in text and "has mounted parts" in text
+    assert 'Type the disk' in text and "not confirmed: nothing changed" in text
+    assert text.index("not confirmed") < text.index("wipefs")           # the question comes before any erase
+    assert "PARTUUID=$NEW-03  /data" in text                            # the separate data partition

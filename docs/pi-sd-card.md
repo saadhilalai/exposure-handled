@@ -98,3 +98,34 @@ Then save.
 - **Imager can't write, or the card doesn't show up:**
   - Try another card reader.
   - Check the card's lock switch (on the SD adapter's side) isn't on "lock".
+
+## Moving to a new card later (no setup again)
+
+The Pi copies itself onto the new card, so nothing is set up twice. The new card can be any size that holds the
+system: it doesn't have to match the old one. The copy also splits the new card into three parts:
+- **boot**;
+- **system**, 16 GB unless you choose otherwise;
+- **data**: sessions, logs and the kill-switch file.
+
+That split is what lets the system part be made read-only later, so pulling the power can't corrupt it.
+
+1. **New card into a USB card reader, and the reader into the Pi.** The Pi stays running from its current card.
+2. **See which disk it is.** Log in to the Pi and run:
+   ```
+   sudo /opt/camera-agent/deploy/pi/clone_card.sh
+   ```
+   It lists the USB disks with their size and model, and changes nothing. The new card is usually `/dev/sda`.
+   Check that the size matches the new card.
+3. **Copy:**
+   ```
+   sudo /opt/camera-agent/deploy/pi/clone_card.sh /dev/sda
+   ```
+   - It shows the disk again and asks you to type its name (`sda`) before erasing anything.
+   - It refuses the card the Pi is running from, anything that isn't on USB, and anything mounted.
+   - The copy takes a few minutes.
+4. **Swap the cards:**
+   - Run `sudo poweroff` and wait for the green light to stop.
+   - Take out the old card and put the new one in the Pi's slot.
+   - Power on.
+5. **Check:** log in as before. Everything is the same: the user, the key, the PIN and the services. The old card
+   is untouched and works as a backup.
