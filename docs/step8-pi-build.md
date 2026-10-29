@@ -299,6 +299,10 @@ You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it g
   - The lighter agent (10 frames a second, half-size picture) was copied over, but the Pi dropped off the network
     about a minute after starting up, before the test began, with nothing running but the code copy. Just before
     that it idled at 4.74–4.82 V and flagged low power most seconds, on the MacBook charger in the wall with the
-    camera plugged in. The lighter agent
-    is still untested on the Pi.
+    camera plugged in. The same evening it also kept switching off on the MacBook's own USB-C port.
+  - **That power cut emptied the files the copy had just written.** The 7 changed files were 0 bytes after the
+    restart (git's own copy was intact), so the agent couldn't start. Lesson: run `sync` straight after copying
+    code to the Pi, before anything else, until the system part is read-only.
+  - With the agent unable to start, the next 5 minutes were an idle reading on the wall charger, camera plugged
+    in: median 4.87 V, lowest 4.80 V, no low-power flags, up to 43.9 °C. The lighter agent is still untested.
 - **The Wi-Fi chip can run its own network** (access-point mode), NetworkManager 1.42, Wi-Fi country set.
