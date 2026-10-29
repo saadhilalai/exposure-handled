@@ -127,3 +127,19 @@ def test_the_card_copy_refuses_the_wrong_disk_and_asks_first():
     assert 'Type the disk' in text and "not confirmed: nothing changed" in text
     assert text.index("not confirmed") < text.index("wipefs")           # the question comes before any erase
     assert "PARTUUID=$NEW-03  /data" in text                            # the separate data partition
+
+
+def test_sending_code_finds_a_file_emptied_by_a_power_cut_and_restores_it(tmp_path):
+    app = tmp_path / "pi"                                                # a folder stands in for the Pi
+    subprocess.run(["git", "clone", "-q", str(ROOT), str(app)], check=True)
+    subprocess.run(["git", "-C", str(app), "checkout", "-q", "HEAD~1"], check=True)
+    (app / "agent" / "config.py").write_text("")
+    env = dict(os.environ, PI="local", PI_APP=str(app), PI_SAVED=str(tmp_path / "saved"), PI_SUDO="")
+    run = lambda *a: subprocess.run(["bash", str(ROOT / "tools" / "pi_send_code.sh"), *a], env=env,
+                                    capture_output=True, text=True)
+    check = run("--check")
+    assert check.returncode == 1 and "1 of" in check.stdout and "agent/config.py" in check.stdout
+    fixed = run("--restore")
+    assert fixed.returncode == 0 and "All" in fixed.stdout
+    assert (app / "agent" / "config.py").read_text() and list((tmp_path / "saved").rglob("config.py"))
+    assert run("--check").returncode == 0
