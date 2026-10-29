@@ -143,3 +143,13 @@ def test_sending_code_finds_a_file_emptied_by_a_power_cut_and_restores_it(tmp_pa
     assert fixed.returncode == 0 and "All" in fixed.stdout
     assert (app / "agent" / "config.py").read_text() and list((tmp_path / "saved").rglob("config.py"))
     assert run("--check").returncode == 0
+
+
+def test_the_watch_test_never_arms_and_refuses_damaged_code():
+    text = (ROOT / "tools" / "pi_watch_test.sh").read_text()
+    subprocess.run(["bash", "-n", str(ROOT / "tools" / "pi_watch_test.sh")], check=True)
+    assert "set -euo pipefail" in text and "camera-bridge-armed" in text and "the bridge is armed" in text
+    assert "systemctl start" not in text and "--armed" not in text                # the agent starts read-only itself
+    assert "AllowedCPUs=3" in text and "OPENCV_FOR_THREADS_NUM=1" in text        # the 2-core limit
+    assert "status --porcelain" in text and "pi_send_code.sh --restore" in text  # emptied files stop it
+    assert "trap stop_all EXIT" in text
