@@ -293,4 +293,7 @@ You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it g
     Up to 50.5 °C.
   - Light was added mid-run: the scene went from 8.4 stops under to about 4.2 under within one 10-second check.
     The suggestion stayed one small ISO step up (nothing changes in read-only, so it keeps offering the first step).
+  - That run was powered from the MacBook's own USB-C port. The same run on the MacBook charger in the wall did
+    worse: median 4.67 V (vs 4.78), lowest 4.53 V (vs 4.63), low power 87% of the time (vs 37%). The Pi slowed
+    itself so much that it fell to 14 frames a second (eyes 35 ms). Neither is a supply for the field.
 - **The Wi-Fi chip can run its own network** (access-point mode), NetworkManager 1.42, Wi-Fi country set.
