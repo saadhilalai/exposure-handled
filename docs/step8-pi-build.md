@@ -281,3 +281,10 @@ You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it g
   - **Fix:** Raspberry Pi's 27W USB-C supply (5.1 V, 5 A) for the bench, and the same check on the D-tap cable.
     Until then: light loads only, and nothing armed.
 - **Sony's Linux download:** Sony's sample project is a zip inside the SDK zip. The `install.sh sdk` step handles it.
+- **The read-only probe on the Pi passed: the go/no-go is a go.**
+  - Sony's Linux SDK finds the camera over USB and connects; 452 settings were read twice with 0 differences; one
+    live-view frame was saved (1024×576, as on the Mac).
+  - It ran as the agent's own user, so the USB permission rule works.
+  - With the camera plugged in, the Pi's idle voltage on the bench charger fell from about 4.95 V to 4.8 V, with a
+    brief low-voltage flag. Another reason for the 27W supply.
+- **The Wi-Fi chip can run its own network** (access-point mode), NetworkManager 1.42, Wi-Fi country set.
