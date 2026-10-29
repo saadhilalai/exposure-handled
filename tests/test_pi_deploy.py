@@ -49,6 +49,13 @@ def test_the_agent_doesnt_stop_when_arming_stops_the_read_only_bridge():
     assert u["Service"]["User"] == "camera-agent" and u["Install"]["WantedBy"] == "multi-user.target"
 
 
+def test_at_most_two_cores_are_busy():                                # four busy cores switch a weak supply off
+    agent = unit("camera-agent.service")["Service"]
+    assert agent["AllowedCPUs"] == "3" and "OPENCV_FOR_THREADS_NUM=1" in agent["Environment"]
+    assert unit("camera-bridge.service")["Service"]["AllowedCPUs"] == "2"
+    assert unit("camera-bridge-armed.service")["Service"]["AllowedCPUs"] == "2"
+
+
 def test_the_health_reading_runs_every_minute():
     assert unit("camera-health.timer")["Timer"]["OnUnitActiveSec"] == "60"
     s = unit("camera-health.service")["Service"]

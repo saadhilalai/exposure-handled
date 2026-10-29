@@ -12,6 +12,10 @@ User=camera-agent
 Group=camera-agent
 Environment=CAMERA_AGENT_CONFIG=/etc/camera-agent/config.toml
 ExecStart=/opt/camera-agent/.venv/bin/python /opt/camera-agent/tools/pi_agent.py
+# One core of the four, and one OpenCV thread: with all four cores busy, a weak supply lets the voltage drop until
+# the Pi switches itself off. The brain only decides a few times a second, so one core is enough.
+AllowedCPUs=3
+Environment=OPENCV_FOR_THREADS_NUM=1 OMP_NUM_THREADS=1
 Restart=on-failure
 RestartSec=2
 

@@ -13,5 +13,7 @@ Group=camera-agent
 Environment=CAMERA_AGENT_CONFIG=/etc/camera-agent/config.toml
 RuntimeDirectory=camera-agent
 RuntimeDirectoryPreserve=yes
+# Its own core, next to the agent's (see camera-agent.service).
+AllowedCPUs=2
 ExecStart=/opt/camera-agent/.venv/bin/python /opt/camera-agent/tools/pi_bridge.py --armed
 Restart=no
