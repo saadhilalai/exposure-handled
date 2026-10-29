@@ -156,6 +156,7 @@ def test_the_watch_test_never_arms_and_refuses_damaged_code():
     assert "AllowedCPUs=3" in text and "OPENCV_FOR_THREADS_NUM=1" in text        # the 2-core limit
     assert "status --porcelain" in text and "pi_send_code.sh --restore" in text  # emptied files stop it
     assert "trap stop_all EXIT" in text
+    assert "camera_on_usb ||" in text and "bInterfaceClass" in text             # an asleep camera stops it at once
     bench = (ROOT / "tools" / "pi_power_bench.sh").read_text()
     subprocess.run(["bash", "-n", str(ROOT / "tools" / "pi_power_bench.sh")], check=True)
     assert "set -euo pipefail" in bench and "the bridge is armed" in bench and "BridgeClient" not in bench

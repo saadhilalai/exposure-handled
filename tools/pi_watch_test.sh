@@ -25,6 +25,15 @@ case "$MINUTES" in ''|*[!0-9]*) die "minutes is a whole number" ;; esac
 ! systemctl is-active -q camera-agent || die "the agent service is running: sudo systemctl stop camera-agent"
 ! systemctl is-active -q "$UNIT" || die "a test is already running"
 sudo test -r "$CONF" || die "no settings file at $CONF"
+camera_on_usb() {   # a Sony device with an imaging (PTP) part: asleep or in another USB mode, it shows up otherwise
+    local d
+    for d in /sys/bus/usb/devices/*; do
+        [ "$(cat "$d/idVendor" 2>/dev/null)" = 054c ] || continue
+        grep -qx 06 "$d"/*:*/bInterfaceClass 2>/dev/null && return 0
+    done
+    return 1
+}
+camera_on_usb || die "the Pi doesn't see the camera as a camera: is it on, screen awake, USB Connection Mode = PC Remote?"
 [ -z "$(sudo git -c safe.directory=$APP -C $APP status --porcelain --untracked-files=no)" ] ||
     die "the code on the Pi doesn't match its commit. On the Mac: tools/pi_send_code.sh --restore"
 sudo systemctl reset-failed "$UNIT" 2>/dev/null || true

@@ -305,5 +305,12 @@ You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it g
     restart (git's own copy was intact), so the agent couldn't start. Lesson: run `sync` straight after copying
     code to the Pi, before anything else, until the system part is read-only.
   - With the agent unable to start, the next 5 minutes were an idle reading on the wall charger, camera plugged
-    in: median 4.87 V, lowest 4.80 V, no low-power flags, up to 43.9 °C. The lighter agent is still untested.
+    in: median 4.87 V, lowest 4.80 V, no low-power flags, up to 43.9 °C.
+  - **The lighter agent, on the same wall charger** (after the files were put back): median 4.82 V, lowest 4.65 V,
+    low power 23 of 305 seconds (8%, vs 87% with the full agent), up to 48.3 °C. It held 10 frames a second the
+    whole time (lowest 9.9), 20 ms a look, the agent 31% of one core. Same decisions: the dark scene (6.8 stops
+    under) got the same one-step ISO suggestion. Better, but still not 0%: the proper supply is still needed.
+  - The first try of that run saw no camera for 5 minutes: the camera showed up over USB as a plain Sony device,
+    not a camera (asleep or out of PC Remote mode). Checking it and replugging fixed it. The watch test now
+    checks for this first and stops at once.
 - **The Wi-Fi chip can run its own network** (access-point mode), NetworkManager 1.42, Wi-Fi country set.
