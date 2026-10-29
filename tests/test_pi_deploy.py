@@ -172,3 +172,14 @@ def test_the_hotspot_is_a_trial_that_undoes_itself_until_kept():
     rescue = unit("camera-wifi-rescue.service")
     assert rescue["Unit"]["ConditionPathExists"] == "/boot/firmware/home-wifi"
     assert "autoconnect no" in rescue["Service"]["ExecStart"] and "rm -f /boot/firmware/home-wifi" in rescue["Service"]["ExecStart"]
+
+
+def test_read_only_keeps_the_data_part_writable_and_needs_it():
+    text = (DEPLOY / "read_only.sh").read_text()
+    subprocess.run(["bash", "-n", str(DEPLOY / "read_only.sh")], check=True)
+    assert 'PARAM="overlayroot=tmpfs:recurse=0"' in text            # recurse=1 (the default) would freeze /data
+    on = text[text.index("    on)"):text.index("    off)")]
+    assert "isn't installed" in on and "/data isn't its own part" in on and "before-read-only" in on
+    send = (ROOT / "tools" / "pi_send_code.sh").read_text()
+    assert "overlayroot=tmpfs /proc/cmdline" in send                 # no code sent into a read-only system
+    assert "overlayroot=tmpfs /proc/cmdline" in (DEPLOY / "install.sh").read_text()

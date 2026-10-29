@@ -61,6 +61,9 @@ report() {    # $1 = commit, $2 = what it's checked against
 [ "$MODE" != send ] || [ -z "$(git status --porcelain --untracked-files=no)" ] || die "this Mac has changes that aren't committed: commit first"
 HEAD=$(git rev-parse HEAD)
 PI_HEAD=$(on_pi "$G rev-parse HEAD") || die "can't reach the Pi at $PI"
+[ "$MODE" = --check ] || ! on_pi "grep -q overlayroot=tmpfs /proc/cmdline" ||
+    die "the Pi's system part is read-only, so changes would vanish at the next start.
+On the Pi: sudo deploy/pi/read_only.sh off, restart, send the code, then read_only.sh on and restart"
 git cat-file -e "$PI_HEAD^{commit}" 2>/dev/null || die "the Pi is on a commit this Mac doesn't have (${PI_HEAD:0:7})"
 
 say "Checking the Pi's files against its commit"

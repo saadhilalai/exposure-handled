@@ -175,6 +175,8 @@ home_wifi() {
 
 need_hotspot() {
     nmcli -t -f NAME connection show | grep -qx "$HOTSPOT" || die "no hotspot yet: sudo deploy/pi/install.sh hotspot"
+    ! grep -q overlayroot=tmpfs /proc/cmdline ||
+        die "the system part is read-only, so this wouldn't last: sudo deploy/pi/read_only.sh off, and restart"
 }
 
 # Switch wlan0 a few seconds after this script ends, so a dropped login can't cut the switch off halfway.
