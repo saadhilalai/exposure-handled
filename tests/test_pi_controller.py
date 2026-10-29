@@ -236,3 +236,13 @@ def test_the_phones_requests_are_its_heartbeat(pi):
         assert c.last_seen is not None
     finally:
         dash.stop()
+
+
+def test_the_first_arm_rehearsal_passes_with_the_fake_camera():
+    """tools/pi_rehearsal.py --check: the phone's whole first-arm walk-through, ISO only."""
+    import subprocess
+    import sys
+    run = subprocess.run([sys.executable, str(ROOT / "tools" / "pi_rehearsal.py"), "--check", "--port", "0"],
+                         capture_output=True, text=True, timeout=120)
+    assert run.returncode == 0, run.stdout + run.stderr
+    assert "FAIL" not in run.stdout and "Only ISO changes" in run.stdout
