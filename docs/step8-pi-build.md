@@ -3,7 +3,8 @@
 The goal: the agent runs on a Raspberry Pi 5 on the camera rig, starts by itself on power-up, and you run it from your phone.
 No laptop on set. Later goal: a product someone else can install, so it's built clean from the start.
 
-This builds on [step8-pi-plan.md](step8-pi-plan.md) (the research and parts). **Nothing here is built yet, and nothing
+This builds on [step8-pi-plan.md](step8-pi-plan.md) (the research and parts). The sessions that finish it, step by
+step: [step8-pi-runbook.md](step8-pi-runbook.md). **Nothing here is built yet, and nothing
 connects to the camera until you say "camera ready".** Anything marked **UNVERIFIED** has to be proven on the Pi itself.
 
 ## 1. Does Sony's SDK run on the Pi 5?
