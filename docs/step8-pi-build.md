@@ -272,9 +272,12 @@ You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it g
   - **What it means:** it fits the 41.7 ms budget at 24 fps, but only just (the estimate was ~33 ms).
   - **Room to spare:** the Pi has 4 cores, so face detection can move to its own core. The brain only decides a few
     times a second, so every other frame would also be enough.
-  - **Still to measure:** the 4-core run didn't finish (see power).
+  - **Still to measure:** the 4-core run, on a proper supply (see power).
 - **Power:**
   - On a MacBook charger through a USB-C dock, the Pi flagged a voltage dip at every start.
-  - It dropped off the network during the 4-core test. Power is the likely cause; unconfirmed.
-  - Power it directly from the charger for the camera tests, and watch for dips again on the D-tap cable.
+  - Plugged straight into the same charger, it still idled at about 4.9 V (the Pi 5 wants 5.1 V).
+  - **Confirmed:** under the 4-core test the Pi switched itself off within a second (red light), twice. The last
+    reading was 4.79 V and 40 °C, so it's power, not heat. The one-core test runs fine on it.
+  - **Fix:** Raspberry Pi's 27W USB-C supply (5.1 V, 5 A) for the bench, and the same check on the D-tap cable.
+    Until then: light loads only, and nothing armed.
 - **Sony's Linux download:** Sony's sample project is a zip inside the SDK zip. The `install.sh sdk` step handles it.
