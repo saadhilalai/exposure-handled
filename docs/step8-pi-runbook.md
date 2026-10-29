@@ -71,6 +71,10 @@ Tools used here, all in the repo:
    - **If nothing confirms it within 10 minutes, the Pi goes back to home Wi-Fi by itself.** So does a restart.
 9. **Join it from the Mac, within 10 minutes:**
    - Wi-Fi menu, pick **camera-pi**, and type the password. It has no internet; that's normal.
+   - **The Mac jumps straight back to home Wi-Fi?** It prefers a network with internet. In System Settings, Wi-Fi,
+     switch **Auto-Join off** for the home network while you work on the Pi, and back on afterwards. A forgotten
+     password can be read on the Pi (on home Wi-Fi):
+     `sudo nmcli -s -g 802-11-wireless-security.psk connection show camera-hotspot`.
    - Then in Terminal:
      ```
      ssh director@10.42.0.1
@@ -90,8 +94,11 @@ Tools used here, all in the repo:
     - Open the browser at **http://10.42.0.1:8770/**, type the **PIN** once, and tap Pair.
     - You should see the live picture and "Watching: read-only, suggesting only", with the kill button at the bottom.
     - **Don't arm.**
-13. The test's summary at the end doubles as a power reading on the Pi's own Wi-Fi. Then on the Pi: `sudo poweroff`,
-    and wait for the green light to stop.
+13. The test's summary at the end doubles as a power reading on the Pi's own Wi-Fi.
+14. **While the Mac needs internet to work on the Pi, send it back to home Wi-Fi:**
+    `sudo /opt/camera-agent/deploy/pi/install.sh hotspot-off`. Its own network stays set up; `hotspot-try` and
+    `hotspot-keep` switch it back on for good. (`sudo nmcli connection modify camera-hotspot autoconnect no`, then
+    `sudo reboot`, does the same.) Then on the Pi: `sudo poweroff`, and wait for the green light to stop.
 
 ### Getting back in touch with the Pi if something goes wrong
 

@@ -313,4 +313,13 @@ You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it g
   - The first try of that run saw no camera for 5 minutes: the camera showed up over USB as a plain Sony device,
     not a camera (asleep or out of PC Remote mode). Checking it and replugging fixed it. The watch test now
     checks for this first and stops at once.
+- **The Pi's own Wi-Fi, used for real:** set up, tried, kept, and it came back on its own after a restart. The Mac
+  joined at 10.42.0.1 and the phone paired with the PIN (1 phone recorded on /data), watch-only, never armed.
+  - 10 minutes of the lighter agent on its own network: median 4.81 V, lowest 4.59 V, low power 11% of the time,
+    up to 49.4 °C, 10 frames a second, 21 ms a look. Making the network costs a little power: still a job for the
+    proper supply.
+  - The first try failed only on the Mac's side: it kept jumping back to the home network (which has internet).
+    Switching the home network's Auto-Join off fixed it.
+  - Afterwards the Pi was sent back to home Wi-Fi (its own network still set up), so the Mac keeps its internet
+    while working on it.
 - **The Wi-Fi chip can run its own network** (access-point mode), NetworkManager 1.42, Wi-Fi country set.
