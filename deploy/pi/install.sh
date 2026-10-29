@@ -4,6 +4,8 @@
 #
 #   sudo deploy/pi/install.sh boot      the two settings Sony's SDK needs (4K memory pages, a bigger USB buffer),
 #                                       then restart the Pi
+#   sudo deploy/pi/install.sh sdk ZIP   unpack Sony's Linux 64bit (ARMv8) SDK zip (downloaded by you from Sony)
+#                                       into the SDK folder; Sony's sample project is a zip inside that zip
 #   sudo deploy/pi/install.sh app       user, folders, settings file, Python, face models, the bridge build,
 #                                       the tests, the services. Needs Sony's Linux SDK on the Pi first.
 #   sudo deploy/pi/install.sh pin       the dashboard's 6-digit PIN (asked twice; only a hash is stored)
@@ -87,8 +89,7 @@ step_app() {
     say "Sony's SDK: $sdk"
     if [ ! -f "$sdk/RemoteCli/app/CRSDK/CameraRemote_SDK.h" ]; then
         die "Sony's SDK isn't there yet. Download the Camera Remote SDK for Linux 64bit (ARMv8) from Sony's site
-(you accept Sony's licence there), copy the zip to the Pi, and unzip it so that this exists:
-  $sdk/RemoteCli/app/CRSDK/CameraRemote_SDK.h
+(you accept Sony's licence there), copy the zip to the Pi, then:  sudo deploy/pi/install.sh sdk <the zip>
 Never put Sony's files in the repo. Then run this step again."
     fi
 
@@ -121,6 +122,22 @@ Never put Sony's files in the repo. Then run this step again."
     systemctl enable camera-bridge.service camera-agent.service camera-health.timer
     echo "enabled: they start at the next power-up (nothing was started now)"
     [ -n "$(setting pin_hash)" ] || echo "Next: sudo deploy/pi/install.sh pin   (the agent won't start without a PIN)"
+}
+
+step_sdk() {
+    need_root; need_pi
+    local zip=${1:-} sdk
+    [ -f "$zip" ] || die "give the path to Sony's zip, e.g.  sudo deploy/pi/install.sh sdk /tmp/CrSDK_..._Linux64ARMv8.zip"
+    case "$(basename "$zip")" in *Linux64ARMv8*.zip) ;; *) die "that isn't the Linux 64bit (ARMv8) SDK zip" ;; esac
+    command -v unzip >/dev/null || apt-get install -y unzip
+    sdk=$(setting sdk_dir)
+    install -d -m 755 "$sdk"
+    unzip -q -o "$zip" -d "$sdk"
+    [ -f "$sdk/RemoteCli.zip" ] || die "no RemoteCli.zip inside Sony's zip: the layout changed, so check it by hand"
+    install -d -m 755 "$sdk/RemoteCli"
+    unzip -q -o "$sdk/RemoteCli.zip" -d "$sdk/RemoteCli"
+    [ -f "$sdk/RemoteCli/app/CRSDK/CameraRemote_SDK.h" ] || die "Sony's header isn't where the build expects it"
+    say "Sony's SDK unpacked into $sdk (never part of the repo)"
 }
 
 step_pin() {
@@ -169,8 +186,9 @@ step_hotspot() {
 
 case "${1:-}" in
     boot) step_boot ;;
+    sdk) step_sdk "${2:-}" ;;
     app) step_app ;;
     pin) step_pin ;;
     hotspot) step_hotspot ;;
-    *) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+    *) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

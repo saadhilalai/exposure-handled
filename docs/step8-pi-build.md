@@ -237,8 +237,9 @@ You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it g
 
 1. **Flash the card and log in** ([pi-sd-card.md](pi-sd-card.md)).
 2. **Copy the repo to `/opt/camera-agent`**, then run `sudo deploy/pi/install.sh boot` and restart the Pi.
-3. **Download Sony's Linux ARM64 SDK** from Sony's site (you accept Sony's licence there) and unzip it to
-   `/opt/camera-agent/sdk`.
+3. **Download Sony's Linux ARM64 SDK** from Sony's site (you accept Sony's licence there), copy the zip to the Pi,
+   and run `sudo deploy/pi/install.sh sdk <the zip>`. Sony's sample project is a zip inside the zip; this step
+   unpacks both.
 4. **Run `sudo deploy/pi/install.sh app`, then `sudo deploy/pi/install.sh pin`.**
    - The first real build of the bridge on Linux.
    - The tests on the Pi.
