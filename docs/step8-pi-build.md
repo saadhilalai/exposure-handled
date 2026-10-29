@@ -287,4 +287,10 @@ You're powering the Pi from the Kondor Blue D-tap to USB-C PD cable. At 5 V it g
   - It ran as the agent's own user, so the USB permission rule works.
   - With the camera plugged in, the Pi's idle voltage on the bench charger fell from about 4.95 V to 4.8 V, with a
     brief low-voltage flag. Another reason for the 27W supply.
+- **5 minutes live, read-only, on one core each for the agent and the bridge** (the bench charger, camera on USB):
+  - 19.6 frames a second (median; lowest 15), the eyes 23 ms a frame. It kept up the whole time.
+  - It stayed on, but the voltage fell to 4.63 V and the Pi flagged low power, slowing itself, 112 of 306 seconds.
+    Up to 50.5 °C.
+  - Light was added mid-run: the scene went from 8.4 stops under to about 4.2 under within one 10-second check.
+    The suggestion stayed one small ISO step up (nothing changes in read-only, so it keeps offering the first step).
 - **The Wi-Fi chip can run its own network** (access-point mode), NetworkManager 1.42, Wi-Fi country set.
