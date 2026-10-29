@@ -167,25 +167,39 @@ $line"
 
 HOTSPOT=camera-hotspot
 RESCUE_FILE=$BOOT/home-wifi
+# Leave the Pi's own network for the home one. $1 = the home connection's name, passed as an argument so any
+# name (an apostrophe, spaces) is safe.
+TO_HOME='nmcli connection down camera-hotspot; nmcli connection up id "$1"'
 
-# The home Wi-Fi connection (Raspberry Pi Imager calls it "preconfigured").
+# The home Wi-Fi connection: the most recently used Wi-Fi other than the hotspot (Imager calls it "preconfigured").
 home_wifi() {
-    nmcli -t -f NAME,TYPE connection show | awk -F: -v h="$HOTSPOT" '$2 == "802-11-wireless" && $1 != h {print $1; exit}'
+    nmcli -t -f TIMESTAMP,TYPE,NAME connection show | sort -t: -k1,1 -rn |
+        awk -F: -v h="$HOTSPOT" '$2 == "802-11-wireless" && $3 != h {sub(/^[^:]*:[^:]*:/, ""); print; exit}'
+}
+
+read_only_now() { grep -q overlayroot=tmpfs /proc/cmdline; }
+
+need_writable() {
+    ! read_only_now || die "the system part is read-only, so this wouldn't last: sudo deploy/pi/read_only.sh off, and restart"
 }
 
 need_hotspot() {
     nmcli -t -f NAME connection show | grep -qx "$HOTSPOT" || die "no hotspot yet: sudo deploy/pi/install.sh hotspot"
-    ! grep -q overlayroot=tmpfs /proc/cmdline ||
-        die "the system part is read-only, so this wouldn't last: sudo deploy/pi/read_only.sh off, and restart"
+    need_writable
 }
 
-# Switch wlan0 a few seconds after this script ends, so a dropped login can't cut the switch off halfway.
+# Run a command a few seconds after this script ends, so a dropped login can't cut a Wi-Fi switch off halfway.
 switch_later() {
-    systemd-run -q --unit="camera-wifi-switch-$(date +%s)" --on-active=5s /bin/sh -c "$1"
+    systemd-run -q --unit="camera-wifi-switch-$(date +%s)" --on-active=5s "$@"
+}
+
+clear_undo() {
+    systemctl stop camera-hotspot-undo.timer 2>/dev/null || true
+    systemctl reset-failed camera-hotspot-undo.timer camera-hotspot-undo.service 2>/dev/null || true
 }
 
 step_hotspot() {
-    need_root; need_pi
+    need_root; need_pi; need_writable
     [ -f "$CONF" ] || die "no settings file yet: run the app step first"
     local ssid band host country pass pass2
     ssid=$(setting ssid); band=$(setting band); host=$(setting host)
@@ -209,6 +223,7 @@ step_hotspot() {
     nmcli connection add type wifi ifname wlan0 con-name "$HOTSPOT" autoconnect no \
         connection.autoconnect-priority 100 ssid "$ssid" 802-11-wireless.mode ap 802-11-wireless.band "$band" \
         ipv4.method shared ipv4.addresses "$host/24" wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$pass" >/dev/null
+    sync
     say "Hotspot '$ssid' set up (WPA2, ${band/bg/2.4 GHz}, the Pi at $host), but not switched on."
     echo "The Pi is still on your home Wi-Fi. Next, to try it:  sudo deploy/pi/install.sh hotspot-try"
 }
@@ -218,10 +233,9 @@ step_hotspot_try() {
     local home ssid host
     home=$(home_wifi); ssid=$(setting ssid); host=$(setting host)
     [ -n "$home" ] || die "no home Wi-Fi connection to come back to"
-    systemctl stop camera-hotspot-undo.timer 2>/dev/null || true
-    systemd-run -q --unit=camera-hotspot-undo --on-active=10min /bin/sh -c \
-        "nmcli connection down $HOTSPOT; nmcli connection up '$home'"
-    switch_later "nmcli connection up $HOTSPOT"
+    clear_undo
+    systemd-run -q --unit=camera-hotspot-undo --on-active=10min /bin/sh -c "$TO_HOME" sh "$home"
+    switch_later nmcli connection up "$HOTSPOT"
     say "In 5 seconds the Pi leaves your home Wi-Fi and makes its own network, '$ssid'. This login will drop."
     echo "Within 10 minutes, on the Mac: join '$ssid', then"
     echo "  ssh <your user>@$host"
@@ -233,7 +247,7 @@ step_hotspot_keep() {
     need_root; need_pi; need_hotspot
     nmcli -t -f NAME connection show --active | grep -qx "$HOTSPOT" ||
         die "the hotspot isn't on right now: run hotspot-try first, and this from the Pi's own network"
-    systemctl stop camera-hotspot-undo.timer 2>/dev/null || true
+    clear_undo
     nmcli connection modify "$HOTSPOT" autoconnect yes connection.autoconnect-priority 100
     sync
     say "Kept: the Pi now makes its own network '$(setting ssid)' at every start, and stays off your home Wi-Fi."
@@ -246,12 +260,31 @@ step_hotspot_off() {
     local home
     home=$(home_wifi)
     [ -n "$home" ] || die "no home Wi-Fi connection to go back to"
-    systemctl stop camera-hotspot-undo.timer 2>/dev/null || true
+    clear_undo
     nmcli connection modify "$HOTSPOT" autoconnect no
     sync
-    switch_later "nmcli connection down $HOTSPOT; nmcli connection up '$home'"
+    switch_later /bin/sh -c "$TO_HOME" sh "$home"
     say "In 5 seconds the Pi goes back to your home Wi-Fi ('$home') and stays there. This login may drop."
     echo "Then on the Mac (on your home Wi-Fi):  ssh <your user>@camera-pi.local"
+}
+
+# Run at start-up by camera-wifi-rescue.service when the rescue file is on the boot part.
+step_hotspot_rescue() {
+    need_root
+    local home
+    home=$(home_wifi)
+    nmcli connection modify "$HOTSPOT" autoconnect no 2>/dev/null || true
+    if [ -n "$home" ]; then
+        /bin/sh -c "$TO_HOME" sh "$home" || true
+    fi
+    if read_only_now; then
+        # The change above is in memory only: keep the file, so it acts again at every start until removed.
+        echo "Rescue: on home Wi-Fi until the next start (read-only: the file stays and acts again)"
+    else
+        rm -f "$RESCUE_FILE"
+        sync
+        echo "Rescue: back on home Wi-Fi for good; the file is removed"
+    fi
 }
 
 case "${1:-}" in
@@ -263,5 +296,6 @@ case "${1:-}" in
     hotspot-try) step_hotspot_try ;;
     hotspot-keep) step_hotspot_keep ;;
     hotspot-off) step_hotspot_off ;;
+    hotspot-rescue) step_hotspot_rescue ;;
     *) sed -n '2,21p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

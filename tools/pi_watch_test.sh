@@ -48,6 +48,8 @@ LOGGER=$!
 
 say "Starting the agent, watch-only, on core 3 for $MINUTES minute(s)"
 touch "$HOME/.watch-test-start"
+BRIDGE_BEFORE=$(systemctl show camera-bridge -p CPUUsageNSec --value)   # it may have run since start-up
+case "$BRIDGE_BEFORE" in ''|*[!0-9]*) BRIDGE_BEFORE=0 ;; esac
 sudo systemd-run -q --unit="$UNIT" -p User=camera-agent -p Group=camera-agent -p AllowedCPUs=3 \
     -E CAMERA_AGENT_CONFIG="$CONF" -E OPENCV_FOR_THREADS_NUM=1 -E OMP_NUM_THREADS=1 \
     "$APP/.venv/bin/python" "$APP/tools/pi_agent.py"
@@ -61,6 +63,7 @@ while [ "$(date +%s)" -lt "$END" ]; do
 done
 CPU_AGENT=$(systemctl show "$UNIT" -p CPUUsageNSec --value)
 CPU_BRIDGE=$(systemctl show camera-bridge -p CPUUsageNSec --value)
+case "$CPU_BRIDGE" in ''|*[!0-9]*) ;; *) [ "$CPU_BRIDGE" -lt "$BRIDGE_BEFORE" ] || CPU_BRIDGE=$((CPU_BRIDGE - BRIDGE_BEFORE)) ;; esac
 SESSION=$(sudo find "$SESSIONS" -maxdepth 1 -name '*pi-watch*' -newer "$HOME/.watch-test-start" | sort | tail -1)
 stop_all
 LOGGER=

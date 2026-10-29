@@ -8,7 +8,7 @@ Wants=NetworkManager-wait-online.service
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'nmcli connection modify camera-hotspot autoconnect no; nmcli connection down camera-hotspot; nmcli device connect wlan0; rm -f /boot/firmware/home-wifi; sync'
+ExecStart=/opt/camera-agent/deploy/pi/install.sh hotspot-rescue
 
 [Install]
 WantedBy=multi-user.target

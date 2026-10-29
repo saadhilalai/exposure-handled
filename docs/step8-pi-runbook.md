@@ -114,10 +114,10 @@ Try these in order:
    - Power the Pi off, take the card out, and put it in the Mac. It shows up as **bootfs**.
    - In Terminal: `touch /Volumes/bootfs/home-wifi`, then eject the card.
    - Put the card back and power on. Within about 2 minutes the Pi is back on home Wi-Fi, and the file removes itself.
-   - **Once the system part is read-only (session 3), this lasts only until the next restart.** So, once you're in:
-     1. `read_only.sh off`
-     2. `sudo touch /boot/firmware/home-wifi`
-     3. Restart, then `hotspot-off`.
+   - **Once the system part is read-only (session 3),** the file stays and sends the Pi to home Wi-Fi at every
+     start. To make that permanent, once you're in:
+     1. `read_only.sh off`, then restart. The file acts once more, and this time it sticks and removes itself.
+     2. Then `read_only.sh on` and restart, if you want the system part read-only again.
 6. **Last resort:** a screen (micro-HDMI) and a USB keyboard on the Pi, then log in and `hotspot-off`.
 
 ---

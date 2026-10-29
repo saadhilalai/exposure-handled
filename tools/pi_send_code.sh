@@ -41,13 +41,20 @@ for p in sys.stdin.read().splitlines():
     except OSError:
         h = \"missing\"
     print(h + \"\\t\" + p)
-'" | sort > "$TMP/got"
+'" | sort > "$TMP/got" || true
+    if [ "$(wc -l < "$TMP/got")" != "$(wc -l < "$TMP/want")" ]; then
+        echo "__lost_the_pi__"                       # the connection dropped: say so, don't call files damaged
+        return
+    fi
     comm -23 "$TMP/want" "$TMP/got" | cut -f2
 }
+
+lost() { [ "$1" != "__lost_the_pi__" ] || die "lost the connection to the Pi during the check: nothing was changed"; }
 
 report() {    # $1 = commit, $2 = what it's checked against
     local bad n
     bad=$(mismatches "$1")
+    lost "$bad"
     n=$(wc -l < "$TMP/want" | tr -d ' ')
     if [ -z "$bad" ]; then
         echo "All $n files on the Pi match $2 (${1:0:7})."
@@ -71,6 +78,7 @@ if report "$PI_HEAD" "the Pi's commit"; then
     [ "$MODE" = --restore ] && echo "Nothing to restore."
 elif [ "$MODE" = --restore ]; then
     bad=$(mismatches "$PI_HEAD")
+    lost "$bad"
     stamp=$(date +%Y%m%d-%H%M%S)
     say "Keeping the damaged versions in $SAVED/$stamp/, then restoring them from the Pi's git copy"
     echo "$bad" | on_pi "cd $APP && while IFS= read -r p; do [ -e \"\$p\" ] || continue; \

@@ -143,6 +143,9 @@ def test_sending_code_finds_a_file_emptied_by_a_power_cut_and_restores_it(tmp_pa
     assert fixed.returncode == 0 and "All" in fixed.stdout
     assert (app / "agent" / "config.py").read_text() and list((tmp_path / "saved").rglob("config.py"))
     assert run("--check").returncode == 0
+    gone = subprocess.run(["bash", str(ROOT / "tools" / "pi_send_code.sh"), "--restore"], capture_output=True,
+                          text=True, env=dict(env, PI_APP=str(tmp_path / "no-such-pi")))
+    assert gone.returncode != 0 and not list((tmp_path / "saved").rglob("runner.py"))   # no Pi: nothing touched
 
 
 def test_the_watch_test_never_arms_and_refuses_damaged_code():
@@ -163,15 +166,19 @@ def test_the_hotspot_is_a_trial_that_undoes_itself_until_kept():
     made = text[text.index("step_hotspot() {"):text.index("step_hotspot_try() {")]
     assert "autoconnect no" in made and "autoconnect yes" not in made     # set up, but never on at start-up
     trial = text[text.index("step_hotspot_try() {"):text.index("step_hotspot_keep() {")]
-    assert "--on-active=10min" in trial and "connection up '$home'" in trial   # no answer: back to home Wi-Fi
+    assert "--on-active=10min" in trial and '"$TO_HOME" sh "$home"' in trial   # no answer: back to home Wi-Fi
     assert "switch_later" in trial                                             # a dropped login can't stop it
     keep = text[text.index("step_hotspot_keep() {"):text.index("step_hotspot_off() {")]
-    assert "--active" in keep and "camera-hotspot-undo.timer" in keep and "autoconnect yes" in keep
+    assert "--active" in keep and "clear_undo" in keep and "autoconnect yes" in keep
     for step in ("hotspot-try)", "hotspot-keep)", "hotspot-off)"):
         assert step in text
     rescue = unit("camera-wifi-rescue.service")
     assert rescue["Unit"]["ConditionPathExists"] == "/boot/firmware/home-wifi"
-    assert "autoconnect no" in rescue["Service"]["ExecStart"] and "rm -f /boot/firmware/home-wifi" in rescue["Service"]["ExecStart"]
+    assert rescue["Service"]["ExecStart"].endswith("install.sh hotspot-rescue")
+    saved = text[text.index("step_hotspot_rescue() {"):]
+    assert "autoconnect no" in saved and "TO_HOME" in saved and "device connect" not in saved   # home, never the hotspot
+    assert saved.index("read_only_now") < saved.index('rm -f "$RESCUE_FILE"')      # read-only: the file stays
+    assert 'up id "$1"' in text and "reset-failed camera-hotspot-undo" in text       # any name; a failed undo clears
 
 
 def test_read_only_keeps_the_data_part_writable_and_needs_it():
