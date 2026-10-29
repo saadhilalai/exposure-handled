@@ -232,7 +232,8 @@ class PiController:
     def _new_runner(self, live):
         name = "%s_%s" % (datetime.now().strftime("%Y-%m-%d_%H%M%S"), "pi-armed" if live else "pi-watch")
         r = AgentRunner(self.cfg.socket_path, self.cfg.sessions_dir / name, look=self.look, live=live, eyes=self.eyes, faces=self.faces,
-                        clock=self.clock, auto=False, exposure=live and self.cfg.allow_exposure, watch_locked=not live)
+                        clock=self.clock, auto=False, exposure=live and self.cfg.allow_exposure, watch_locked=not live,
+                        max_fps=self.cfg.max_fps, half_size=self.cfg.half_size)
         r.start()
         return r
 

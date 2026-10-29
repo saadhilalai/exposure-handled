@@ -24,7 +24,8 @@ SCHEMA = {
     "bridge": {"binary": (Path, ROOT / "build" / "bridge" / "camera_bridge"), "allow_exposure": (bool, False)},
     "dashboard": {"host": (str, "127.0.0.1"), "port": (int, 8770), "names": (list, []), "pin_hash": (str, "")},
     "hotspot": {"ssid": (str, "camera-pi"), "band": (str, "bg")},
-    "agent": {"look": (str, "cinematic"), "phone_timeout_s": (float, 5.0)},
+    "agent": {"look": (str, "cinematic"), "phone_timeout_s": (float, 5.0), "max_fps": (float, 10.0),
+              "half_size": (bool, True)},
 }
 LOOK_KEYS = ("cinematic", "run_and_gun", "interview", "low_light", "photo_portrait")
 
@@ -48,6 +49,8 @@ class Config:
     band: str = "bg"
     look: str = "cinematic"
     phone_timeout_s: float = 5.0
+    max_fps: float = 10.0
+    half_size: bool = True
     source: str = "defaults"
 
     # Everything the Pi writes lives under data_dir, the card's writable partition.
@@ -119,6 +122,8 @@ def parse(text, source="(text)"):
         raise ConfigError("%s: [hotspot] band must be \"bg\" (2.4 GHz) or \"a\" (5 GHz)" % source)
     if not 1.0 <= values["phone_timeout_s"] <= 60.0:
         raise ConfigError("%s: [agent] phone_timeout_s must be 1-60 seconds" % source)
+    if values["max_fps"] != 0 and not 5.0 <= values["max_fps"] <= 30.0:
+        raise ConfigError("%s: [agent] max_fps must be 5-30 frames a second (0 = no cap)" % source)
     return Config(source=source, **values)
 
 

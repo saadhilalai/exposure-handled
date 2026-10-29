@@ -74,16 +74,21 @@ def approved_settings(ranges, exposure=False):
 class AgentRunner:
     def __init__(self, socket_path, session_dir, look="cinematic", live=False, eyes=None, ranges=None,
                  clock=time.monotonic, on_event=None, auto=True, faces=None, iso_while_recording=False, take=None,
-                 exposure=False, exposure_while_recording=False, label=None, watch_locked=False):
+                 exposure=False, exposure_while_recording=False, label=None, watch_locked=False, max_fps=None,
+                 half_size=False, sleep=time.sleep):
         """auto=False starts a live session with Auto off: it suggests until the operator turns Auto on.
         iso_while_recording: the Step 7 switch (see above). take: the run-sheet name of this take.
         exposure: aperture, shutter and WB may change too (needs a bridge started with --allow-exposure).
         exposure_while_recording: the rehearsal switch (see above). label: "rehearsal" keeps this data apart.
         watch_locked: watch-only, and keep watching a locked bridge (the Pi after a kill: the phone still sees the
-        picture until it's armed again). Never with live=True."""
+        picture until it's armed again). Never with live=True.
+        max_fps: look at no more than this many frames a second (None or 0 = every frame). half_size: decode the live
+        view at half size (faces are still found at the detector's own size). Both save power on the Pi."""
         if watch_locked and live:
             raise RunnerError("watch_locked is for watching only")
         self.watch_locked = watch_locked
+        self.max_fps, self.half_size, self.sleep = max_fps, half_size, sleep
+        self.t_next_frame = None
         self.bridge_locked = False
         self.socket_path = socket_path
         self.client = BridgeClient(socket_path)
@@ -238,6 +243,9 @@ class AgentRunner:
         """One live-view frame through eyes → brain → (safety gate → bridge). False = stop."""
         if self.killed or self.stop_requested:
             return False
+        self._pace()
+        if self.killed or self.stop_requested:
+            return False
         try:
             now = self.clock()
             if now - self.t_status >= STATUS_EVERY_S:
@@ -261,7 +269,8 @@ class AgentRunner:
             self._status("No live view: %s" % header.get("error", "?"))
             return True
         self.frame_no = header["frame_no"]
-        bgr = cv2.imdecode(np.frombuffer(jpeg, np.uint8), cv2.IMREAD_COLOR)
+        bgr = cv2.imdecode(np.frombuffer(jpeg, np.uint8),
+                           cv2.IMREAD_REDUCED_COLOR_2 if self.half_size else cv2.IMREAD_COLOR)
         if bgr is None:
             return True
         t = self.clock()
@@ -287,6 +296,16 @@ class AgentRunner:
         if t - self.t_tick >= 1.0:
             self._tick(t)
         return not (self.killed or self.stop_requested)
+
+    def _pace(self):
+        """With max_fps, wait so frames start no closer together than 1/max_fps (the rest of the time is idle)."""
+        if not self.max_fps:
+            return
+        now = self.clock()
+        if self.t_next_frame is not None and self.t_next_frame > now:
+            self.sleep(self.t_next_frame - now)
+            now = self.clock()
+        self.t_next_frame = now + 1.0 / self.max_fps
 
     def _act(self, p, t):
         if self.killed:

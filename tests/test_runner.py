@@ -207,3 +207,35 @@ def test_with_auto_off_the_status_holds_steady(fake, tmp_path):
     after = {s for t, s in seen if t > 2.0}
     assert len(after) == 1 and "ISO" in after.pop()
     assert cam.sets == []
+
+
+def test_the_frame_cap_looks_at_no_more_frames_than_asked(fake, tmp_path):
+    cam, path = fake(scene_offset=TOO_DARK, realtime=True)          # a real 24 fps clock
+    r = runner_for(cam, path, tmp_path, max_fps=10)
+    r.run(seconds=3.2)
+    rates = [e["fps"] for e in log(tmp_path, "runner_log.jsonl") if e["event"] == "tick"][1:]
+    assert rates and all(8 <= fps <= 11 for fps in rates)
+    assert any(e["event"] == "would_change" for e in log(tmp_path, "runner_log.jsonl"))   # still deciding
+
+
+def test_the_frame_cap_waits_only_for_the_rest_of_each_frame(fake, tmp_path):
+    cam, path = fake(scene_offset=TOO_DARK)
+    waits = []
+    r = runner_for(cam, path, tmp_path, max_fps=10, sleep=waits.append)
+    for _ in range(5):
+        assert r.step()
+    assert len(waits) == 4 and all(0 < w <= 0.1 for w in waits)       # never longer than one frame slot
+    r2 = runner_for(cam, path, tmp_path / "b", sleep=waits.append)
+    r2.step(), r2.step()
+    assert len(waits) == 4                                               # no cap: never waits
+
+
+def test_half_size_looks_at_a_smaller_picture_and_decides_the_same(fake, tmp_path):
+    cam, path = fake(scene_offset=TOO_DARK)
+    full, half = runner_for(cam, path, tmp_path / "full"), runner_for(cam, path, tmp_path / "half", half_size=True)
+    full.run(seconds=4), half.run(seconds=4)
+    assert (half.report.width, half.report.height) == (256, 144) and full.report.width == 512
+    assert abs(half.report.key_stops - full.report.key_stops) <= 0.1
+    assert half.jpeg is not None and len(half.jpeg) > 0                  # the phone still gets the camera's own picture
+    would = lambda d: [e["setting"] for e in log(d, "runner_log.jsonl") if e["event"] == "would_change"][:1]
+    assert would(tmp_path / "half") == would(tmp_path / "full") == ["IsoSensitivity"]

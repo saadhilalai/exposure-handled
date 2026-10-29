@@ -26,6 +26,13 @@ def test_the_example_file_is_valid_and_matches_the_plan():
     assert c.allow_exposure is False and c.pin_hash == ""
     assert c.lock_file == Path("/data/camera-agent/state/locked")
     assert c.socket_path == Path("/run/camera-agent/bridge.sock")
+    assert c.max_fps == 10.0 and c.half_size is True
+
+
+def test_the_pi_is_light_even_with_an_older_settings_file():
+    c = parse("[agent]\nlook = \"cinematic\"\n")                     # a file from before these two settings
+    assert c.max_fps == 10.0 and c.half_size is True
+    assert parse("[agent]\nmax_fps = 0\nhalf_size = false\n").max_fps == 0
 
 
 def test_env_variable_points_at_a_file(monkeypatch, tmp_path):
@@ -44,6 +51,8 @@ def test_env_variable_points_at_a_file(monkeypatch, tmp_path):
     ("[agent]\nlook = \"moody\"\n", "look must be"),
     ("[hotspot]\nband = \"6GHz\"\n", "band must be"),
     ("[agent]\nphone_timeout_s = 0.1\n", "1-60"),
+    ("[agent]\nmax_fps = 2\n", "5-30 frames"),
+    ("[agent]\nhalf_size = 1\n", "true or false"),
     ("[dashboard]\nnames = \"camera-pi.local\"\n", "list of names"),
     ("[paths]\ndata_dir = \"\"\n", "path in quotes"),
     ("not toml at all [", "(text)"),

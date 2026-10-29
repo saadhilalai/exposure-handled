@@ -27,3 +27,6 @@ band = "bg"                              # "bg" = 2.4 GHz (recommended on the Pi
 [agent]
 look = "cinematic"                       # the look at start-up: cinematic, run_and_gun, interview, low_light, photo_portrait
 phone_timeout_s = 5.0                    # armed and no word from the phone for this long: hold the settings and pause
+max_fps = 10.0                           # frames looked at per second (0 = all 24). 10 is enough: the brain reacts in
+                                         # half a second at the quickest, and fewer frames draw less power
+half_size = true                         # look at the live view at half size (same decisions, less work)
